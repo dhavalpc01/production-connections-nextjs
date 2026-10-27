@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="80 0 780 860" width="780" height="860" role="img" aria-label="Production Connections">
+  <title>Production Connections</title>
+  <defs>
+    <!-- Facet shading: each band lightens across its middle, like the folded
+         highlight in the brand mark. -->
+    <linearGradient id="pc-cyan" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#10C8D6"/>
+      <stop offset="0.48" stop-color="#7BEFDF"/>
+      <stop offset="0.52" stop-color="#22D3DA"/>
+      <stop offset="1" stop-color="#0BC4D3"/>
+    </linearGradient>
+    <linearGradient id="pc-gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFD400"/>
+      <stop offset="0.45" stop-color="#FF8A0A"/>
+      <stop offset="0.55" stop-color="#FFC107"/>
+      <stop offset="1" stop-color="#FFD000"/>
+    </linearGradient>
+    <linearGradient id="pc-grey" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#9A9A9A"/>
+      <stop offset="0.45" stop-color="#3C3C3C"/>
+      <stop offset="0.55" stop-color="#7A7A7A"/>
+      <stop offset="1" stop-color="#A5A5A5"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded corners come from a same-colour stroke with round joins. -->
+  <g stroke-linejoin="round" stroke-width="34">
+    <polygon points="122,44 640,322 538,394 120,203" fill="url(#pc-cyan)" stroke="url(#pc-cyan)"/>
+    <polygon points="120,246 222,290 274,736 124,812" fill="url(#pc-gold)" stroke="url(#pc-gold)"/>
+    <polygon points="318,632 690,352 814,433 326,744" fill="url(#pc-grey)" stroke="url(#pc-grey)"/>
+  </g>
+</svg>

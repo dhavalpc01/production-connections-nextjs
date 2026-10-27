@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="80 0 780 860" width="780" height="860" role="img" aria-label="Production Connections">
+  <title>Production Connections</title>
+  <!-- Rounded corners come from a same-colour stroke with round joins. -->
+  <g stroke-linejoin="round" stroke-width="34">
+    <polygon points="122,44 640,322 538,394 120,203" fill="#111111" stroke="#111111"/>
+    <polygon points="120,246 222,290 274,736 124,812" fill="#111111" stroke="#111111"/>
+    <polygon points="318,632 690,352 814,433 326,744" fill="#111111" stroke="#111111"/>
+  </g>
+</svg>

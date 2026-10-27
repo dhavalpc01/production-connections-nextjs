@@ -1,9 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   cacheComponents: true,
   partialPrefetching: true,
+  // WordPress URLs end in a slash; keep them identical so links and rankings carry over.
+  trailingSlash: true,
   turbopack: {
     rules: {
       "*.css": {
@@ -11,6 +12,23 @@ const nextConfig: NextConfig = {
         as: "*.css",
       },
     },
+  },
+  // Mirrors inc/legacy-redirects.php in the WordPress theme.
+  async redirects() {
+    const renamedServices: Record<string, string> = {
+      "ai-marketing-automation": "ai-automation-systems",
+      "social-media-advertising": "social-media-marketing",
+      "google-ads-ppc": "pay-per-click",
+      "marketing-strategy": "digital-strategy-marketing",
+    };
+    return [
+      ...Object.entries(renamedServices).map(([from, to]) => ({
+        source: `/services/${from}/`,
+        destination: `/services/${to}/`,
+        permanent: true,
+      })),
+      { source: "/our-services/", destination: "/services/", permanent: true },
+    ];
   },
 };
 

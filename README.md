@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# production-connections-nextjs
 
-## Getting Started
+Next.js rebuild of productionconnections.com, converted page by page from the
+WordPress + Elementor site in
+[Dev-Suthar/production-connections](https://github.com/Dev-Suthar/production-connections)
+(branch `latestAllPagesAt-21-10`, the latest copy of every page).
 
-First, run the development server:
+Stack: Next.js 16 (App Router, Turbopack, Cache Components), React 19,
+TypeScript, Tailwind CSS 4.
+
+## Run it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # only needed for the lead form API
+npm run dev                  # http://localhost:3000
+npm run build && npm start   # production check
+npm run lint
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Layout
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Path | What it is |
+|---|---|
+| `src/app/` | Routes. One folder per WP URL, trailing slash kept (`trailingSlash: true`). |
+| `src/app/api/leads/route.ts` | Form capture → Supabase (`form_submissions`, `newsletter_signups`). |
+| `src/components/layout/` | Header (desktop dropdowns + flyouts), MobileNav, Footer. |
+| `src/components/PagePlaceholder.tsx` | Stand-in for routes not converted yet. |
+| `src/content/` | Page data. `site.ts` (contact + nav), `services.ts`, `industries.ts`. |
+| `src/lib/forms/` | Form definitions and validation rules ported from `inc/form-rules.php`. |
+| `src/lib/seo.ts` | Per-page metadata helper. |
+| `src/types/content.ts` | Content types; grows a section shape per page type as it is converted. |
+| `public/images/` | Theme images; `public/images/pillar/` is the page photography (`assets/pillar-images/`). |
+| `next.config.ts` | Legacy 301s mirrored from `inc/legacy-redirects.php`. |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Design system
 
-## Learn More
+Tokens and utilities live in `src/app/globals.css`, ported from the child
+theme's CSS:
 
-To learn more about Next.js, take a look at the following resources:
+- Colours: `gold` #ffa201, `grey` #83848b, `ink` #0e0e0e and friends
+  (`bg-ink`, `text-gold`, …).
+- Fonts: Outfit for headings (`font-heading`), DM Sans for body.
+- Glass: `glass-dark` (default for cards), `glass-white` (small inset parts),
+  `glass-amber` (CTA buttons), plus `glass-edge` for the client's 1px
+  white-gradient corner ring and `fade-line` for fade-edge rules. Glass is for
+  surfaces only, never behind copy.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Converting a page
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See [MIGRATION.md](MIGRATION.md) for the route map, the WP source of every
+page, and the conversion checklist.

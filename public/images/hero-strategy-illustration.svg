@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 760" fill="none">
+	<title>Search, social, email, content and analytics climbing into one aligned strategy</title>
+
+	<!-- faint blueprint grid -->
+	<g stroke="#FFFFFF" stroke-opacity="0.08" stroke-width="1">
+		<path d="M0 660h640M0 580h640M0 500h640M0 420h640M0 340h640M0 260h640M0 180h640" />
+		<path d="M80 0v760M180 0v760M280 0v760M380 0v760M480 0v760M580 0v760" />
+	</g>
+
+	<!-- baseline axis -->
+	<path d="M40 700h560" stroke="#FFFFFF" stroke-opacity="0.28" stroke-width="2" stroke-linecap="round" />
+
+	<!-- the channels, each running its own way, before the plan lines them up -->
+	<polyline
+		points="60,676 146,634 226,648 300,586 366,566 420,468 462,392"
+		stroke="#FFFFFF"
+		stroke-width="7"
+		stroke-linecap="round"
+		stroke-linejoin="round"
+	/>
+
+	<!-- start of the line: no channel yet, just spend -->
+	<circle cx="60" cy="676" r="8" fill="#FFFFFF" fill-opacity="0.55" />
+
+	<!-- search -->
+	<g transform="translate(146,634)">
+		<circle r="21" fill="#ffa201" />
+		<circle cx="-3" cy="-4" r="6.5" stroke="#0A0A0A" stroke-width="2.75" />
+		<path d="M1.5 0.5L8 7" stroke="#0A0A0A" stroke-width="2.75" stroke-linecap="round" />
+	</g>
+
+	<!-- social -->
+	<g transform="translate(226,648)">
+		<circle r="21" fill="#ffa201" />
+		<rect x="-10" y="-8" width="20" height="13" rx="4" stroke="#0A0A0A" stroke-width="2.4" />
+		<path d="M-4 5L-5 11L2 5" fill="#0A0A0A" />
+		<g fill="#0A0A0A">
+			<circle cx="-4.5" cy="-1.5" r="1.4" />
+			<circle cx="0" cy="-1.5" r="1.4" />
+			<circle cx="4.5" cy="-1.5" r="1.4" />
+		</g>
+	</g>
+
+	<!-- email -->
+	<g transform="translate(300,586)">
+		<circle r="21" fill="#ffa201" />
+		<rect x="-10" y="-7" width="20" height="14" rx="2" stroke="#0A0A0A" stroke-width="2.4" />
+		<path d="M-10 -6L0 3L10 -6" stroke="#0A0A0A" stroke-width="2.4" stroke-linejoin="round" />
+	</g>
+
+	<!-- content -->
+	<g transform="translate(366,566)">
+		<circle r="21" fill="#ffa201" />
+		<circle r="10.5" stroke="#0A0A0A" stroke-width="2.4" />
+		<path d="M-3 -6L7 0L-3 6Z" fill="#0A0A0A" />
+	</g>
+
+	<!-- analytics — the moment the channels start reading as one dashboard -->
+	<g transform="translate(420,468)">
+		<circle r="21" fill="#ffa201" />
+		<rect x="-9" y="2" width="4.5" height="5" fill="#0A0A0A" />
+		<rect x="-2.25" y="-2" width="4.5" height="9" fill="#0A0A0A" />
+		<rect x="4.5" y="-6" width="4.5" height="13" fill="#0A0A0A" />
+	</g>
+
+	<!-- flying off the last data point, into the plan -->
+	<g stroke="#FFFFFF" stroke-opacity="0.4" stroke-width="2.5" stroke-linecap="round">
+		<path d="M398 512l40-70" />
+		<path d="M382 498l44-92" />
+	</g>
+	<g transform="translate(462,392) rotate(-58)">
+		<path d="M0 -18 L38 0 L0 18 L10 0 Z" fill="#ffa201" />
+	</g>
+
+	<!-- the target: one strategy the channels are now aimed at -->
+	<g transform="translate(462,392)">
+		<circle r="150" stroke="#FFFFFF" stroke-opacity="0.22" stroke-width="2" stroke-dasharray="2 10" stroke-linecap="round" />
+		<circle r="112" stroke="#ffa201" stroke-width="3" />
+		<circle r="74" stroke="#FFFFFF" stroke-opacity="0.7" stroke-width="2.5" />
+		<circle r="36" fill="#ffa201" fill-opacity="0.22" stroke="#ffa201" stroke-width="3" />
+		<circle r="12" fill="#FFFFFF" />
+	</g>
+
+	<!-- scattered accent marks, matching the theme's own dot/plus motif -->
+	<g fill="#ffa201">
+		<circle cx="118" cy="150" r="4.5" />
+		<circle cx="560" cy="120" r="3.5" />
+		<circle cx="602" cy="240" r="4.5" />
+		<circle cx="70" cy="330" r="3.5" />
+		<circle cx="540" cy="560" r="4.5" />
+		<circle cx="270" cy="130" r="3.5" />
+	</g>
+	<g stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="2.5" stroke-linecap="round">
+		<path d="M600 470v20M590 480h20" />
+		<path d="M46 560v20M36 570h20" />
+		<path d="M330 60v20M320 70h20" />
+	</g>
+</svg>

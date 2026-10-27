@@ -1,26 +1,135 @@
 @import "tailwindcss";
 
+/*
+ * Production Connections design tokens.
+ *
+ * Ported from the WordPress child theme (nimo-child):
+ *   - palette   scripts/apply-brand-colors.php (gold #ffa201, grey #83848b)
+ *   - surfaces  assets/css/*.css (near-black #0e0e0e / #0a0a0a / #161616)
+ *   - glass     assets/css/glass.css (dark + white glass, gradient edge)
+ *   - fonts     Outfit (headings) + DM Sans (body), both variable
+ *
+ * The site is dark only: black and gold, no light theme.
+ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --pc-gold: #ffa201;
+  --pc-gold-soft: #f5a524;
+  --pc-amber: #d29737;
+  --pc-grey: #83848b;
+  --pc-muted: #b5b5b5;
+  --pc-ink: #0e0e0e;
+  --pc-ink-deep: #0a0a0a;
+  --pc-ink-raised: #161616;
+  --pc-ink-panel: #111215;
+  --pc-text: #efefef;
+  --pc-error: #ff6b6d;
+
+  /* The client's glass edge: white 0% -> 100% -> 0%, corner to corner. */
+  --pc-edge: linear-gradient(135deg, rgba(255, 255, 255, 0) 0%, #fff 50%, rgba(255, 255, 255, 0) 100%);
+  --pc-line-h: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, #fff 50%, rgba(255, 255, 255, 0) 100%);
+  --pc-line-v: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, #fff 50%, rgba(255, 255, 255, 0) 100%);
+  --pc-amber-glass: linear-gradient(90deg, rgba(166, 128, 70, 0.9) 0%, rgba(150, 106, 44, 0.9) 55%, rgba(132, 90, 30, 0.9) 100%);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-gold: var(--pc-gold);
+  --color-gold-soft: var(--pc-gold-soft);
+  --color-amber: var(--pc-amber);
+  --color-grey: var(--pc-grey);
+  --color-muted: var(--pc-muted);
+  --color-ink: var(--pc-ink);
+  --color-ink-deep: var(--pc-ink-deep);
+  --color-ink-raised: var(--pc-ink-raised);
+  --color-ink-panel: var(--pc-ink-panel);
+  --color-text: var(--pc-text);
+  --color-error: var(--pc-error);
+
+  --font-heading: var(--font-outfit);
+  --font-sans: var(--font-dm-sans);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--pc-ink);
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--pc-ink);
+  color: var(--pc-text);
+  font-family: var(--font-dm-sans), Helvetica, Arial, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-outfit), var(--font-dm-sans), sans-serif;
+  color: #fff;
+}
+
+/*
+ * Glass. Surfaces only — cards, buttons, menus, badges. Never panels behind
+ * copy and never glass lettering (client, 2026-10-13).
+ */
+@utility glass-dark {
+  position: relative;
+  background: rgba(28, 24, 20, 0.55);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  backdrop-filter: blur(16px) saturate(170%);
+}
+
+@utility glass-white {
+  position: relative;
+  background: rgba(255, 255, 255, 0.16);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+@utility glass-amber {
+  position: relative;
+  background: var(--pc-amber-glass);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
+}
+
+/*
+ * The edge: a 1px gradient ring drawn on ::after and masked down to the
+ * border, so it follows border-radius on a see-through box (border-image
+ * cannot). The host needs position: relative, which the glass utilities set.
+ */
+@utility glass-edge {
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: var(--pc-edge);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+    pointer-events: none;
+  }
+}
+
+/* Fade-edge rule: a 1px line that falls away at both ends. */
+@utility fade-line {
+  height: 1px;
+  background: var(--pc-line-h);
+  border: 0;
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass-dark {
+    background: #1c1814;
+  }
+  .glass-white {
+    background: #2a2a2a;
+  }
+  .glass-amber {
+    background: #966a2c;
+  }
 }
