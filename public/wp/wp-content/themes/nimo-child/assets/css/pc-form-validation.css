@@ -1,0 +1,63 @@
+/**
+ * Inline form validation messages.
+ *
+ * Deliberately unbranded and small. These sit inside five different form
+ * layouts across the site — a black service-page panel, a near-white popup,
+ * two dark CTA bands — so anything opinionated about background or spacing
+ * would break somewhere.
+ *
+ * WHY TWO REDS. No single red clears WCAG AA against both a black panel and a
+ * near-white one; the contrast maths rules it out. A colour light enough to
+ * read on black (needs luminance >= 0.175) is by definition too light to read
+ * on #f9f9f9 (needs <= 0.168). So there is a colour for each, and the script
+ * measures the field's actual background luminance to pick between them.
+ *
+ * The first attempt selected on wrapper class instead, and was wrong in both
+ * directions — the service-page panel carries none of the "dark" class names
+ * but is pure black, and the popup theme that reads as dark by name renders on
+ * #f9f9f9. Measuring cannot drift when someone restyles a panel.
+ *
+ *   #b32d2e on #f9f9f9  ->  5.9:1   AA
+ *   #ff6b6d on #000     ->  7.6:1   AA
+ */
+
+.pc-field-error {
+	display: block;
+	margin: 6px 0 0;
+	font-size: 13px;
+	line-height: 1.4;
+	color: #b32d2e;
+	font-weight: 500;
+}
+
+.pc-field-error--on-dark {
+	color: #ff6b6d;
+}
+
+.pc-field-invalid {
+	border-color: #b32d2e !important;
+}
+
+.pc-field-invalid--on-dark {
+	border-color: #ff6b6d !important;
+}
+
+.pc-field-invalid:focus {
+	outline: 2px solid #b32d2e;
+	outline-offset: 1px;
+}
+
+.pc-field-invalid--on-dark:focus {
+	outline-color: #ff6b6d;
+}
+
+/* The honeypot is hidden by an inline style so it cannot be exposed by a
+   stylesheet failing to load. This is belt and braces for anything that
+   strips inline styles. */
+.pc-hp-wrap {
+	position: absolute !important;
+	left: -9999px !important;
+	width: 1px !important;
+	height: 1px !important;
+	overflow: hidden !important;
+}

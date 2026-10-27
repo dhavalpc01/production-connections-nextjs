@@ -1,0 +1,17 @@
+:root {
+                --nm-clr-pr-1: #ffa100;
+                --nm-clr-pr-2: #83848b;
+                --nm-clr-pr-3: #ffa206;
+                --nm-clr-sd-3: #83848b;
+                --nm-clr-pr-5: #FD3F00;
+            }
+        
+            :root {
+                --nm-clr-gd-1: linear-gradient(62deg, #3adfcc 0%, #3943c1 100%);
+            }
+        
+            .wa-cursor::before {
+                background-color:  !important;
+            }
+        
+/*# sourceURL=nimo-primary-color-inline-css */

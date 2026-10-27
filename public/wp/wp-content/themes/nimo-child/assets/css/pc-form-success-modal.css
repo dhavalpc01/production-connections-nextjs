@@ -1,0 +1,148 @@
+/**
+ * The "message sent" confirmation, as a modal.
+ *
+ * WHY THIS EXISTS. CF7 prints its success line into `.wpcf7-response-output`,
+ * a thin bordered strip at the foot of the form. On the service pages that
+ * strip lands below the fold of a tall form, under the inline field errors
+ * from the attempt before it — so the page a visitor sees after a successful
+ * submit is a wall of red with a green sentence somewhere beneath it. Several
+ * people read that as a failure and submitted again. The confirmation has to
+ * interrupt, not queue up behind the errors it replaces.
+ *
+ * SCOPE. Only the sent state is taken over. `.invalid`, `.spam`, `.unaccepted`
+ * and `.aborted` keep the inline strip: those belong beside the fields the
+ * visitor still has to fix, and a modal over a form you cannot see is worse
+ * than a strip under one you can.
+ *
+ * The panel is fixed dark (#161616 on the site's gold) rather than inheriting,
+ * because it floats over five different form backgrounds — a black service
+ * panel, a near-white popup, two dark CTA bands — and an overlay is the one
+ * place on the site that does not have to match its surroundings.
+ */
+
+/* CF7 puts a state class on the form itself; this is the sent one only. */
+form.wpcf7-form.sent .wpcf7-response-output {
+	display: none !important;
+}
+
+.pc-sent-modal {
+	position: fixed;
+	inset: 0;
+	z-index: 999999; /* Popup Maker sits at 1999999999; this is over the site, under it. */
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+	background: rgba(0, 0, 0, 0.72);
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity 0.25s var(--nm-cube-1, cubic-bezier(0.55, 0.085, 0, 0.99)), visibility 0.25s;
+}
+
+.pc-sent-modal.is-open {
+	opacity: 1;
+	visibility: visible;
+}
+
+.pc-sent-modal__panel {
+	position: relative;
+	width: 100%;
+	max-width: 420px;
+	padding: 40px 32px 32px;
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	border-radius: 14px;
+	background: #161616;
+	text-align: center;
+	transform: translateY(12px) scale(0.98);
+	transition: transform 0.25s var(--nm-cube-1, cubic-bezier(0.55, 0.085, 0, 0.99));
+}
+
+.pc-sent-modal.is-open .pc-sent-modal__panel {
+	transform: none;
+}
+
+.pc-sent-modal__tick {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 56px;
+	height: 56px;
+	margin: 0 auto 20px;
+	border-radius: 50%;
+	background: var(--nm-clr-pr-1, #ffa201);
+}
+
+.pc-sent-modal__tick svg {
+	width: 26px;
+	height: 26px;
+	display: block;
+}
+
+.pc-sent-modal__title {
+	margin: 0 0 10px;
+	color: #fff;
+	font-size: 22px;
+	line-height: 1.3;
+	font-weight: 600;
+}
+
+.pc-sent-modal__text {
+	margin: 0 0 26px;
+	color: #b5b5b5;
+	font-size: 15px;
+	line-height: 1.55;
+}
+
+.pc-sent-modal__close {
+	display: inline-block;
+	padding: 12px 34px;
+	border: 0;
+	border-radius: 999px;
+	background: var(--nm-clr-pr-1, #ffa201);
+	color: #0e0e0e;
+	font-size: 14px;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+	cursor: pointer;
+}
+
+.pc-sent-modal__close:hover,
+.pc-sent-modal__close:focus-visible {
+	background: #ffc061;
+}
+
+/* The corner dismiss. Present for the mouse; the button above is the one that
+   takes focus, so keyboard users never have to find this. */
+.pc-sent-modal__x {
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	width: 34px;
+	height: 34px;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: transparent;
+	color: #838383;
+	font-size: 22px;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.pc-sent-modal__x:hover,
+.pc-sent-modal__x:focus-visible {
+	color: #fff;
+	background: rgba(255, 255, 255, 0.07);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.pc-sent-modal,
+	.pc-sent-modal__panel {
+		transition: none;
+	}
+
+	.pc-sent-modal__panel {
+		transform: none;
+	}
+}

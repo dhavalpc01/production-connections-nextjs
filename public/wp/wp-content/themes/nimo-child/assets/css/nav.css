@@ -1,0 +1,162 @@
+/**
+ * Main navigation corrections, site-wide.
+ *
+ * WHY THIS FILE EXISTS
+ * --------------------
+ * The header views in the nimo-core plugin
+ * (`elementor-widgets/tx-headers/views/view-2.php` and `view-3.php`, line 48)
+ * post-process the rendered menu with a `preg_replace_callback` that appends
+ *
+ *     <i class="fa-solid fa-angles-down"></i>
+ *
+ * to the <a> of EVERY <li> carrying the `dropdown` class — which is every item
+ * with children, at every level. It is a vendor file, so the icon cannot be
+ * suppressed at source without forking the plugin.
+ *
+ * On this site that puts a chevron on five items: About, Services and Resources
+ * at the top level, and then "Design & Development" and "Marketing &
+ * Advertising" INSIDE the Services dropdown. The two nested ones are the ones
+ * being hidden here — a chevron sitting inside an already-open dropdown panel
+ * reads as clutter rather than as an affordance.
+ *
+ * Scoped to `.dropdown-menu` descendants on purpose, so the three top-level
+ * arrows are untouched: those sit on a closed menu bar where the hint earns its
+ * place.
+ *
+ * NOTE: this is cosmetic only. The third menu level still works — the theme
+ * positions it as a right-hand flyout in
+ * `nimo/assets/css/nimo-core.css:4022` (`.dropdown-menu li .dropdown-menu
+ * { top: 0; left: 100% }`) — so the ten Marketing and four Design service pages
+ * underneath are still reachable on hover. Hiding the arrow removes the visual
+ * cue for them, not the links.
+ *
+ * The mobile nav (`.mobile-main-navigation`) is unaffected: it renders through a
+ * different path and never receives these <i> elements.
+ */
+
+.nm-main-navigation .dropdown-menu i.fa-angles-down {
+	display: none;
+}
+
+/* THE SECOND ARROW.
+ *
+ * Hiding the <i> above is not enough — a submenu item carries TWO chevrons from
+ * two unrelated places, and removing only the first leaves a fainter one behind
+ * that looks like the fix half-worked:
+ *
+ *   1. the injected <i class="fa-angles-down">, handled above; and
+ *   2. a ::before pseudo-element from the parent theme
+ *      (`nimo-core.css`, `.nm-main-navigation .navbar-nav li .dropdown-menu
+ *      li:is(.dropdown) > a::before`) — a Font Awesome glyph pinned at
+ *      `right: 20px` with `opacity: .42`, which is why it reads as a ghost
+ *      rather than as an icon.
+ *
+ * `content: none` removes the generated box outright rather than making it
+ * transparent, so it also stops reserving its slot. The `body` prefix is there
+ * purely to outrank the parent theme's identical selector without `!important`.
+ */
+body .nm-main-navigation .navbar-nav li .dropdown-menu li:is(.dropdown):not(.pc-industry-nav) > a::before {
+	content: none;
+}
+
+/* THE INDUSTRY CATEGORIES KEEP THEIR ARROW, AND THE TWO MENUS NOW DIFFER.
+ *
+ * The `:not(.pc-industry-nav)` above is the whole of that exception. It is worth
+ * explaining, because the rule it carves out of was a deliberate decision and
+ * this is not a reversal of it.
+ *
+ * When that rule was written, the only second-level parents on the site were the
+ * two hand-built Services headers — `Design & Development` and
+ * `Marketing & Advertising`. Those are `#` links: they go nowhere, they exist to
+ * label a group, and the note at the top of this file judged an arrow on them to
+ * be clutter rather than an affordance. Nothing about that has changed.
+ *
+ * The Industries dropdown gained a second level when every industry page moved
+ * under a category (/industries/property-logistics/restoration/). Its
+ * second-level items are NOT labels — each one is a real published page with its
+ * own copy, and each one has a flyout of industries beneath it. With no arrow
+ * they read as ordinary links, and the five industries under
+ * `Property, Construction & Logistics` are reachable only by a hover nobody has
+ * been told about.
+ *
+ * `.pc-industry-nav` is set by inc/industry-menu.php on every item it generates,
+ * so this matches the industry tree and nothing else. It is deliberately not
+ * keyed on `menu-item-object-page`: that describes what the item POINTS AT, and
+ * would silently start matching a Services header the day one is repointed at a
+ * real page.
+ *
+ * The glyph, its position and its opacity all come from the parent theme
+ * (`nimo-core.css`, `.nm-main-navigation .navbar-nav li .dropdown-menu
+ * li:is(.dropdown) > a::before` — a Font Awesome chevron pinned at `right: 20px`
+ * at 42% opacity). Nothing is redeclared here; the exception simply stops
+ * removing it.
+ */
+
+/* ------------------------------------------------------------------ *
+ * The nav was riding high in the header bar
+ *
+ * `nimo-core.css` sets `.nm-main-navigation:is(.has-header-3){ margin-top:-37px }`.
+ * In the demo, Header 3 is a TWO-ROW header — a tall logo band with the menu
+ * tucked up beside it — and that negative pull is what closes the gap. This site
+ * runs Header 3 as a single bar, so nothing needs pulling up and the -37px just
+ * drags the menu off centre.
+ *
+ * Measured before, against a header box spanning 0->70:
+ *
+ *     nav      top -13.5   bottom 46.5     (13.5px ABOVE the header, 23.5 below)
+ *     logo     top  13.1   bottom 56.9     centred
+ *     CTA      top  10     bottom 60       centred
+ *
+ * So the menu was the only element in the bar not centred, hanging over the top
+ * edge while leaving a 23.5px gap underneath — the "too much space below, none
+ * above" in the report.
+ *
+ * Zeroing it lets `.nm-header-3-wrap`'s own `align-items: center` do the work it
+ * was always trying to do: 10px above, 10px below, and the nav's centre line
+ * exactly on the header's. The bar grows 70px -> 80px as a result, which costs
+ * nothing — `.nm-header-3-area` is `position: absolute` over the hero, so it
+ * never displaced page content in the first place.
+ *
+ * The `body` prefix supplies the specificity to beat the parent theme's rule
+ * without `!important`.
+ * ------------------------------------------------------------------ */
+body .nm-main-navigation:is(.has-header-3) {
+	margin-top: 0;
+}
+
+/* ------------------------------------------------------------------ *
+ * ...and too much air between the links and the gold rule
+ *
+ * The gold rule (`.bg-line-clr`) is a child of the nav, pinned to its bottom
+ * edge, and the nav's height is set entirely by the links' own padding. So the
+ * gap is simply:
+ *
+ *     gap = link padding-bottom - rule height (1px; was 3px, see below)
+ *
+ * At the theme's `padding: 18px 0` that is a 15px gap under a 16px word, which
+ * reads as the rule belonging to something else rather than underlining the menu.
+ *
+ * Both sides are reduced, not just the bottom: the wrap centres the nav as a
+ * box, so trimming only the bottom would push the text off the header's centre
+ * line and undo the fix above.
+ * ------------------------------------------------------------------ */
+body .nm-main-navigation:is(.has-header-3) .navbar-nav li a {
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+
+/* ------------------------------------------------------------------ *
+ * The rule under the menu items: removed (client, 2026-10-14)
+ *
+ * The theme draws a bar under the whole menu list (`.bg-line-clr`). With the
+ * header's own bottom edge and the dividers between items, it was a third
+ * line doing nothing, so it is hidden. The header's bottom edge (glass.css,
+ * the header ::before) is a different element and stays.
+ * ------------------------------------------------------------------ */
+body .nm-main-navigation:is(.has-header-3) .bg-line-clr {
+	display: none;
+}
+
+/* The off-canvas panel's own colours live in inc/offcanvas-panel.php, which
+   owns that surface end to end — link colours, the gold expand arrow and the
+   tap-to-call button. This file is the DESKTOP navigation only. */

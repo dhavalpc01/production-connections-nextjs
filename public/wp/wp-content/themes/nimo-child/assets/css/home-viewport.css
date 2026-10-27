@@ -1,0 +1,216 @@
+/**
+ * Home page: keep the scroll-PINNED sections inside the viewport.
+ *
+ * Two sections on the home page are pinned by the theme's GSAP ScrollTrigger
+ * on desktop, which means they cannot scroll: whatever does not fit in the
+ * window is never seen. Each gets sized to the viewport height here.
+ *
+ *   1. The hero — "Start the Conversation" was below the fold on laptops.
+ *   2. The Capabilities card stack — after the 2026-10-13 copy pass the cards
+ *      grew to ~580px, pinned 20% down the window, so on short laptops their
+ *      bottom edge (feature list, note) was cut off. See the end of the file.
+ *
+ * ===================================================================
+ * 1. Home hero: always fit the viewport, so "Start the Conversation" is visible.
+ *
+ * WHY THIS FILE EXISTS
+ * --------------------
+ * On desktop widths the theme pins the hero with GSAP ScrollTrigger
+ * (`start: "top top"`, `pinSpacing: false`): the hero is `position: fixed` from
+ * the first pixel and the About section slides up OVER it. The hero itself
+ * never scrolls, so anything below the bottom of the window is covered before
+ * it can be reached.
+ *
+ * The theme sizes the hero for a tall screen — 185px top padding, an 80px
+ * three-line headline, 20px copy — 847px to the bottom of the button. On a
+ * 1366x768 laptop (a ~657px tall browser window) the button sat at 795-847px:
+ * below the fold, unreachable, and the next scroll started the About section.
+ * Tablets and phones are not pinned by the theme, so they scroll normally and
+ * never had the problem.
+ *
+ * THE FIX
+ * -------
+ * 1. From 992px wide, every vertical measure of the hero scales with the
+ *    viewport HEIGHT (vh), capped at the theme's own values. A tall screen
+ *    (~1080px) looks exactly as designed; a short one gets a proportionally
+ *    smaller hero that still fits, button included. Worked through:
+ *
+ *       height  top pad  title   copy   total to button bottom
+ *       1080    185      80px    20px   847   (theme's own sizes)
+ *        900    144      74px    20px  ~765
+ *        768    123      63px    18px  ~670
+ *        657    105      54px    16px  ~590
+ *
+ * 2. Below 600px tall nothing readable fits in one screen, so there the pin
+ *    is switched off and the hero scrolls like any other section (as it
+ *    already does on tablets and phones). GSAP writes the pin as inline
+ *    styles, which only !important can override.
+ *
+ * Scoped to the home page's hero. The About section's own -55px overlap and
+ * rounded top still sit over the hero's bottom padding either way.
+ */
+
+@media (min-width: 992px) {
+	body.home .nm-hero-3-area {
+		padding-top: clamp(100px, 16vh, 185px);
+	}
+
+	/* Widths in `em` so the text keeps its designed line breaks at every size
+	   ("Most Marketing Is / Useless. We Fix That."): the box shrinks with the
+	   font. In px, a smaller font fitted more words per line and broke as
+	   "Most Marketing Is Useless. We Fix / That." */
+	body.home .nm-hero-3-content .nm-hero-3-title {
+		margin-top: clamp(16px, 3.2vh, 38px);
+		font-size: clamp(48px, 8.2vh, 80px);
+		line-height: 1.11;
+		max-width: 11em;
+	}
+
+	body.home .nm-hero-3-content .nm-hero-3-disc {
+		margin-top: clamp(14px, 3vh, 32px);
+		font-size: clamp(16px, 2.4vh, 20px);
+		line-height: 1.6;
+		max-width: 35em;
+	}
+
+	body.home .nm-hero-3-content .inner-div {
+		margin-top: clamp(16px, 3.4vh, 35px);
+	}
+}
+
+/* Too short to fit: unpin, let the hero scroll. */
+@media (min-width: 992px) and (max-height: 599px) {
+	body.home .nm-hero-3-area {
+		position: relative !important;
+		top: auto !important;
+		left: auto !important;
+		width: auto !important;
+		transform: none !important;
+	}
+}
+
+/* ===================================================================
+ * 2. Capabilities card stack (Creative Approach / Media Production /
+ *    Performance Marketing)
+ *
+ * Pinned with `start: "top 20%"`, so the stack's bottom edge sits at
+ * 20vh + its height. With the 2026-10-13 copy (longer bodies, five-item
+ * feature lists, the Media Production note) the tallest card is ~580px:
+ * fine on a 768px+ window, cut off below ~760px (1280x720 ended at 736px,
+ * 1366x657 at 724px).
+ *
+ * On short desktop windows the card's spacing and type tighten — padding,
+ * the gaps between title, body, list and note, and a slightly smaller title
+ * and list — taking ~70px off the tallest card. Nothing is hidden; on taller
+ * windows the theme's own sizes stand.
+ * =================================================================== */
+@media (min-width: 992px) and (max-height: 800px) {
+	body.home .nm-services-2-card .card-content {
+		padding-top: 14px;
+		padding-bottom: 14px;
+	}
+
+	body.home .nm-services-2-card .card-title {
+		font-size: 28px;
+	}
+
+	body.home .nm-services-2-card .card-disc {
+		margin-top: 10px;
+		font-size: 15px;
+		line-height: 1.5;
+	}
+
+	body.home .nm-services-2-card .card-features {
+		margin-top: 12px;
+	}
+
+	body.home .nm-services-2-card .card-features li {
+		font-size: 15px;
+	}
+
+	body.home .nm-services-2-card .card-features li:not(:last-child) {
+		margin-bottom: 9px;
+	}
+
+	body.home .nm-services-2-card .pc-card-note {
+		margin-top: 10px;
+		padding-top: 8px;
+		font-size: 12px;
+	}
+}
+
+/* ===================================================================
+ * 2b. Capabilities stack geometry
+ *
+ * The theme piles the cards with fixed negative margins (-520px odd,
+ * -530px even), which only line up if every card is ~520px tall. The
+ * redesigned cards differ (Media Production, with its note, runs ~110px
+ * taller than Creative Approach), so a taller card was pulled up past the
+ * pinned box and its top slid under the fixed header (client screenshot,
+ * 2026-10-15). Stacking them in ONE grid cell instead gives every card the
+ * same top, and the grid stretches them all to the tallest one, so the
+ * pile stays inside the pinned box at any content length. The theme's
+ * 50px margin-bottom on the cards must go too: in a shared cell it adds
+ * to the row and every card grew 50px. (Never height: 100% on the cards:
+ * the pin takes its height from them, so they would inflate each other.)
+ * The theme's tilt and its one-by-one fly-in (GSAP on the cards) are unchanged.
+ * =================================================================== */
+@media (min-width: 992px) {
+	body.home .nm-services-2-wrap {
+		display: grid;
+	}
+
+	body.home .nm-services-2-wrap > .nm-services-2-card,
+	body.home .nm-services-2-wrap > .nm-services-2-card:first-child {
+		grid-area: 1 / 1;
+		margin-top: 0;
+		margin-bottom: 0;
+	}
+}
+
+/* The deck look (client, 2026-10-15: "chipak gaye, pahle jaisa"): in one
+   shared cell all three cards started at the same top and read as a single
+   glued block. As with the theme's old margins, each later card now sits a
+   step lower, so the cards behind show their top edges above the front
+   one. The steps go UP from the front card (-28px, -14px, 0) so the pile
+   still clears the header and fits a 1366x657 screen. `translate` is its own
+   property: when GSAP builds the fly-in it folds it into its own transform
+   once (and writes `translate: none` inline). Never !important: then it
+   applied twice, doubling the offset. */
+@media (min-width: 992px) {
+	body.home .nm-services-2-wrap > .nm-services-2-card:nth-child(1) {
+		translate: 0 -28px;
+	}
+	body.home .nm-services-2-wrap > .nm-services-2-card:nth-child(2) {
+		translate: 0 -14px;
+	}
+}
+
+/* Phones and tablets get the same pinned deck (built by the footer script
+   in home-copy-render.php, which adds `pc-svc-stack` to <html> only when the
+   screen is tall enough for a card to fit; otherwise the cards stay a plain
+   list). */
+html.pc-svc-stack body.home .nm-services-2-wrap {
+	display: grid;
+}
+
+html.pc-svc-stack body.home .nm-services-2-wrap > .nm-services-2-card {
+	grid-area: 1 / 1;
+	margin: 0;
+}
+
+html.pc-svc-stack body.home .nm-services-2-wrap > .nm-services-2-card:nth-child(odd) {
+	rotate: -2deg;
+}
+
+html.pc-svc-stack body.home .nm-services-2-wrap > .nm-services-2-card:nth-child(even) {
+	rotate: 1.5deg;
+}
+
+html.pc-svc-stack body.home .nm-services-2-wrap > .nm-services-2-card:nth-child(1) {
+	translate: 0 -20px;
+}
+
+html.pc-svc-stack body.home .nm-services-2-wrap > .nm-services-2-card:nth-child(2) {
+	translate: 0 -10px;
+}

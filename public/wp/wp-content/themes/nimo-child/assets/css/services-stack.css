@@ -1,0 +1,49 @@
+/*
+ * The stacked services deck ("Creative Direction" / "Media Production" /
+ * "Performance Marketing").
+ *
+ * HOW THE DECK IS SUPPOSED TO WORK. The parent theme overlaps the cards with
+ * negative margins and alternating tilts, then animates them in one at a time on
+ * scroll (nimo-core.js, "Services-2-card-sticky" — `gsap.from(cards, {yPercent:
+ * 100, stagger: 1})`). Cards arrive in DOM order, so each new card should land in
+ * front of the one before it and the most recent card should be the one on top.
+ *
+ * Nothing in the theme sets a z-index on these cards: they are all
+ * `position: relative; z-index: auto`, so the deck's order is decided purely by
+ * DOM order, where a later sibling paints over an earlier one. That is the
+ * correct behaviour and it needs no help from us.
+ *
+ * THE BUG. One rule breaks it — nimo-extra.css:12
+ *
+ *     .nm-services-2-card:hover { z-index: 2; }
+ *
+ * Because every other card is `z-index: auto`, hovering ANY card lifts it out of
+ * the deck and in front of every card that comes after it. Put the pointer over
+ * the first card and "Creative Direction" jumps to the front of the stack,
+ * covering the cards that are supposed to be sitting on top of it. Since the
+ * deck sits under the cursor for the whole pinned scroll, this is easy to trigger
+ * by accident and reads exactly as "the wrong card is on top".
+ *
+ * That rule sets nothing but the z-index — no scale, no shadow, no outline — so
+ * it is not lifting a card clear of anything. Its only effect is the reordering.
+ *
+ * THE FIX. Take the hovered card's z-index back to `auto` so it stays in its
+ * place in the deck and DOM order governs again. Specificity does the work:
+ * this selector is (0,3,0) against the theme's (0,2,0), so no `!important` is
+ * needed.
+ *
+ * Deliberately NOT done by assigning each card an explicit ascending z-index.
+ * The theme calls this section "infinite stacking support" and sizes the scroll
+ * area from the card count at runtime, so any number of cards is legal — an
+ * nth-child ladder would silently stop working past whatever number we wrote out.
+ * Restoring `auto` is count-independent.
+ *
+ * Scoped under `.nm-services-2-wrap`, so this file is inert on any page that
+ * does not render this widget.
+ */
+
+@media (min-width: 992px) {
+	.nm-services-2-wrap .nm-services-2-card:hover {
+		z-index: auto;
+	}
+}

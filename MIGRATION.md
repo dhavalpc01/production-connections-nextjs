@@ -6,22 +6,43 @@ those scripts are the source of truth for every page below. Paths in the
 "WP source" column are relative to that repo; theme files are under
 `public/wp-content/themes/nimo-child/`.
 
-## How to convert one page
+## How pages are ported (same-to-same)
 
-1. Read the WP content file and its builder (table below).
-2. Add the page's section types to `src/types/content.ts` (first page of a
-   type only) and its copy to `src/content/<type>/<slug>.ts`.
-3. Build the sections as components in `src/components/<type>/`, reusing
-   the glass utilities in `globals.css`. Port only the CSS the page needs
-   from the theme's `assets/css/<file>.css` into Tailwind classes.
-4. Swap `PagePlaceholder` in the route for the real sections. Set
-   `seoDescription` so the page gets its meta description.
-5. `npm run build`, then compare against the WP page at desktop and phone
-   widths (the WP home hero is checked at 1366×657).
+The design reference is the local WordPress mirror of the
+`latestAllPagesAt-21-10` branch (`D:\Project\Wordpress\production-connections`,
+served at `http://localhost:8090`). Each page is ported from what that mirror
+actually renders, so the result matches it pixel for pixel:
+
+- **Markup** — `scripts/wp-port/html-to-jsx.mjs` turns the rendered HTML into
+  React components (`src/wp/<page>/`, one file per section), keeping every
+  class name, so the WordPress CSS applies unchanged.
+- **Styles** — `scripts/wp-port/capture-assets.mjs` copies the page's
+  stylesheets, fonts and images into `public/wp/` (same `wp-content` paths)
+  and records their order in `src/wp/assets.json`. `src/wp/WpDocument.tsx`
+  links them in that order with WordPress's body classes.
+- **Behaviour** — `src/wp/WpRuntime.tsx` loads the theme's own scripts
+  (jQuery, GSAP/ScrollTrigger/SplitText, Swiper, Lenis, WOW, marquee...) after
+  hydration, in WordPress's order, and replaces the server-side parts:
+  forms post to `/api/leads`, Popup Maker's click trigger, current-menu marking.
+- **Isolation** — every ported page is its own root layout
+  (`src/app/(home)`, `(about)`, `(contact)`), so navigating between them is a
+  full page load as on WordPress and no page's CSS leaks into another.
+
+To port another page:
+
+1. `curl -s http://localhost:8090/<path>/ -o scripts/wp-port/snapshots/<page>.html`
+2. `node scripts/wp-port/capture-assets.mjs http://localhost:8090 <page>`
+3. Add its jobs (page content selector, breadcrumb) to `scripts/wp-port/generate.mjs`
+   and run `node scripts/wp-port/generate.mjs`.
+4. Add `src/app/(<page>)/layout.tsx` with `WpDocument` (page id from the
+   snapshot's `page-id-N` body class) and the route's `page.tsx` with its
+   title / description from the snapshot. Remove the placeholder route.
+5. `npm run build`, run it, and compare with the mirror at 1366×657, 768 and
+   375 wide: page height and each section's height should match.
 6. Tick the box below.
 
-Once a page TYPE is done (e.g. Service Detail), every other page of that type
-should be a data-only port.
+Header, footer, preloader, back-to-top and the contact popup are shared
+(`src/wp/chrome/`, from the home snapshot).
 
 ## Route map
 
@@ -29,9 +50,9 @@ should be a data-only port.
 
 | Done | URL | WP source | Styles / scripts |
 |---|---|---|---|
-| [ ] | `/` | `scripts/apply-home-copy.php`, `inc/home-copy-render.php`, `inc/home-network.php` | `home-viewport.css`, `glass.css` |
-| [ ] | `/about-us/` | `scripts/apply-about-copy.php` | `about.css`, `about-cards-reveal.js` |
-| [ ] | `/contact-us/` | contact page + Contact Form (see Forms) | `contact.css` |
+| [x] | `/` | `scripts/apply-home-copy.php`, `inc/home-copy-render.php`, `inc/home-network.php` | `home-viewport.css`, `glass.css` |
+| [x] | `/about-us/` | `scripts/apply-about-copy.php` | `about.css`, `about-cards-reveal.js` |
+| [x] | `/contact/` | contact page + `[pc_contact_form]` (see Forms) | `contact.css` |
 | [ ] | `/services/` | `services` archive, `inc/service-page.php` | `services-stack.css`, `pc-service-index.js` |
 | [ ] | `/industries/` | `build-industries-page.php` (repo root) | `industries.css`, `industry-card-reveal.js` |
 | [ ] | `/blog/` | DB only (posts are not in scripts) — export first | `inc/blog-grid-order.php` |
@@ -107,18 +128,25 @@ Styles: `industry-detail.css`; script: `industry-cta.js`. Content file is
 
 ### Site chrome
 
-| Done | Piece | WP source |
+| Done | Piece | Where |
 |---|---|---|
-| [~] | Header + menus | `inc/header-footer.php`, `inc/service-menu.php`, `inc/industry-menu.php`, `nav.css` — structure done, visual pass pending |
-| [~] | Footer | `footer-4.css`, tf-footer post (DB) — placeholder; social links still to fill |
-| [ ] | Off-canvas panel | `inc/offcanvas-panel.php` |
-| [ ] | Breadcrumbs | `inc/breadcrumb.php` |
-| [ ] | SEO meta + schema | `inc/seo-meta.php` |
+| [x] | Header + desktop/mobile menus + off-canvas | `src/wp/chrome/WpHeader.tsx` (Elementor 268) |
+| [x] | Footer | `src/wp/chrome/WpFooter.tsx` (Elementor 4785) |
+| [x] | Preloader, back-to-top, SVG gold filter | `src/wp/chrome/` |
+| [x] | Contact popup (Popup Maker 4518) | `src/wp/chrome/WpContactPopup.tsx`, opened by `.popmake-4518` |
+| [x] | Breadcrumb banner | per page, e.g. `src/wp/about/AboutBreadcrumb.tsx` |
+| [~] | SEO meta | title, description, canonical, OG image per page; Yoast's JSON-LD schema not ported yet |
+
+The placeholder pages (services, industries, blog, privacy) still use the
+first scaffold's Tailwind header/footer (`src/components/layout/`) until each
+is ported the same way.
 
 ## Forms
 
-From `inc/supabase-forms.php`. The Next.js forms post JSON to `/api/leads`
-with the old CF7 id as `formId`, so Supabase rows stay comparable.
+From `inc/supabase-forms.php`. The ported markup keeps the CF7 forms;
+`WpRuntime` posts them to `/api/leads` with their `_wpcf7` id, so Supabase
+rows stay comparable. The theme's `pc-form-validation.js` still validates
+first and its success modal still opens on `wpcf7mailsent`.
 
 | Form | `formId` | Fields | Table |
 |---|---|---|---|
@@ -127,11 +155,10 @@ with the old CF7 id as `formId`, so Supabase rows stay comparable.
 | Book Strategy Call | `4005` | name, email, phone, message | `form_submissions` |
 | Newsletter H_2 (home inline) | `324` | email | `newsletter_signups` |
 | Newsletter H_4 (unplaced) | `328` | email | `newsletter_signups` |
+| Contact page `[pc_contact_form]` (WPCode 1805) | `pc-contact` | name, email, message; phone, business optional | `form_submissions` |
 
 Validation rules: `src/lib/forms/rules.ts` (from `inc/form-rules.php`).
-Still to build: the form UI components, the success modal
-(`pc-form-success-modal.css/js`), and an end-to-end test like the WP repo's
-`scripts/test-forms.py`.
+`pc-website-url` is a honeypot: filled means a bot, and nothing is stored.
 
 ## Redirects
 
@@ -140,13 +167,22 @@ Still to build: the form UI components, the success modal
 `social-media-advertising` → `social-media-marketing`,
 `google-ads-ppc` → `pay-per-click`,
 `marketing-strategy` → `digital-strategy-marketing` (all under `/services/`),
-and `/our-services/` → `/services/`.
+`/our-services/` → `/services/`, and `/contact-us/` → `/contact/`.
 
 ## Known gaps
 
-- Unknown slugs render the 404 page with `noindex`, but the HTTP status is
-  200 because Cache Components stream the response.
+- **Emails.** WordPress mailed the admin and the visitor after a contact-page
+  submission (and CF7 mailed on its forms). `/api/leads` only stores the lead
+  in Supabase; mail needs a provider (Resend, SES...) wired in.
+- **Supabase keys.** Set `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` in
+  `.env.local` / Vercel. Without them valid submissions answer 503.
+- **GeoGrid widget.** WordPress loads `gg-widget.js` from
+  reporting.productionconnectionsllc.com on every page; it injects a
+  normalize + utility stylesheet that changes form-field line heights. That
+  stylesheet is copied (`public/wp/inline/geogrid-widget.css`, via
+  `scripts/wp-port/extract-geogrid-css.mjs`); the widget itself is not loaded.
+- Pages that 404 on WordPress's own theme (two `cap-*.webp` images, some
+  Font Awesome fallbacks) 404 here too; `scripts/wp-port/missing.json` lists them.
 - Blog posts and any DB-only pages need an export from the WP database
-  (`make wp CMD="post list ..."` in the WP repo) before they can be ported.
-- `public/images/pillar/` is ~89 MB of JPGs, unoptimised; serve through
-  `next/image` and consider re-encoding.
+  before they can be ported.
+- `public/images/pillar/` is ~89 MB of JPGs, unoptimised; consider re-encoding.

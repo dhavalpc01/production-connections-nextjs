@@ -1,0 +1,3 @@
+.nm-breadcrumb-list a::after {
+            background-image: url(/wp/wp-content/themes/nimo/assets/img/breadcrumb/icon.svg) !important; background-size: contain !important;
+        }

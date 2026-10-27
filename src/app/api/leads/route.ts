@@ -7,19 +7,22 @@ import { validateField, type LeadField } from "@/lib/forms/rules";
  * PostgREST, into the same tables the WordPress site uses
  * (supabase/schema.sql: form_submissions, newsletter_signups).
  *
- * Body: JSON { formId, fields: { full_name, email, ... }, pageUrl?, pageTitle?, utm? }.
- * Responds 422 with { errors: { field: message } } when validation fails.
+ * Body: JSON { formId, data: { <cf7 field name>: value, ... }, pageUrl?, pageTitle? }.
+ * `data` is the form's raw fields, as the CF7 markup names them; the hidden
+ * pc-utm-* and pc-referrer inputs carry attribution, as on WordPress.
+ * Responds 422 with { errors: { <cf7 field name>: message } } when validation fails.
  */
 
-const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"] as const;
+const UTM_KEYS = ["source", "medium", "campaign", "term", "content"] as const;
 
 type LeadBody = {
   formId?: string;
-  fields?: Partial<Record<LeadField, string>>;
+  data?: Record<string, string>;
   pageUrl?: string;
   pageTitle?: string;
-  utm?: Partial<Record<(typeof UTM_KEYS)[number], string>>;
 };
+
+const clip = (value: string | null | undefined, max: number) => (value ? value.slice(0, max) : null);
 
 export async function POST(request: Request) {
   let body: LeadBody;
@@ -29,21 +32,30 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid JSON." }, { status: 400 });
   }
 
-  const form = body.formId ? getFormById(body.formId) : undefined;
+  const form = body.formId ? getFormById(String(body.formId)) : undefined;
   if (!form) {
     return Response.json({ error: "Unknown form." }, { status: 400 });
   }
 
-  const values: Partial<Record<LeadField, string>> = {};
-  const errors: Partial<Record<LeadField, string>> = {};
-  for (const field of [...form.fields, ...(form.optional ?? [])]) {
-    const value = body.fields?.[field]?.trim() ?? "";
-    const required = form.fields.includes(field);
-    if (!value && !required) continue;
-    const error = validateField(field, value);
-    if (error) errors[field] = error;
-    else values[field] = value;
+  const data = body.data ?? {};
+
+  // Honeypot: a hidden field real visitors never see. Bots that fill it get a
+  // normal-looking success and nothing is stored.
+  if (data["pc-website-url"]) {
+    return Response.json({ ok: true, message: form.successMessage });
   }
+
+  const values: Partial<Record<LeadField, string>> = {};
+  const errors: Record<string, string> = {};
+  const check = (name: string, column: LeadField, required: boolean) => {
+    const value = String(data[name] ?? "").trim();
+    if (!value && !required) return;
+    const error = validateField(column, value);
+    if (error) errors[name] = error;
+    else values[column] = value;
+  };
+  for (const [name, column] of Object.entries(form.fields)) check(name, column, true);
+  for (const [name, column] of Object.entries(form.optional ?? {})) check(name, column, false);
   if (Object.keys(errors).length > 0) {
     return Response.json({ errors }, { status: 422 });
   }
@@ -54,24 +66,28 @@ export async function POST(request: Request) {
     return Response.json({ error: "Lead capture is not configured." }, { status: 503 });
   }
 
-  const utm = Object.fromEntries(UTM_KEYS.map((key) => [key, body.utm?.[key]?.slice(0, 200) ?? null]));
   const row = {
     submission_uid: randomUUID(),
     form_id: form.id,
     form_title: form.title,
-    page_url: body.pageUrl?.slice(0, 2000) ?? null,
-    page_title: body.pageTitle?.slice(0, 300) ?? null,
-    referrer: request.headers.get("referer"),
+    page_url: clip(body.pageUrl, 2000),
+    page_title: clip(body.pageTitle, 300),
+    referrer: clip(data["pc-referrer"] || request.headers.get("referer"), 2000),
     ip_address: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
-    user_agent: request.headers.get("user-agent"),
-    ...utm,
+    user_agent: clip(request.headers.get("user-agent"), 500),
+    ...Object.fromEntries(UTM_KEYS.map((key) => [`utm_${key}`, clip(data[`pc-utm-${key}`], 255)])),
   };
+
+  // Hidden bookkeeping inputs (CF7 ids, WP nonces) are not part of the enquiry.
+  const rawFields = Object.fromEntries(
+    Object.entries(data).filter(([name]) => !name.startsWith("_wpcf7") && !name.startsWith("_wp_") && name !== "pc_cf_nonce"),
+  );
 
   const table = form.kind === "newsletter" ? "newsletter_signups" : "form_submissions";
   const payload =
     form.kind === "newsletter"
       ? { ...row, email: values.email }
-      : { ...row, ...values, raw_fields: body.fields ?? {} };
+      : { ...row, ...values, newsletter_opt_in: Boolean(data.pc_newsletter), raw_fields: rawFields };
 
   const response = await fetch(`${supabaseUrl}/rest/v1/${table}`, {
     method: "POST",
@@ -87,7 +103,7 @@ export async function POST(request: Request) {
 
   if (!response.ok) {
     console.error("Supabase insert failed", table, response.status, await response.text());
-    return Response.json({ error: "Could not save your message. Please try again." }, { status: 502 });
+    return Response.json({ error: "There was an error trying to send your message. Please try again later." }, { status: 502 });
   }
-  return Response.json({ ok: true });
+  return Response.json({ ok: true, message: form.successMessage });
 }

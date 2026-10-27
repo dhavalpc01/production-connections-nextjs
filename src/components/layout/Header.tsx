@@ -64,7 +64,7 @@ export function Header() {
 
         <div className="flex items-center gap-3">
           <Link
-            href="/contact-us/"
+            href="/contact/"
             className="glass-amber glass-edge hidden rounded-full px-5 py-2.5 text-sm font-semibold text-white sm:inline-block"
           >
             Let&rsquo;s Talk

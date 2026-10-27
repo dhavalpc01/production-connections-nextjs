@@ -1,0 +1,174 @@
+/*
+ * Contact page (/contact/, post 229): glass and responsive layer.
+ *
+ * The top contact block now shares the home page's design (the widget was
+ * switched to style_2 by scripts/apply-contact-page.php), so glass.css styles
+ * it through its `:is(body.home, body.pc-contact)` rules. This file covers the
+ * rest of the page, the "Tell Us What's Not Working" form and the FAQ tabs
+ * (theme layout faqs-1), with the same glass system (client, 2026-10-16):
+ * dark glass cards with the 1px gradient edge (--pc-edge), amber glass pill
+ * button with white text (--pc-amber).
+ *
+ * Loaded on this page only (inc/enqueue.php), after glass.css; every
+ * selector is scoped to `body.pc-contact`.
+ */
+
+/* ================================================================== *
+ * The edge — the same 1px gradient ring as glass.css
+ * ================================================================== */
+body.pc-contact .nm-faqs-1-contact::before,
+body.pc-contact .nm-faqs-1-tabs-pane .nm-accordion-item::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	padding: var(--pc-edge-w);
+	border-radius: inherit;
+	background: var(--pc-edge);
+	-webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+	-webkit-mask-composite: xor;
+	        mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+	pointer-events: none;
+}
+
+body.pc-contact .nm-faqs-1-contact,
+body.pc-contact .nm-faqs-1-tabs-pane .nm-accordion-item {
+	position: relative;
+}
+
+/* ================================================================== *
+ * The form card
+ * ================================================================== */
+body.pc-contact .nm-faqs-1-contact {
+	background-color: rgba(28, 24, 20, 0.6);
+	background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 45%);
+	-webkit-backdrop-filter: blur(20px) saturate(140%);
+	        backdrop-filter: blur(20px) saturate(140%);
+	box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
+}
+
+/* The CF7 form sat on its own solid black panel inside the card. */
+body.pc-contact .nm-faqs-1-contact .pc-cf {
+	background: transparent;
+}
+
+/* Field rules: the site's white fade instead of a grey line; amber when the
+   field is in use. */
+body.pc-contact .nm-faqs-1-contact .pc-cf input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]),
+body.pc-contact .nm-faqs-1-contact .pc-cf textarea {
+	border-bottom-style: solid;
+	border-bottom-color: transparent;
+	border-bottom-width: var(--pc-line-w);
+	border-image: var(--pc-line-h) 1;
+	color: #fff;
+}
+
+body.pc-contact .nm-faqs-1-contact .pc-cf input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):focus,
+body.pc-contact .nm-faqs-1-contact .pc-cf textarea:focus {
+	border-image: linear-gradient(90deg, rgba(200, 150, 70, 0) 0%, rgb(200, 150, 70) 50%, rgba(200, 150, 70, 0) 100%) 1;
+	outline: none;
+}
+
+/* FAQ: the rule under a question's title, as on the service pages. */
+body.pc-contact .nm-accordion-item .item-title {
+	border-bottom-color: transparent;
+	border-image: var(--pc-line-h) 1;
+	border-bottom-width: var(--pc-line-w);
+}
+
+/* Submit ("Book Strategy Call"): the site's amber glass pill, white text,
+   the arrow in a dark glass disc. */
+body.pc-contact .nm-faqs-1-contact .pc-btn {
+	background-color: rgba(150, 106, 44, 0.9);
+	background-image:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0) 100%),
+		var(--pc-amber);
+	color: #fff;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+	-webkit-backdrop-filter: blur(16px) saturate(170%);
+	        backdrop-filter: blur(16px) saturate(170%);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+	position: relative;
+}
+
+/* Its edge: the cards' gradient ring, at the site's one border weight. */
+body.pc-contact .nm-faqs-1-contact .pc-btn::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 3;
+	padding: var(--pc-edge-w);
+	border-radius: inherit;
+	background: var(--pc-edge);
+	-webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+	-webkit-mask-composite: xor;
+	        mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+	pointer-events: none;
+}
+
+body.pc-contact .nm-faqs-1-contact .pc-btn .pc-btn-tx {
+	color: #fff;
+}
+
+body.pc-contact .nm-faqs-1-contact .pc-btn .pc-btn-ic {
+	background: rgba(0, 0, 0, 0.7);
+	color: #fff;
+	-webkit-backdrop-filter: blur(10px);
+	        backdrop-filter: blur(10px);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+body.pc-contact .nm-faqs-1-contact .pc-btn .pc-btn-ic svg {
+	stroke: #fff;
+}
+
+/* ================================================================== *
+ * FAQ
+ * ================================================================== */
+body.pc-contact .nm-faqs-1-tabs-pane .nm-accordion-item {
+	border-color: transparent;
+	background-color: rgba(28, 24, 20, 0.55);
+	background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 45%);
+	-webkit-backdrop-filter: blur(16px) saturate(140%);
+	        backdrop-filter: blur(16px) saturate(140%);
+	box-shadow: 0 18px 44px rgba(0, 0, 0, 0.4);
+}
+
+/* Tab row underline: the fade line (white only). */
+body.pc-contact .nm-faqs-1-tabs-btn-line {
+	background: var(--pc-line-h);
+	opacity: 0.5;
+}
+
+/* ================================================================== *
+ * Responsive
+ * ================================================================== */
+
+/* Tablets and phones: same 535px banner lock as About (Customizer CSS,
+   min/max-height !important); outranked on this page only. */
+@media (max-width: 991px) {
+	html body.pc-contact .nm-breadcrumb-area {
+		min-height: 0 !important;
+		max-height: none !important;
+		padding: 170px 0 80px;
+	}
+}
+
+@media (max-width: 767px) {
+	html body.pc-contact .nm-breadcrumb-area {
+		padding: 130px 0 56px;
+		background-position: 70% 0;
+	}
+
+	body.pc-contact .nm-faqs-1-contact {
+		padding: 34px 22px;
+		border-radius: 24px;
+	}
+}
+
+/* Decorative glows hang past the edges; clip them at their sections so no
+   phone browser can pan sideways (`clip` makes no scroll container). */
+body.pc-contact .nm-faqs-1-area,
+body.pc-contact .nm-contact-2-area {
+	overflow-x: clip;
+}

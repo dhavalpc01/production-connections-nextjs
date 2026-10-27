@@ -64,7 +64,7 @@ export const mainNav: NavLink[] = [
     href: "/blog/",
     children: [{ label: "Blog", href: "/blog/" }],
   },
-  { label: "Contact", href: "/contact-us/" },
+  { label: "Contact", href: "/contact/" },
 ];
 
 export const footerNav: { title: string; links: NavLink[] }[] = [
@@ -75,7 +75,7 @@ export const footerNav: { title: string; links: NavLink[] }[] = [
       { label: "Services", href: "/services/" },
       { label: "Industries", href: "/industries/" },
       { label: "Blog", href: "/blog/" },
-      { label: "Contact", href: "/contact-us/" },
+      { label: "Contact", href: "/contact/" },
     ],
   },
   {

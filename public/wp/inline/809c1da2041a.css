@@ -1,0 +1,30 @@
+@media screen and (max-width: 550px){
+		body.page-id-4371{
+			overflow: hidden !important;
+		}
+		body.page-id-4371 .page-wrapper.main-wrapper{
+			overflow: hidden !important;
+		}
+	}
+	
+	@media screen and (min-width: 550px){
+		.page-id-4264 .nm-price-4-wrap,
+.page-id-4371 .nm-price-4-wrap {
+    grid-template-columns: 1fr 1fr !important;
+}
+	}
+
+.page-id-4264 .nm-price-4-btn-wrap,
+.page-id-4371 .nm-price-4-btn-wrap {
+    display: none !important;
+}
+
+.page-id-4264 .nm-about-4-features-single .icon i,
+.page-id-4371 .nm-about-4-features-single .icon i {
+    font-size: 60px !important;
+    opacity: 1 !important;
+}
+
+.page-id-4371 .nm-faqs-1-tabs-btn .nav-link { 
+	color: white !important;
+	}

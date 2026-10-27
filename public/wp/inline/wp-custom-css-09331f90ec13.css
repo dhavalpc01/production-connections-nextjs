@@ -1,0 +1,359 @@
+body:not(.pc-engine-service) #contact h3 > div > p,
+body:not(.pc-engine-service) .feature-description-container h3 > div > p{
+font-size: 26px !important;
+	margin-top: 12px !important;
+}
+.nm-header-1-wrap,.dropdown-menu{
+border: 1px solid rgba(255, 161, 0, 0.4) !important;
+}
+body:not(.pc-engine-service) #counter-container .counter{
+display: none !important;
+}
+@media screen and (min-width: 1024px){
+	
+body:not(.pc-engine-service) #about-features .nm-choose-2-right.wa-p-relative > :first-child{
+	position: absolute !important;
+	left: -50vw;
+	bottom: -9%;
+} 
+}
+@media screen and (max-width: 550px){
+	body:not(.pc-engine-service) .section-spacing .nm-hero-3-content,
+body:not(.pc-engine-service) .section-spacing .nm-cta-2-wrap,
+body:not(.pc-engine-service) .section-spacing .nm-container-3{
+		padding-left: 5%;
+		padding-right: 5%;
+	}
+}
+body:not(.pc-engine-service) #sticky-hero-container .nm-hero-3-area.wa-p-relative.wa_add_class.active{
+	position: relative !important;
+}
+
+
+.nm-header-1-wrap, .dropdown-menu {
+    border: 0px !important;
+}
+
+.mobile-main-navigation ul li .dropdown-menu {
+    border-radius: 0; 
+    background-color: transparent;
+    border: none;
+    margin-left: 0px !important;
+    padding: 0 !important;
+}
+.mobile-main-navigation ul li a{
+	color: #000000 !important;
+}
+body:not(.pc-engine-service) .services-template .nm-breadcrumb-area{
+  position: relative;
+  z-index: 1;
+}
+
+body:not(.pc-engine-service) .services-template .nm-breadcrumb-area::before{
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.2); /* adjust darkness here */
+  z-index: -1;
+}
+body:not(.pc-engine-service) .postid-1056 .nm-breadcrumb-area::before,
+body:not(.pc-engine-service) .postid-1389 .nm-breadcrumb-area::before,
+body:not(.pc-engine-service) .postid-1294 .nm-breadcrumb-area::before,
+body:not(.pc-engine-service) .postid-1234 .nm-breadcrumb-area::before{
+	  background: rgba(0, 0, 0, 0.4) !important;
+}
+body:not(.pc-engine-service) .nm-breadcrumb-area{
+	padding-top: 240px;
+	min-height: 535px !important;
+	max-height: 535px !important;
+}
+
+body:not(.pc-engine-service) .postid-981 .nm-breadcrumb-area{
+background-position: top center;
+}
+body:not(.pc-engine-service) .nm-breadcrumb-area{
+    background-position: center top !important;
+}
+body:not(.pc-engine-service) .postid-1234 .nm-breadcrumb-area{
+background-position: center !important;
+}
+
+.nm-main-navigation:is(.has-header-3) .navbar-nav li a{
+	font-size: 16px !important;
+}
+.nm-main-navigation:is(.has-header-3) .navbar-nav {
+    gap: 35px !important;
+}
+
+
+
+body:not(.pc-engine-service) body.postid-2815 p.nm-about-2-disc.nm-p-1{
+    display: none !important;
+}
+
+body:not(.pc-engine-service) body.postid-2815 .nm-about-2-right-inner-div.mb-40.has-about-3{
+    display: none !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ================================================================
+   PRODUCTION CONNECTIONS — Marketing Strategy Service Page
+   Complete Dark Theme + Brand Color CSS Fix
+   Brand Colors: Gold #D29737 | BG #0E0E0E / #131313 | Text #ffffff
+   Fonts: Space Grotesk 700 (headings) / Inter 400 (body)
+   ================================================================ */
+
+/* ---------- 1) GLOBAL COLOR VARIABLES ----------
+   Overrides theme's default orange (#ffa100) with brand gold everywhere
+   buttons/icons/accents pull from these vars */
+body:not(.pc-engine-service) {
+    --nm-clr-pr-1: #D29737 !important;
+    --nm-clr-pr-2: #83848b !important;
+    --nm-clr-pr-3: #D29737 !important;
+    --nm-clr-sd-3: #83848b !important;
+    --nm-clr-gd-3: linear-gradient(130deg, #D29737 21%, 58%, #83848b 100%) !important;
+}
+
+body:not(.pc-engine-service) /* ---------- 2) GLOBAL DARK BACKGROUND ---------- */
+
+
+/* ---------- 5) ABOUT-1 SECTION (dark cards: Our Mission / Our Vision / Collaborate) ---------- */
+.nm-about-1-area{
+    background-color: #0E0E0E !important;
+}
+body:not(.pc-engine-service) .nm-about-1-card .title a,
+body:not(.pc-engine-service) .nm-about-1-card .disc{
+    color: #ffffff !important;
+}
+body:not(.pc-engine-service) .nm-about-1-card .icon i{
+    color: #D29737 !important;
+}
+
+body:not(.pc-engine-service) /* ---------- 6) ABOUT-4 SECTION ("Driving digital success...") ---------- */
+.nm-about-4-area{
+    background-color: #0E0E0E !important;
+}
+body:not(.pc-engine-service) body:not(.single-services) .nm-about-4-area .nm-sec-title-4,
+body:not(.pc-engine-service) body:not(.single-services) .nm-about-4-area .nm-sec-title-4 div,
+body:not(.pc-engine-service) body:not(.single-services) .nm-about-4-area .title a,
+body:not(.pc-engine-service) body:not(.single-services) .nm-about-4-area .disc,
+body:not(.pc-engine-service) body:not(.single-services) .nm-about-4-area .number{
+    color: #ffffff !important;
+    opacity: 1 !important;
+    background: none !important;
+    -webkit-background-clip: initial !important;
+    background-clip: initial !important;
+    -webkit-text-fill-color: unset !important;
+}
+body:not(.pc-engine-service) .nm-about-4-area .nm-subtitle-4 .text{
+    color: #D29737 !important;
+}
+body:not(.pc-engine-service) .nm-about-4-area .nm-subtitle-4 .text{
+color: #ffffff !important;
+}
+
+/* ---------- 7) SERVICES SECTION ---------- */
+body:not(.single-services) .nm-services-4-sec-title h2,
+body:not(.single-services) .nm-services-4-sec-title h2 div {
+    color: #ffffff !important;
+    opacity: 1 !important;
+    background: none !important;
+    -webkit-background-clip: initial !important;
+    background-clip: initial !important;
+    -webkit-text-fill-color: unset !important;
+}
+body:not(.pc-engine-service) .nm-services-4-item .title,
+body:not(.pc-engine-service) .nm-services-4-item .title a,
+body:not(.pc-engine-service) .nm-services-4-item .disc,
+body:not(.pc-engine-service) .nm-services-4-item .number,
+body:not(.pc-engine-service) .nm-services-4-item .features-list li{
+    color: #ffffff !important;
+}
+body:not(.pc-engine-service) .nm-services-4-item .features-list li i{
+    color: #D29737 !important;
+}
+
+body:not(.pc-engine-service) .nm-services-4-item .item-img{
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: block !important;
+    position: relative !important;
+    height: 280px !important;
+    border: 1px solid rgba(210,151,55,0.25);
+}
+body:not(.pc-engine-service) .nm-services-4-item .item-img img{
+    opacity: 1 !important;
+    visibility: visible !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}
+body:not(.pc-engine-service) .nm-services-4-item:not(.active) .item-img{
+    display: block !important;
+}
+
+body:not(.pc-engine-service) /* ---------- 8) PRICING SECTION ---------- */
+.nm-price-4-sec-title h2,
+body:not(.pc-engine-service) .nm-price-4-sec-title .sec-disc{
+    color: #ffffff !important;
+}
+body:not(.pc-engine-service) .nm-price-4-toggle-btn .btn-elm{
+    background-color: #131313 !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(210,151,55,0.3);
+}
+
+body:not(.pc-engine-service) .nm-price-4-card{
+    background-color: #131313 !important;
+    border: 1px solid rgba(210,151,55,0.25) !important;
+}
+
+body:not(.pc-engine-service) /* card-top: icon + plan name area (was still white bg before) */
+.nm-price-4-card .card-top{
+    background-color: #131313 !important;
+    border-bottom: 1px solid rgba(210,151,55,0.2);
+}
+body:not(.pc-engine-service) .nm-price-4-card .package-x-icon .icon{
+    background-color: #1a1a1a !important;
+}
+body:not(.pc-engine-service) .nm-price-4-card .package-x-icon .icon svg path{
+    fill: #D29737 !important;
+}
+body:not(.pc-engine-service) .nm-price-4-card .package-name{
+    color: #D29737 !important;
+}
+body:not(.pc-engine-service) .nm-price-4-card .plan-name{
+    color: #ffffff !important;
+}
+body:not(.pc-engine-service) .nm-price-4-card .package-disc{
+    color: rgba(255,255,255,0.6) !important;
+}
+
+body:not(.pc-engine-service) /* card-body: price + features list */
+.nm-price-4-card .price,
+body:not(.pc-engine-service) .nm-price-4-card .price span,
+body:not(.pc-engine-service) .nm-price-4-card .package-features li{
+    color: #ffffff !important;
+}
+body:not(.pc-engine-service) .nm-price-4-card .card-btn{
+    background-color: #D29737 !important;
+    color: #ffffff !important;
+}
+body:not(.pc-engine-service) .nm-price-4-card .card-btn:hover{
+	color: #ffffff !important;
+}
+body:not(.pc-engine-service) .nm-subtitle-4{
+	color: #ffffff !important;
+}
+
+/* ---------- 9) BLOG SECTION ---------- */
+body:not(.single-services) .nm-blog-4-sec-title h2,
+body:not(.single-services) .nm-blog-4-sec-title h2 div {
+    color: #ffffff !important;
+    opacity: 1 !important;
+    background: none !important;
+    -webkit-background-clip: initial !important;
+    background-clip: initial !important;
+    -webkit-text-fill-color: unset !important;
+}
+body:not(.pc-engine-service) .nm-blog-4-item-1 .content-wrap,
+body:not(.pc-engine-service) .nm-blog-4-item-2 .content-wrap{
+    background-color: #131313 !important;
+}
+body:not(.pc-engine-service) .nm-blog-4-item-2{
+background-color: #131313 !important;
+}
+body:not(.pc-engine-service) .nm-blog-4-item-1 .title a,
+body:not(.pc-engine-service) .nm-blog-4-item-2 .title a{
+    color: #ffffff !important;
+}
+body:not(.pc-engine-service) .nm-blog-4-item-1 .disc,
+body:not(.pc-engine-service) .nm-blog-4-item-2 .disc,
+body:not(.pc-engine-service) .nm-blog-4-item-1 .date,
+body:not(.pc-engine-service) .nm-blog-4-item-2 .date{
+    color: rgba(255,255,255,0.6) !important;
+}
+
+body:not(.pc-engine-service) .nm-pr-btn-1,
+body:not(.pc-engine-service) .nm-pr-btn-2,
+body:not(.pc-engine-service) .nm-pr-btn-4{
+    background-color: #D29737 !important;
+    color: #0E0E0E !important;
+    border-color: #D29737 !important;
+}
+body:not(.pc-engine-service) .nm-pr-btn-1 .icon,
+body:not(.pc-engine-service) .nm-pr-btn-2 .icon,
+body:not(.pc-engine-service) .nm-pr-btn-4 .icon{
+		background: #000 !important;
+    color: #ffffff !important;
+}
+
+body:not(.pc-engine-service) .CTA-Final-section{
+background:
+      radial-gradient(ellipse 700px 400px at 50% 0%, rgba(210,151,55,0.10), transparent 65%),
+      var(--bg-2);
+}
+
+body:not(.pc-engine-service) h5.nm-h-1.steps-number{
+font-size:22px !important;
+}
+    
+
+
+body:not(.pc-engine-service) .nm-services-4-sec-title{
+    text-align: center !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+}
+body:not(.pc-engine-service) .nm-subtitle-4{
+    display: none !important;
+}
+
+body:not(.pc-engine-service) @media screen and (min-width: 1024px){
+	body:not(.pc-engine-service) #home-3-about-has-more-than-6-cards .nm-choose-2-right.wa-p-relative > :nth-child(1){
+	position: absolute !important;
+top: 740px !important;
+left: -54vw !important;
+}
+}
+body:not(.pc-engine-service) .postid-3426 .nm-services-4-sec-title.mb-70{
+	margin-bottom: 60px !important;
+}
+
+
+body:not(.pc-engine-service) .transparentPrice h2{ font-size:55px; color:#ffffff;font-weight:700;}
+
+body:not(.pc-engine-service) .transparentPrice h2 div{    background-image: linear-gradient(to right, rgb(255, 255, 255) 50%, rgba(104, 104, 104, 0.5) 50%)!important;}
+
+
+.nm-header-3-area{ background:#000000c7; top: 0;
+    padding-top: 10px;
+    padding-bottom: 10px;}
+
+
+
+
+/* nimo-child: palette for engine-built service pages */
+body.pc-engine-service {
+	--nm-clr-pr-1: #ffa201;
+	--nm-clr-pr-2: #83848b;
+	--nm-clr-pr-3: #ffa201;
+	--nm-clr-sd-3: #83848b;
+	--nm-clr-pr-5: #ffa201;
+	--nm-clr-gd-3: linear-gradient(130deg, #ffa201 21%, #83848b 58%, #83848b 100%);
+}

@@ -1,0 +1,55 @@
+/*
+ * The inline newsletter control (the "Free Marketing Audit" CTA band).
+ *
+ * THE BUG. The parent theme draws this control as one rounded field with the
+ * submit button floating inside it, and positions the button absolutely against
+ * `.nm-trial-2-form`:
+ *
+ *     .nm-trial-2-form-btn { position: absolute; top: 12px; right: 12px; }
+ *
+ * That works only if the field reaches the same right edge as `.nm-trial-2-form`.
+ * It does not. The field is rendered by Contact Form 7, which wraps every input
+ * in `span.wpcf7-form-control-wrap` — an INLINE-BLOCK. The generated form also
+ * carries `text-align: center`, so that inline-block is centred rather than
+ * stretched: measured at a 1440px viewport the container was 455px wide and the
+ * field 415.5px, leaving ~20px of dead space on each side.
+ *
+ * The button, anchored to the container rather than to the field, therefore
+ * landed 8px PAST the field's right edge — overhanging the rounded border
+ * instead of sitting inside it. It looks like a button that has slipped out of
+ * its box, because that is exactly what it is.
+ *
+ * Note the vertical axis was never wrong: top/bottom both came out at the
+ * intended 12px. Only the horizontal edge was, which is why the symptom reads as
+ * "the button is in the wrong place" rather than "the control is broken".
+ *
+ * THE FIX. Make CF7's wrapper fill the container, so the field's right edge and
+ * the container's right edge coincide and the theme's own `right: 12px` lands
+ * where it was always meant to. The parent theme's absolute positioning is left
+ * alone — the floating-button design is intentional, and re-doing this as a flex
+ * row would move the button outside the field's border and change the design.
+ *
+ * Scoped entirely under `.nm-trial-2-form`, so this file is inert on any page
+ * that does not render this widget.
+ */
+
+.nm-trial-2-form .wpcf7-form-control-wrap {
+	display: block;
+	width: 100%;
+}
+
+.nm-trial-2-form .nm-trial-2-form-input {
+	width: 100%;
+
+	/*
+	 * Keep typed text out from under the floating button. Without this the input's
+	 * 30px right padding lets the value run beneath the button — and the caret
+	 * with it, so you cannot see what you are typing at the end of a long address.
+	 *
+	 * The value clears the button's measured width (129px at the current
+	 * "Get Started" label) plus its 12px inset, plus breathing room. It is a magic
+	 * number because CSS cannot ask a sibling how wide it is; if the button label
+	 * ever gets materially longer, re-measure and raise this.
+	 */
+	padding-right: 160px;
+}

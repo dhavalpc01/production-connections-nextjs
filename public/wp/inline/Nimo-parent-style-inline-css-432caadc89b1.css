@@ -1,0 +1,422 @@
+/*
+	 * Width AND height set explicitly (not `width: auto`) — the theme prints
+	 * its own inline rule, `.tx-header .tx-logo img{ max-width: 142px }`, at
+	 * higher specificity than a single class. With `width: auto` the browser
+	 * resolved that cap first and derived height from the 343:200 ratio,
+	 * rendering at 142x82.8 no matter what height was requested here. A fixed
+	 * width for each size keeps it well under 142px so the cap never engages.
+	 */
+	.pc-logo{
+		display: block;
+		width: 75px;
+		height: 44px;
+	}
+	.nm-footer-4-area .pc-logo,
+	.nm-footer-5-area .pc-logo{ width: 96px; height: 56px; }
+	@media (max-width: 767px){ .pc-logo{ width: 58px; height: 34px; } }
+
+	/*
+	 * The CTA band's logo tile. Both the box and the image need reshaping,
+	 * because the two assets are nothing alike: the demo favicon was a light
+	 * glyph baked onto its own dark 90x90 square, while pc-logo.gif is a dark
+	 * wordmark on transparency in a 343x200 landscape lockup. Dropped into the
+	 * theme's tile unchanged it would be squashed to a square and would sit
+	 * dark-on-dark against the band's photo. So the tile turns light, takes the
+	 * mark's proportions, and `object-fit: contain` keeps the lockup undistorted.
+	 *
+	 * The theme's own `.nm-cta-2-content .nm-about-2-img-logo` rule has the same
+	 * specificity as these; this stylesheet prints after nimo-core.css, so the
+	 * tie resolves here. Its `outline` and `a2FLogoKf` pulse are deliberately
+	 * left alone — that animation is part of the section, not the old artwork.
+	 */
+	.nm-cta-2-content .nm-about-2-img-logo{
+		background: #fff;
+		width: 172px;
+		height: 100px;
+		border-radius: 16px;
+	}
+	.nm-cta-2-content .pc-cta-logo{
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		padding: 10px 14px;
+	}
+	@media (max-width: 767px){
+		.nm-cta-2-content .nm-about-2-img-logo{ width: 140px; height: 82px; }
+	}
+
+	/* Decorative initials replacing the demo monogram artwork. */
+	.pc-monogram{
+		display: block;
+		font-family: var(--nm-font-1);
+		font-weight: 700;
+		font-size: 190px;
+		line-height: .8;
+		letter-spacing: -0.04em;
+		color: transparent;
+		-webkit-text-stroke: 1px rgba(255,255,255,.12);
+		user-select: none;
+	}
+	@media (max-width: 991px){ .pc-monogram{ font-size: 120px; } }
+
+	/*
+	 * The footer brand is a per-letter animated headline sized for the demo's
+	 * four-character name. "Production Connections" is 22 characters and
+	 * overflowed the row, so it is scaled to fit and allowed to wrap.
+	 */
+	.nm-footer-4-top-logo, .nm-footer-4-top-logo *,
+	.nm-footer-5-top-logo, .nm-footer-5-top-logo *{
+		font-size: clamp(32px, 4.4vw, 74px) !important;
+		line-height: 1.06 !important;
+	}
+	.nm-footer-4-top-logo, .nm-footer-5-top-logo{
+		max-width: 100%;
+		overflow-wrap: anywhere;
+	}
+	/*
+	 * The footer wordmark carries .nm-h-4, which the theme paints
+	 * var(--nm-clr-h-4) (#0A0A0A) and only lifts to white through its scroll
+	 * animation — so it is invisible on the dark footer until that runs.
+	 */
+	.nm-footer-4-top-logo, .nm-footer-4-top-logo *{ color: #fff !important; }
+	
+
+	.pc-nav-inert > a{
+		cursor: default;
+	}
+	.pc-nav-inert > a[href]{
+		pointer-events: none;
+	}
+	
+
+	/* The sheet itself. nimo-core sets `background: #fff` on the area. */
+	.wa-offcanvas-area{
+		background: var(--nm-clr-black-2, #111);
+		color: #fff;
+	}
+
+	/*
+	 * Top-level links. The demo leaves these on the body paragraph colour, which
+	 * is a mid grey chosen for white backgrounds. On the dark sheet they read as
+	 * disabled, so they go to full white and the active/open one takes the gold.
+	 */
+	#m-main-nav > li > a{
+		color: #fff;
+	}
+	#m-main-nav > li > a:hover,
+	#m-main-nav > li.dropdown.active > a,
+	#m-main-nav > li.current-menu-item > a,
+	#m-main-nav > li.current_page_item > a{
+		color: var(--nm-clr-pr-1, #ffa201);
+	}
+
+	/*
+	 * Sub-menu links sit at `#212529` — the Bootstrap body default, invisible
+	 * here. Slightly under pure white on purpose: it keeps the top level as the
+	 * dominant row rather than flattening the two into one wall of white.
+	 */
+	#m-main-nav ul li a{
+		color: rgba(255,255,255,.82);
+	}
+	#m-main-nav ul li a:hover,
+	#m-main-nav ul li.current-menu-item > a{
+		color: var(--nm-clr-pr-1, #ffa201);
+	}
+
+	/* Row rules are black-on-white alpha; inverted so they read at all. */
+	#m-main-nav li,
+	#m-main-nav ul li{
+		border-color: rgba(255,255,255,.12);
+	}
+
+	/*
+	 * The expand chevron and the close button are drawn as bare elements that
+	 * inherit `currentColor` or are painted black outright.
+	 */
+	.wa-offcanvas-close span{
+		background: #fff;
+	}
+	.wa-offcanvas-close:hover span{
+		background: var(--nm-clr-pr-1, #ffa201);
+	}
+	#m-main-nav .dropdown-toggle,
+	#m-main-nav .nav-link-toggle,
+	#m-main-nav > li > a::after{
+		color: #fff;
+	}
+
+	/* Social row: black glyphs inside a black-alpha ring. */
+	.wa-offcanvas-social-link{
+		color: #fff;
+		border-color: rgba(255,255,255,.28);
+	}
+	.wa-offcanvas-social-link:hover{
+		color: var(--nm-clr-black-2, #111);
+		background: var(--nm-clr-pr-1, #ffa201);
+		border-color: var(--nm-clr-pr-1, #ffa201);
+	}
+	/*
+	 * The row is MIXED: Facebook is a Font Awesome `<i>` glyph, which takes
+	 * `color` above, while LinkedIn, X and Instagram are inline `<svg>` painted
+	 * `fill: #000`. `color` does not reach an SVG — it paints with `fill` — so
+	 * those three stayed black on the dark sheet while Facebook went white.
+	 * `currentColor` hands them the anchor's colour, hover included, instead of
+	 * repeating the two values.
+	 */
+	.wa-offcanvas-social-link svg,
+	.wa-offcanvas-social-link svg *{
+		fill: currentColor;
+	}
+
+	/*
+	 * THE CUSTOMIZER BEATS EVERYTHING ABOVE.
+	 *
+	 * Customizer "Additional CSS" (post 549, served as `<style id="wp-custom-css">`)
+	 * carries `.mobile-main-navigation ul li a{ color:#000 !important }`. That
+	 * outranks the `#m-main-nav` rules further up this file, so every link in the
+	 * panel computed to pure black on the #111 sheet — a contrast ratio of
+	 * 1.11:1, i.e. the menu was invisible rather than merely dim.
+	 *
+	 * 549 is client-edited and is deliberately never modified from here, so this
+	 * takes it back with `!important` of its own plus the extra specificity of
+	 * the `.wa-offcanvas-area` prefix, which is what decides it between two
+	 * `!important` declarations.
+	 */
+	.wa-offcanvas-area .mobile-main-navigation ul li a{
+		color: #e8e8e8 !important;
+	}
+	.wa-offcanvas-area .mobile-main-navigation ul li a:hover,
+	.wa-offcanvas-area .mobile-main-navigation ul li.current-menu-item > a{
+		color: var(--nm-clr-pr-1, #D29737) !important;
+	}
+
+	/*
+	 * The expand arrow. It is NOT one of the chevrons the header view injects —
+	 * it is a `<span class="dropdown-btn"><i class="fa-angle-right"></i></span>`
+	 * appended by the theme's own script for the accordion, and it is painted
+	 * black, so it disappeared into the sheet like the links did. Gold, to match
+	 * the accent the rest of the panel already uses for state.
+	 */
+	.wa-offcanvas-area .mobile-main-navigation .dropdown-btn,
+	.wa-offcanvas-area .mobile-main-navigation .dropdown-btn i{
+		color: var(--nm-clr-pr-1, #D29737);
+	}
+	.wa-offcanvas-area .mobile-main-navigation .dropdown-btn:hover i{
+		color: #fff;
+	}
+
+	/*
+	 * The social block is emptied at the data level (see fix-offcanvas.php:
+	 * `social_heading` cleared and `enable_social_links` off). `side-info.php`
+	 * still prints the wrapper unconditionally, so without this the panel keeps
+	 * that element's margin as a gap under the menu.
+	 *
+	 * `:empty` alone does NOT match it — the template leaves newlines and indent
+	 * inside the div, and a whitespace text node is enough to fail `:empty`.
+	 * `:not(:has(*))` is the test that actually holds: no ELEMENT children,
+	 * whitespace notwithstanding. Both are kept so the rule still degrades to
+	 * something sensible if `:has()` is ever unavailable.
+	 */
+	.wa-offcanvas-social:empty,
+	.wa-offcanvas-social:not(:has(*)){
+		display: none;
+	}
+
+	/*
+	 * The call button, injected by nimo_child_offcanvas_call_button() below.
+	 */
+	.pc-offcanvas-call{
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		margin: 6px 0 40px;
+		padding: 16px 22px;
+		border-radius: 10px;
+		background: var(--nm-clr-pr-1, #D29737);
+		color: var(--nm-clr-black-2, #111);
+		text-decoration: none;
+		transition: background .2s ease, color .2s ease;
+	}
+	.pc-offcanvas-call:hover,
+	.pc-offcanvas-call:focus{
+		background: #fff;
+		color: var(--nm-clr-black-2, #111);
+	}
+	.pc-offcanvas-call .pc-offcanvas-call-icon{
+		display: inline-flex;
+		font-size: 18px;
+		line-height: 1;
+	}
+	.pc-offcanvas-call .pc-offcanvas-call-text{
+		display: flex;
+		flex-direction: column;
+		line-height: 1.25;
+	}
+	.pc-offcanvas-call .pc-offcanvas-call-label{
+		font-weight: 700;
+		font-size: 16px;
+	}
+	.pc-offcanvas-call .pc-offcanvas-call-number{
+		font-size: 14px;
+		opacity: .78;
+	}
+
+	/* Any heading nimo-core prints in the panel inherits the body h-colour. */
+	.wa-offcanvas-wrap h1, .wa-offcanvas-wrap h2, .wa-offcanvas-wrap h3,
+	.wa-offcanvas-wrap h4, .wa-offcanvas-wrap h5, .wa-offcanvas-wrap h6,
+	.wa-offcanvas-wrap p{
+		color: #fff;
+	}
+
+	/*
+	 * The brand mark. NO `filter` HERE, DELIBERATELY — `pc-logo.gif` is already
+	 * drawn for a dark background: light grey "Production", a teal-and-gold play
+	 * glyph, and the partner lockup below it. An `invert()` was tried first on the
+	 * assumption it was a dark-on-light mark and it wrecked the palette, turning
+	 * "CONNECTIONS" red and the hulu logo magenta. Rendered against #111 as-is, it
+	 * is the same mark the dark header shows.
+	 *
+	 * Wider than the header's 75px because this is the full lockup — wordmark,
+	 * strapline and four partner logos. The panel has the room, and below about
+	 * 140px the partner row stops being legible at all.
+	 */
+	.wa-offcanvas-top-logo .pc-logo{
+		width: 150px;
+		height: auto;
+	}
+	
+
+	/* Why Us subline — under the section heading. */
+	.nm-choose-2-area .pc-sec-subline {
+		margin-top: 18px;
+		max-width: 620px;
+		font-size: 18px;
+		line-height: 1.6;
+		color: rgba(255, 255, 255, 0.70);
+	}
+
+	/* Why Us cards — the problem, then the fix. */
+	.nm-choose-2-card .disc .pc-card-problem {
+		display: block;
+		color: rgba(255, 255, 255, 0.55);
+		font-style: italic;
+	}
+	.nm-choose-2-card .disc .pc-card-fix {
+		display: block;
+		margin-top: 10px;
+		padding-top: 10px;
+		color: #fff;
+		font-weight: 500;
+		/* the site line, as a short divider between the two */
+		background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.35) 50%, rgba(255, 255, 255, 0) 100%) top / 100% 1px no-repeat;
+	}
+
+	/* Case Studies — a project slide in the testimonial slider: three
+	   labelled rows (small amber label over its line), split by the site
+	   fade-line, left-aligned and a size down from the centred review quote. */
+	.nm-testimonial-2-content-slider-single.pc-case-slide {
+		text-align: left;
+		font-size: 17px;
+		line-height: 1.55;
+	}
+	.pc-case-slide .pc-case-row {
+		display: block;
+		padding-top: 14px;
+		margin-top: 14px;
+		background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.45) 50%, rgba(255, 255, 255, 0) 100%) top / 100% 1px no-repeat;
+	}
+	.pc-case-slide .pc-case-row:first-child {
+		margin-top: 0;
+		padding-top: 0;
+		background: none;
+	}
+	.pc-case-slide .pc-case-label {
+		display: block;
+		margin-bottom: 6px;
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: rgb(196, 160, 100);
+	}
+	.pc-case-slide .pc-case-text {
+		display: block;
+		color: rgba(255, 255, 255, 0.88);
+	}
+
+	/* Complimentary Evaluation — the microcopy under the form. */
+	.nm-trial-2-area .pc-cta-microcopy {
+		margin: -24px 0 28px;
+		text-align: center;
+		font-size: 14px;
+		font-style: italic;
+		color: rgba(255, 255, 255, 0.6);
+	}
+
+	/* Contact — the info cards ended flush on the footer's top edge; give
+	   the block room to finish before the footer starts. */
+	/* On the whole row, not the card list — on the list it lifted the cards
+	   80px above the photo, whose bottom edge they should share. */
+	.nm-contact-2-area .nm-contact-1-wrap {
+		padding-bottom: 80px;
+	}
+
+	/* The theme sets word-break: break-all on section headings, which also
+	   split the words of the paragraph inside this one ("mon / ey"). */
+	.nm-contact-2-area .nm-sec-title-2,
+	.nm-contact-2-area .nm-sec-title-2 * {
+		word-break: normal;
+		overflow-wrap: normal;
+	}
+
+	/* Contact — button left, the line right of it in three short lines,
+	   split by the site's vertical fade divider. */
+	.nm-contact-2-area .nm-contact-1-social.has-contact-3 {
+		display: flex;
+		align-items: center;
+		gap: 26px;
+	}
+	.nm-contact-2-area .pc-contact-kicker {
+		position: relative;
+		margin: 0;
+		padding-left: 26px;
+		font-size: 17px;
+		line-height: 1.35;
+		color: #fff;
+	}
+	.nm-contact-2-area .pc-contact-kicker::before {
+		content: "";
+		position: absolute;
+		left: 0;
+		top: -4px;
+		bottom: -4px;
+		width: 2px;
+		background: var(--pc-line-v);
+		opacity: .75;
+	}
+	.nm-contact-2-area .pc-contact-kicker span {
+		display: block;
+	}
+	@media (max-width: 400px) {
+		.nm-contact-2-area .nm-contact-1-social.has-contact-3 {
+			gap: 16px;
+		}
+		.nm-contact-2-area .pc-contact-kicker {
+			padding-left: 16px;
+			font-size: 15px;
+		}
+	}
+
+	/* Capabilities note — small print under the feature list. */
+	.nm-services-2-card .pc-card-note {
+		margin-top: 16px;
+		padding-top: 12px;
+		font-size: 13px;
+		line-height: 1.55;
+		font-style: italic;
+		color: rgba(255, 255, 255, 0.55);
+		background: var(--pc-line-h) top / 100% 1px no-repeat;
+	}
+	
+/*# sourceURL=Nimo-parent-style-inline-css */

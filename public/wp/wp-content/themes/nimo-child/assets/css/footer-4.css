@@ -1,0 +1,109 @@
+/**
+ * Footer 4 corrections, site-wide.
+ *
+ * WHY THIS FILE EXISTS
+ * --------------------
+ * These rules started life in `service-detail.css`, scoped to
+ * `body.single-services`, because Footer 4 was only ever used on the service
+ * pages. It is now the site's footer on every page, and `service-detail.css` is
+ * deliberately enqueued ONLY on `is_singular('services')` (see inc/enqueue.php),
+ * so without this file the footer renders uncorrected everywhere else: the
+ * wordmark clipped, the widget columns unbalanced, and the social icons invisible.
+ *
+ * Kept as its own stylesheet rather than moved into `style.css` so the origin of
+ * each fix stays traceable, and so it can be dropped wholesale if the footer is
+ * ever changed again.
+ *
+ * The `body.single-services` scope is removed from each selector — that scope was
+ * only ever incidental. Everything else is unchanged from the original rules, and
+ * the explanations are preserved because each one records a non-obvious cause.
+ */
+
+/* ------------------------------------------------------------------ *
+ * 1. The text wordmark was being clipped
+ *
+ * `.nm-footer-4-top` is a fixed `height: 87px` with `overflow: hidden`, sized for
+ * the demo's single-line logo IMAGE. `inc/branding.php` replaces that image with
+ * real text, which wraps to two lines (67.8px) at mobile and, bottom-aligned with
+ * a -14px margin, ran 13px past the box — cutting "Connections" in half.
+ *
+ * Letting the row size to its content fixes it without shrinking the wordmark.
+ * The PC watermark keeps its intentional bleed.
+ *
+ * `height: auto` alone is not enough: the wordmark also carries
+ * `margin-bottom: -14px`, an optical nudge that pulls its box below the
+ * container's content edge, where `overflow: hidden` still cuts it. That nudge is
+ * tuned for the single-line logo and has to go at this width.
+ * ------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------ *
+ * 2. Widget columns
+ *
+ * The demo's four-column footer row does not divide cleanly at this width; these
+ * let the columns wrap to a balanced two-up instead of leaving one orphan.
+ *
+ * Same 767px breakpoint as the wordmark fix above — both came from the one
+ * `@media (max-width: 767px)` block in service-detail.css.
+ * ------------------------------------------------------------------ */
+
+@media (max-width: 767px) {
+	.nm-footer-4-top {
+		height: auto;
+	}
+
+	.nm-footer-4-top-logo {
+		margin-bottom: 0;
+	}
+
+	.nm-footer-4-wrap {
+		padding-bottom: 60px;
+		gap: 40px;
+	}
+
+	.nm-footer-4-widget {
+		flex: 1 1 100%;
+	}
+
+	.nm-footer-4-widget:nth-child(2),
+	.nm-footer-4-widget:nth-child(3) {
+		flex: 1 1 calc(50% - 20px);
+	}
+}
+
+/* ------------------------------------------------------------------ *
+ * 3. Contact row icons
+ *
+ * The map-pin / email / phone / clock artwork ships as dark PNGs intended for a
+ * light footer. This recolours them to the brand accent rather than shipping four
+ * replacement files.
+ * ------------------------------------------------------------------ */
+
+.nm-footer-4-contact li img {
+	filter: brightness(0) saturate(100%) invert(60%) sepia(95%) saturate(1612%)
+		hue-rotate(356deg) brightness(106%) contrast(105%);
+}
+
+/* ------------------------------------------------------------------ *
+ * 4. Social icons need an explicit fill
+ *
+ * nimo-core's CSS styles every icon-bearing element with `color`, on the
+ * assumption Icons_Manager always renders an `<i>` font glyph, which inherits
+ * `color` for free. It sometimes renders inline `<svg class="e-font-icon-svg">`
+ * instead — Elementor's own choice per icon value — and an SVG's `fill` does NOT
+ * inherit from `color`. With no `fill` rule the browser default applies: solid
+ * black, which on this dark footer is invisible.
+ *
+ * Confirmed invisible without this: the footer's Instagram/Twitter/LinkedIn
+ * icons. Facebook in the same row is unaffected only because that one value
+ * happens to render as `<i>`. Reproduces on the untouched Home 04 demo, so it is
+ * a pre-existing theme/Elementor-version quirk, not a regression.
+ *
+ * `currentColor` rather than a fixed value, so the fix follows whatever `color`
+ * nimo-core sets per context instead of overriding it.
+ * ------------------------------------------------------------------ */
+
+.nm-footer-4-social .link-elm svg {
+	fill: currentColor;
+	height: 1em;
+	width: auto;
+}

@@ -1,0 +1,1809 @@
+/**
+ * Glassmorphism, site-wide.
+ *
+ * Two looks, both taken from the client's reference screens:
+ *
+ *   DARK glass   warm smoked panel — rgba(28,24,20,.55), blur 14-20px. The
+ *                default for cards: the site is black and gold, so dark glass
+ *                sits in it rather than on it.
+ *   WHITE glass  rgba(255,255,255,.14-.24), blur 10-16px. Small inset parts
+ *                (icon tiles, pills, badges, arrow buttons).
+ *
+ * GLASS IS FOR SURFACES, NOT TEXT. Cards, buttons, menus, badges. No panels
+ * behind copy and no glass lettering (client, 2026-10-13).
+ *
+ * THE EDGE (client design, 2026-10-13): every glass surface carries the same
+ * 1px border — a linear gradient, white 0% opacity → white 100% → white 0%.
+ * It runs corner to corner (135deg), so two opposite corners catch the light
+ * and the other two fall away: the "corner shine". White is the only line
+ * colour: no gold or grey rules anywhere in the chrome.
+ *
+ * A gradient border cannot be a real `border` on a rounded, see-through box
+ * (border-image ignores border-radius; a border-box background layer would
+ * show through the glass). So it is drawn on a free pseudo-element, masked
+ * down to a 1px ring — see "The edge" below for which pseudo each one uses.
+ *
+ * Every glass rule ships an @supports fallback at the end, so a browser without
+ * backdrop-filter gets solid colours rather than a washed-out see-through box.
+ */
+
+:root {
+	/* The edge: the client's gradient, corner to corner. */
+	--pc-edge: linear-gradient(135deg, rgba(255, 255, 255, 0) 0%, #fff 50%, rgba(255, 255, 255, 0) 100%);
+	/* The same gradient as a straight line, for rules and dividers. */
+	--pc-line-h: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, #fff 50%, rgba(255, 255, 255, 0) 100%);
+	--pc-line-v: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, #fff 50%, rgba(255, 255, 255, 0) 100%);
+	/* The client's amber glass (sampled from their reference): light gold at
+	   the left deepening to amber at the right. Slightly see-through. */
+	--pc-amber: linear-gradient(90deg, rgba(166, 128, 70, 0.90) 0%, rgba(150, 106, 44, 0.90) 55%, rgba(132, 90, 30, 0.90) 100%);
+	/* One weight for every border on the site (client, 2026-10-26: "sab jagah
+	   ek jaisa, bold"): the gradient edge on cards, pills and buttons, and the
+	   fade line of every divider. */
+	--pc-edge-w: 2px;
+	--pc-line-w: 2px;
+}
+
+/* ================================================================== *
+ * The edge — one 1px gradient ring, shared by every glass surface
+ *
+ * `padding: 1px` + a two-layer mask (content-box excluded from border-box)
+ * leaves only the 1px ring of the gradient visible, following the element's
+ * own border-radius. Each element uses whichever pseudo the theme leaves
+ * free; the theme's own 1px borders are turned transparent (not removed) so
+ * nothing changes size.
+ * ================================================================== */
+
+/* ::after is free on these. */
+body .nm-header-3-area .nm-pr-btn-2.has-v3::after,
+body.home .nm-hero-3-content .nm-pr-btn-2.has-v3::after,
+body.home .nm-cta-2-content .nm-pr-btn-2.has-v3::after,
+body.home .nm-portfolio-2-content .nm-pr-btn-2.has-v3::after,
+body .nm-footer-4-area .nm-pr-btn-4.nm-footer-4-btn::after,
+body .nm-header-3-area .nm-offcanvas-btn-1::after,
+body .wa-back-to-top::after,
+body .nm-main-navigation:is(.has-header-3) .navbar-nav li .dropdown-menu::after,
+body.home .nm-about-2-disc::after,
+body.home .nm-about-2-right-inner-div.has-about-3::after,
+body.home .nm-services-2-card::after,
+body.home .nm-choose-2-card.has-choose-3::after,
+body.home .nm-choose-2-card.has-choose-3 .icon::after,
+body.home .nm-portfolio-2-card .card-content::after,
+body.home .nm-portfolio-2-card .item-categories::after,
+body.home .nm-portfolio-2-card .card-btn::after,
+body.home .nm-steps-2-card.has-steps-3 .card-icon::after,
+body.home .nm-testimonial-2-wrap::after,
+body.home .nm-testimonial-2-img-slider-single .author-rating::after,
+body.home .nm-testimonial-2-right-inner .nm-slider-btn-1::after,
+body.home .nm-trial-2-form .wpcf7-form-control-wrap::after,
+body.home .nm-trial-2-form-btn::after,
+body.home .nm-trial-2-counter-single.has-trial-3::after,
+:is(body.home, body.pc-contact) .nm-contact-1-info-single::after,
+:is(body.home, body.pc-contact) .nm-contact-1-info-single .icon::after,
+/* ::after is taken (button face / white top tab), so ::before. */
+:is(body.home, body.pc-contact) .nm-contact-1-social.has-contact-3 .link-elm::before,
+body.home .nm-trial-2-wrap::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	width: auto;  /* the theme sizes some of these pseudos (e.g. a 1px top line) */
+	height: auto;
+	z-index: auto;
+	padding: var(--pc-edge-w);
+	border-radius: inherit;
+	background: var(--pc-edge);
+	opacity: 1;
+	-webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+	-webkit-mask-composite: xor;
+	        mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+	pointer-events: none;
+}
+
+/* The ring is absolutely positioned, so each host must be a positioned box.
+   (Those not listed here are positioned by the theme already.) */
+body .nm-header-3-area .nm-pr-btn-2.has-v3,
+body.home .nm-hero-3-content .nm-pr-btn-2.has-v3,
+body.home .nm-cta-2-content .nm-pr-btn-2.has-v3,
+body.home .nm-portfolio-2-content .nm-pr-btn-2.has-v3,
+body .nm-header-3-area .nm-offcanvas-btn-1,
+body.home .nm-services-2-card,
+body.home .nm-choose-2-card.has-choose-3 .icon,
+body.home .nm-portfolio-2-card .card-content,
+body.home .nm-steps-2-card.has-steps-3 .card-icon,
+body.home .nm-testimonial-2-wrap,
+body.home .nm-testimonial-2-img-slider-single .author-rating,
+body.home .nm-testimonial-2-right-inner .nm-slider-btn-1,
+body.home .nm-trial-2-counter-single.has-trial-3,
+:is(body.home, body.pc-contact) .nm-contact-1-info-single,
+:is(body.home, body.pc-contact) .nm-contact-1-info-single .icon {
+	position: relative;
+}
+
+/* The CF7 field: the ring sits on its wrapper (an <input> has no pseudos). */
+body.home .nm-trial-2-form .wpcf7-form-control-wrap::after {
+	border-radius: 15px;
+}
+
+/* The theme's own solid borders give way to the ring. */
+body.home .nm-about-2-disc,
+body.home .nm-about-2-right-inner-div.has-about-3,
+body.home .nm-services-2-card,
+body.home .nm-choose-2-card.has-choose-3,
+body.home .nm-trial-2-wrap,
+body.home .nm-trial-2-counter-single.has-trial-3,
+body.home .nm-trial-2-form input.wpcf7-email {
+	border-color: transparent;
+}
+
+/* ================================================================== *
+ * Glass buttons
+ *
+ * After the client's "Break" reference: the button's OWN colour becomes the
+ * glass — gold stays gold, see-through and frosted — with a soft shine across
+ * the top half and white type. Other colours keep their own tint the same way.
+ *
+ * The site's Custom CSS forces .nm-pr-btn-2 / .nm-pr-btn-4 to solid gold with
+ * dark text, both !important, at 0-2-1. Every selector here is 0-3-1 or more.
+ * ================================================================== */
+
+/* Gold: header "Contact Us", hero "Start the Conversation", CTA "Talk With
+   Our Team", portfolio "View Case Studies", footer "Let's Talk". */
+body .nm-header-3-area .nm-pr-btn-2.has-v3,
+body.home .nm-hero-3-content .nm-pr-btn-2.has-v3,
+body.home .nm-cta-2-content .nm-pr-btn-2.has-v3,
+body.home .nm-portfolio-2-content .nm-pr-btn-2.has-v3,
+body .nm-footer-4-area .nm-pr-btn-4.nm-footer-4-btn {
+	/* The client's amber (2026-10-13 reference, sampled): a left-to-right
+	   sweep from a light gold to a deep amber, frosted, under a white shine. */
+	background-color: rgba(150, 106, 44, 0.90) !important;
+	background-image:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0) 100%),
+		var(--pc-amber);
+	border-color: transparent !important;
+	color: #fff !important;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+	-webkit-backdrop-filter: blur(16px) saturate(170%);
+	        backdrop-filter: blur(16px) saturate(170%);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.30);
+	/* Pill-shaped, like the footer's "Let's Talk" (client, 2026-10-14). */
+	border-radius: 100px !important;
+}
+
+/* The .nm-pr-btn-2 icon is a 42x46 rounded square; inside a pill it becomes
+   a circle, matching "Let's Talk". 46px = the 50px button less its 2px inset. */
+body .nm-header-3-area .nm-pr-btn-2.has-v3 .icon,
+body.home .nm-hero-3-content .nm-pr-btn-2.has-v3 .icon,
+body.home .nm-cta-2-content .nm-pr-btn-2.has-v3 .icon,
+body.home .nm-portfolio-2-content .nm-pr-btn-2.has-v3 .icon {
+	width: 46px;
+	height: 46px;
+	border-radius: 50%;
+}
+
+/* The black icon box inside each gold button: dark glass. */
+body .nm-header-3-area .nm-pr-btn-2.has-v3 .icon,
+body.home .nm-hero-3-content .nm-pr-btn-2.has-v3 .icon,
+body.home .nm-cta-2-content .nm-pr-btn-2.has-v3 .icon,
+body.home .nm-portfolio-2-content .nm-pr-btn-2.has-v3 .icon,
+body .nm-footer-4-area .nm-pr-btn-4.nm-footer-4-btn .icon {
+	background: rgba(0, 0, 0, 0.70) !important;
+	-webkit-backdrop-filter: blur(10px);
+	        backdrop-filter: blur(10px);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+/* Mobile menu disc (< 1200px): the same amber glass as the gold buttons. */
+body .nm-header-3-area .nm-offcanvas-btn-1 {
+	background-image:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0) 55%),
+		var(--pc-amber);
+	-webkit-backdrop-filter: blur(14px) saturate(170%);
+	        backdrop-filter: blur(14px) saturate(170%);
+	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.30);
+}
+
+/* "Get Started" (Free Marketing Audit): its own white-to-grey, as glass.
+   Dark label kept — it is a light button. */
+body.home .nm-trial-2-form-btn {
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(160, 160, 160, 0.55) 100%);
+	-webkit-backdrop-filter: blur(14px) saturate(160%);
+	        backdrop-filter: blur(14px) saturate(160%);
+	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.30);
+}
+
+/* "Schedule a Strategy Call": the face is the link's ::after (#2D2D2D). */
+:is(body.home, body.pc-contact) .nm-contact-1-social.has-contact-3 .link-elm::after {
+	background:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 55%),
+		rgba(45, 45, 45, 0.55);
+	-webkit-backdrop-filter: blur(16px) saturate(150%);
+	        backdrop-filter: blur(16px) saturate(150%);
+	box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+}
+
+/* Back-to-top: its own #2D2D2D, as glass (the demo's lime border is gone). */
+body .wa-back-to-top {
+	background:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0) 55%),
+		rgba(45, 45, 45, 0.55);
+	border-color: transparent;
+	border-radius: 10px;
+	-webkit-backdrop-filter: blur(14px) saturate(150%);
+	        backdrop-filter: blur(14px) saturate(150%);
+	box-shadow: 0 8px 22px rgba(0, 0, 0, 0.40);
+}
+
+/* Testimonial arrows: their own #1F1F1F, as glass. */
+body.home .nm-testimonial-2-right-inner .nm-slider-btn-1 {
+	background:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0) 55%),
+		rgba(31, 31, 31, 0.55);
+	-webkit-backdrop-filter: blur(12px);
+	        backdrop-filter: blur(12px);
+}
+
+/* ================================================================== *
+ * Glass cards — DARK glass, the shared edge gives the corner shine
+ * ================================================================== */
+
+/* About: intro copy card + skill-bars card.
+ *
+ * Painted on ::before, not the card: the skill card's lip (`.bg-shadow`) is a
+ * child at z-index:-2 peeking out below, and a backdrop-filter on the card
+ * would lift it ABOVE the card's background. With `isolation` and a -1
+ * ::before the lip stays underneath. On the skill card the ::before is also
+ * made opaque at its base (#0E0E0E, the section's own colour — so nothing is
+ * lost visually) so the lip cannot glow through the glass; that frees its
+ * ::after for the edge. */
+body.home .nm-about-2-disc,
+body.home .nm-about-2-right-inner-div.has-about-3 {
+	position: relative;
+	isolation: isolate;
+	background: transparent;
+}
+
+body.home .nm-about-2-disc::before,
+body.home .nm-about-2-right-inner-div.has-about-3::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	border-radius: inherit;
+	background:
+		linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 45%),
+		rgba(28, 24, 20, 0.55);
+	-webkit-backdrop-filter: blur(18px) saturate(140%);
+	        backdrop-filter: blur(18px) saturate(140%);
+	box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+	pointer-events: none;
+}
+
+body.home .nm-about-2-right-inner-div.has-about-3::before {
+	background:
+		linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 45%),
+		linear-gradient(rgba(28, 24, 20, 0.55), rgba(28, 24, 20, 0.55)),
+		rgb(14, 14, 14);
+}
+
+/* The lip below the skill card: was gold-to-grey, now the white edge
+   gradient (white is the only line colour). 7px of it shows under the card. */
+body.home .nm-about-2-right-inner-div.has-about-3 .bg-shadow {
+	z-index: -3;
+	height: 44px;
+	bottom: -7px;
+	border-radius: 0 0 30px 30px;
+	background: var(--pc-line-h);
+	animation: none;
+	opacity: 0.6;
+}
+
+/* Skill bars, as glass (client, 2026-10-14): a SILVER track with a GOLD fill.
+ *
+ * 8px tall — at the theme's 4px there is no surface for glass to read on.
+ * Track: frosted silver, a light-to-mid grey sweep with a top shine and a
+ * faint inner shadow, so it reads as a metal-glass channel. Fill: the site's
+ * amber gold (`--pc-amber`, the same as the buttons) under a white shine,
+ * with a soft warm glow — lit gold sitting in the silver channel. */
+.nm-about-2-skill-single .progress-line {
+	height: 8px;
+	border-radius: 8px;
+	background:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 60%),
+		linear-gradient(90deg, rgba(214, 216, 220, 0.55) 0%, rgba(160, 163, 168, 0.55) 100%);
+	-webkit-backdrop-filter: blur(8px) saturate(140%);
+	        backdrop-filter: blur(8px) saturate(140%);
+	box-shadow:
+		inset 0 1px 2px rgba(0, 0, 0, 0.25),
+		inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+}
+.nm-about-2-skill-single .progress-line-fill {
+	border-radius: 8px;
+	background:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 60%),
+		var(--pc-amber);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.45),
+		0 0 10px rgba(166, 128, 70, 0.45);
+}
+
+/* Services stack: Creative Direction, Media Production, Performance Marketing.
+   GSAP stacks these; .68 lets the card underneath blur through without its
+   text competing. */
+body.home .nm-services-2-card {
+	background-color: rgba(28, 24, 20, 0.68);
+	background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 45%);
+	-webkit-backdrop-filter: blur(20px) saturate(140%);
+	        backdrop-filter: blur(20px) saturate(140%);
+	box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+}
+
+/* Capabilities card LAYOUT, after the client's reference (2026-10-14):
+ *
+ *     |            Media Production *            |   <- title band, centred
+ *     |------------------------------------------|   <- site fade-line
+ *     | description (muted)       |              |
+ *     | ★ feature                 |    photo     |
+ *     | ★ feature                 |              |
+ *     | note                      |              |
+ *
+ * The theme wraps title, body and list in one `.card-content` box beside the
+ * image, so the title cannot span both columns. `.card-content` becomes
+ * `display: contents` and the card itself is the grid; its children place
+ * themselves. The feature tick becomes a gold star. */
+/* Rows: title band | spacer | description | features | note | spacer. The two
+   1fr spacers centre the text block vertically beside the photo, which spans
+   everything below the band. */
+body.home .nm-services-2-card {
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	grid-template-rows: auto 1fr auto auto auto 1fr;
+	column-gap: 34px;
+	row-gap: 0;
+	padding: 0 16px 16px;
+	border-radius: 22px;
+}
+
+body.home .nm-services-2-card .card-content {
+	display: contents;
+}
+
+/* Title band: centred, with a divider running the card's full width (the
+   card's 16px side padding is cancelled so the line reaches both edges). */
+body.home .nm-services-2-card .card-title {
+	grid-column: 1 / -1;
+	grid-row: 1;
+	margin: 0 -16px 18px;
+	padding: 22px 16px 20px;
+	font-size: 36px;
+	text-align: center;
+	background: var(--pc-line-h) bottom / 100% var(--pc-line-w) no-repeat;
+}
+
+body.home .nm-services-2-card .card-disc {
+	grid-column: 1;
+	grid-row: 3;
+	margin: 0 0 6px;
+	padding-left: 22px;
+	font-size: 15px;
+	color: rgba(255, 255, 255, 0.58);
+}
+
+body.home .nm-services-2-card .card-features {
+	grid-column: 1;
+	grid-row: 4;
+	margin-top: 8px;
+	padding-left: 22px;
+}
+
+/* Each feature: a large gold star, bold white text, and the site's own
+   divider under it (none under the last): the client's white 0% > 100% > 0%
+   fade, `--pc-line-h`, not a one-sided fade (client, 2026-10-15). */
+body.home .nm-services-2-card .card-features li {
+	padding-bottom: 12px;
+	font-size: 17px;
+	background: var(--pc-line-h) bottom / 100% var(--pc-line-w) no-repeat;
+}
+
+body.home .nm-services-2-card .card-features li:not(:last-child) {
+	margin-bottom: 12px;
+}
+
+body.home .nm-services-2-card .card-features li:last-child {
+	padding-bottom: 0;
+	background: none;
+}
+
+body.home .nm-services-2-card .pc-card-note {
+	grid-column: 1;
+	grid-row: 5;
+	align-self: start;
+	margin-left: 22px;
+}
+
+body.home .nm-services-2-card .card-features li i {
+	display: none;
+}
+
+body.home .nm-services-2-card .card-features li::before {
+	content: "\2605";
+	flex: 0 0 auto;
+	font-size: 20px;
+	line-height: 1;
+	color: rgb(212, 160, 60);
+	text-shadow: 0 0 8px rgba(212, 160, 60, 0.45);
+}
+
+/* The photo FILLS the height the text column needs (cropped, as the theme
+   already does with object-fit: cover) instead of setting it. At its own
+   proportions it stood ~466px tall and pushed the pinned card stack past the
+   bottom of short laptop windows. */
+body.home .nm-services-2-card .card-img {
+	position: relative;
+	grid-column: 2;
+	grid-row: 2 / span 5;
+	height: auto;
+	min-height: 240px;
+	border-radius: 16px;
+}
+
+body.home .nm-services-2-card .card-img img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+/* Phones: one column — title band, photo, then the text — instead of two
+   ~144px columns. */
+@media (max-width: 767px) {
+	body.home .nm-services-2-card {
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-rows: none;
+	}
+	body.home .nm-services-2-card .card-img {
+		grid-column: 1;
+		grid-row: 2;
+		min-height: 200px;
+		margin-bottom: 18px;
+	}
+	body.home .nm-services-2-card .card-disc     { grid-row: 3; padding: 0 8px; }
+	body.home .nm-services-2-card .card-features { grid-row: 4; padding: 0 8px; }
+	body.home .nm-services-2-card .pc-card-note  { grid-row: 5; margin-left: 8px; margin-right: 8px; }
+}
+
+/* "Why choose us" six cards (01-06): dark glass card, white glass icon.
+ *
+ * The glass is on ::before: the step number (`.number`) sits BEHIND the card
+ * at a negative z-index, and a backdrop-filter on the card would lift it in
+ * front. Order: number (-2) < glass (-1) < text, so the number's overlap
+ * shows through the glass, blurred. The theme's ::after was a GOLD hover edge;
+ * it is now the shared white edge, always on. */
+body.home .nm-choose-2-card.has-choose-3 {
+	background: transparent;
+}
+
+body.home .nm-choose-2-card.has-choose-3::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	border-radius: inherit;
+	background:
+		linear-gradient(134deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 50%),
+		rgba(28, 24, 20, 0.55);
+	-webkit-backdrop-filter: blur(16px) saturate(140%);
+	        backdrop-filter: blur(16px) saturate(140%);
+	pointer-events: none;
+}
+
+body.home .nm-choose-2-card.has-choose-3 .number {
+	z-index: -2;
+}
+
+body.home .nm-choose-2-card.has-choose-3::after {
+	width: auto;
+	height: auto;
+	background-size: auto;
+	animation: none;
+}
+
+body.home .nm-choose-2-card.has-choose-3 .icon,
+body.home .nm-steps-2-card.has-steps-3 .card-icon,
+:is(body.home, body.pc-contact) .nm-contact-1-info-single .icon {
+	background: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.06) 100%);
+	-webkit-backdrop-filter: blur(12px) saturate(160%);
+	        backdrop-filter: blur(12px) saturate(160%);
+	box-shadow: 0 6px 16px rgba(0, 0, 0, 0.30);
+}
+
+:is(body.home, body.pc-contact) .nm-contact-1-info-single .icon {
+	color: rgba(255, 255, 255, 0.85);
+}
+
+/* Theme hover turns the step icon solid white; kept. */
+body.home .nm-steps-2-card.has-steps-3:hover .card-icon {
+	background: rgba(255, 255, 255, 0.92);
+}
+
+/* Portfolio cards: dark glass title strip, white glass category pill,
+   dark glass eye button over the photo. */
+body.home .nm-portfolio-2-card .card-content {
+	background-color: rgba(28, 24, 20, 0.62);
+	background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 50%);
+	-webkit-backdrop-filter: blur(18px) saturate(140%);
+	        backdrop-filter: blur(18px) saturate(140%);
+	box-shadow: 0 20px 50px rgba(0, 0, 0, 0.40);
+}
+
+body.home .nm-portfolio-2-card .item-categories {
+	background: linear-gradient(135deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.08) 100%);
+	-webkit-backdrop-filter: blur(14px) saturate(160%);
+	        backdrop-filter: blur(14px) saturate(160%);
+	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.30);
+}
+
+body.home .nm-portfolio-2-card .card-btn {
+	background: linear-gradient(135deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0) 55%), rgba(20, 18, 16, 0.45);
+	-webkit-backdrop-filter: blur(14px) saturate(150%);
+	        backdrop-filter: blur(14px) saturate(150%);
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.40);
+}
+
+/* Process steps (Step 01-03), after the client's reference (2026-10-14):
+ *
+*            [ Step: 01 ]            <- tab hanging from the top edge
+ *     +--------------------------+
+ *     |  (icon)  Research &      |
+ *     |          Strategy        |
+ *     |   description, centred   |
+ *     +--------------------------+
+ *
+ * The theme's notched card is an image (`.bg-shape` / `.bg-shape-hover`); both
+ * are hidden and the card becomes a plain rounded dark-glass panel with the
+ * site edge. It keeps the theme's 18px side gutters (the cards' spacing), so
+ * the glass ::before and the ring ::after are inset 18px each side.
+ *
+ * The number pill and icon live in `.steps-x-icon`, the title and body in
+ * `.padding-wrap` — different boxes, so both become `display: contents` and
+ * the card is the grid that places them. The card is already a stacking
+ * context (z-index:1), so the glass at -1 sits under the text. */
+body.home .nm-steps-2-card.has-steps-3 {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	grid-template-rows: auto auto auto 1fr;
+	align-items: center;
+	align-content: start;
+	column-gap: 14px;
+	min-height: 410px;
+	padding: 98px 38px 36px;
+	margin-top: 0;
+	border-radius: 14px;
+	overflow: visible;
+}
+
+/* The Case Studies section's decorative 3D shape reaches up into this
+   section, and as that section is the later layer it painted over card 3's
+   text. Raising the Process section instead would slice the shape off flat
+   at the section edge (its background is solid), so the ornament is nudged
+   clear of the cards. The parallax motion is on the <img>, so moving its
+   wrapper does not disturb it. */
+body.home .nm-testimonial-2-bg-shape-1 {
+	transform: translate(110px, 70px);
+}
+
+body.home .nm-steps-2-card.has-steps-3 .bg-shape,
+body.home .nm-steps-2-card.has-steps-3 .bg-shape-hover {
+	display: none;
+}
+
+body.home .nm-steps-2-card.has-steps-3::before,
+body.home .nm-steps-2-card.has-steps-3::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 18px;
+	right: 18px;
+	border-radius: 14px;
+	pointer-events: none;
+}
+
+body.home .nm-steps-2-card.has-steps-3::before {
+	z-index: -1;
+	background:
+		linear-gradient(165deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 35%, rgba(255, 255, 255, 0) 60%),
+		rgba(14, 14, 14, 0.86);
+	-webkit-backdrop-filter: blur(16px) saturate(140%);
+	        backdrop-filter: blur(16px) saturate(140%);
+	box-shadow: 0 20px 50px rgba(0, 0, 0, 0.40);
+}
+
+/* A clear, even outline all round — the reference's card edge is a solid
+   light line, not the corner-to-corner fade the other glass cards use. */
+body.home .nm-steps-2-card.has-steps-3::after {
+	padding: var(--pc-edge-w);
+	background: rgba(255, 255, 255, 0.55);
+	-webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+	-webkit-mask-composite: xor;
+	        mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+
+body.home .nm-steps-2-card.has-steps-3 .steps-x-icon,
+body.home .nm-steps-2-card.has-steps-3 .padding-wrap {
+	display: contents;
+}
+
+/* The step label: a TAB hanging from the card's top edge, outlined on its
+   sides and bottom and rounded underneath. Positioned, so all three cards'
+   tabs sit identically whatever their content. */
+/* Hangs just BELOW the card's top border (top = the border's width), so the
+   card's white outline runs unbroken across the top — the tab never covers
+   it — and is its own piece of white glass, outlined on its sides and
+   bottom (client reference, 2026-10-14). */
+body.home .nm-steps-2-card.has-steps-3 .steps-number {
+	position: absolute;
+	top: var(--pc-edge-w);
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 2;
+	width: 74%;
+	max-width: 280px;
+	margin: 0;
+	padding: 11px 0 15px;
+	text-align: center;
+	white-space: nowrap;
+	font-size: 20px;
+	border-radius: 0 0 30px 30px;
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.04) 100%);
+	-webkit-backdrop-filter: blur(12px) saturate(150%);
+	        backdrop-filter: blur(12px) saturate(150%);
+	box-shadow:
+		inset var(--pc-edge-w) 0 0 rgba(255, 255, 255, 0.55),
+		inset calc(-1 * var(--pc-edge-w)) 0 0 rgba(255, 255, 255, 0.55),
+		inset 0 calc(-1 * var(--pc-edge-w)) 0 rgba(255, 255, 255, 0.55),
+		0 6px 16px rgba(0, 0, 0, 0.30);
+}
+
+body.home .nm-steps-2-card.has-steps-3 .steps-number::after {
+	display: none;
+}
+
+/* Large dark icon disc beside a big two-line title. Overrides the shared
+   white-glass icon tile for these cards. */
+body.home .nm-steps-2-card.has-steps-3 .card-icon {
+	grid-column: 1;
+	grid-row: 2;
+	width: 96px;
+	height: 96px;
+	font-size: 38px;
+	background: radial-gradient(circle at 34% 28%, rgb(52, 52, 52) 0%, rgb(22, 22, 22) 55%, rgb(10, 10, 10) 100%);
+	box-shadow:
+		0 10px 22px rgba(0, 0, 0, 0.50);
+}
+
+body.home .nm-steps-2-card.has-steps-3 .title {
+	grid-column: 2;
+	grid-row: 2;
+	margin: 0;
+	font-size: clamp(26px, 2.4vw, 36px);
+	line-height: 1.08;
+}
+
+body.home .nm-steps-2-card.has-steps-3 .date {
+	display: none;
+}
+
+/* The theme's dashed rule under the title, redrawn as the site fade-line
+   spanning the card. */
+body.home .nm-steps-2-card.has-steps-3 .line {
+	display: block;
+	grid-column: 1 / -1;
+	grid-row: 3;
+	width: auto;
+	height: var(--pc-line-w);
+	margin: 26px 0 22px;
+	border: 0;
+	opacity: 0.8;
+	background: var(--pc-line-h);
+}
+
+body.home .nm-steps-2-card.has-steps-3 .disc {
+	grid-column: 1 / -1;
+	grid-row: 4;
+	margin: 0;
+	text-align: center;
+	color: rgba(255, 255, 255, 0.62);
+}
+
+/* Testimonial card: dark glass; the photo dissolves into it (mask on the
+   <img> only — masking the slide would fade the name and badge too); the
+   rating badge is white glass. */
+body.home .nm-testimonial-2-wrap {
+	background-color: rgba(28, 24, 20, 0.55);
+	background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0) 45%);
+	-webkit-backdrop-filter: blur(20px) saturate(140%);
+	        backdrop-filter: blur(20px) saturate(140%);
+	box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+}
+
+body.home .nm-testimonial-2-img-slider-single > img {
+	-webkit-mask-image: linear-gradient(to top, transparent 0%, #000 30%);
+	        mask-image: linear-gradient(to top, transparent 0%, #000 30%);
+}
+
+body.home .nm-testimonial-2-img-slider-single::after {
+	background: linear-gradient(0deg, rgba(14, 12, 10, 0.75) 22%, rgba(14, 12, 10, 0.35) 40%, rgba(0, 0, 0, 0) 62%);
+}
+
+body.home .nm-testimonial-2-img-slider-single .author-rating {
+	background: linear-gradient(90deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.35) 100%);
+	-webkit-backdrop-filter: blur(12px) saturate(160%);
+	        backdrop-filter: blur(12px) saturate(160%);
+}
+
+/* Free Marketing Audit: dark glass panel (already a stacking context, so the
+   blur goes on it directly), a deeper glass well for the email field, and
+   dark glass stat cards. */
+body.home .nm-trial-2-wrap {
+	background-color: rgba(28, 24, 20, 0.55);
+	background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0) 40%);
+	-webkit-backdrop-filter: blur(20px) saturate(140%);
+	        backdrop-filter: blur(20px) saturate(140%);
+	box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+}
+
+body.home .nm-trial-2-form input.wpcf7-email {
+	background-color: rgba(8, 8, 9, 0.50);
+	-webkit-backdrop-filter: blur(12px);
+	        backdrop-filter: blur(12px);
+	box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+
+body.home .nm-trial-2-counter-single.has-trial-3 {
+	background: linear-gradient(90deg, rgba(20, 20, 20, 0.55) 0%, rgba(67, 67, 67, 0.40) 100%);
+	-webkit-backdrop-filter: blur(16px) saturate(140%);
+	        backdrop-filter: blur(16px) saturate(140%);
+	box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* Contact block: Email / Office / Business Hours as dark glass cards.
+   Padded so the copy is off the edge; Email takes the full row on ≥576px
+   because the address (~262px) does not fit a padded third-width card. */
+:is(body.home, body.pc-contact) .nm-contact-1-info-single {
+	padding: 22px 20px;
+	border-radius: 18px;
+	background:
+		linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0) 50%),
+		rgba(28, 24, 20, 0.50);
+	-webkit-backdrop-filter: blur(16px) saturate(140%);
+	        backdrop-filter: blur(16px) saturate(140%);
+	box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35);
+	overflow-wrap: anywhere;
+}
+
+@media (min-width: 576px) {
+	:is(body.home, body.pc-contact) .nm-contact-1-info {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	:is(body.home, body.pc-contact) .nm-contact-1-info .nm-contact-1-info-single:first-child {
+		grid-column: 1 / -1;
+	}
+}
+
+/* Contact block LAYOUT — matched to the client's mockup (2026-10-14, v2,
+ * proportions measured off the reference):
+ *
+ *                 Contact / heading / body            (unchanged, above)
+ *   +------------------------------+  line above the button (our copy)
+ *   |                              |  [ Book the Damn Call ]
+ *   |  HQ photo — LANDSCAPE,       |  +------( Email )------+   ~4.3 : 1
+ *   |  877 : 513, bottom-aligned   |  | (o) |  hello@...     |
+ *   |  with the cards, radius 28,  |  +---------------------+
+ *   |  light frame                 |  +-(Office)-+ +-(Hours)-+  ~1.75 : 1
+ *   +------------------------------+  | (o)| US  | | (o)|9-5 |
+ *
+ * Measured off the reference: photo : card column = 1.22 : 1 with a gap of
+ * ~2.5% of the row; the Email card is ~4.3x as wide as it is tall, the two
+ * small cards ~1.75x; each tab is ~60% of its card's width and ~40% of its
+ * height, rounded deep underneath, tinted per card (Email #3498DB33, Office
+ * #0B723633, Hours #FFA70033 — client-specified); icon disc ~1/3 of the card
+ * height; a thin vertical divider; the value centred in the lower half.
+ * Text unchanged. */
+@media (min-width: 1200px) {
+	:is(body.home, body.pc-contact) .nm-contact-1-wrap {
+		grid-template-columns: minmax(0, 1.22fr) minmax(0, 1fr);
+		column-gap: 30px;
+		align-items: end;
+	}
+}
+
+/* Landscape photo at the mockup's own ratio, sitting on the cards' baseline
+   (its top lands level with the button, as in the reference). */
+:is(body.home, body.pc-contact) .nm-contact-1-img {
+	align-self: end;
+	aspect-ratio: 877 / 513;
+	min-height: 0;
+	border-radius: 28px;
+	overflow: hidden;
+	box-shadow:
+		0 0 0 4px rgba(255, 255, 255, 0.85),
+		0 0 30px rgba(255, 255, 255, 0.12),
+		0 30px 70px rgba(0, 0, 0, 0.55);
+}
+
+:is(body.home, body.pc-contact) .nm-contact-1-img .pc-hq-img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: 55% center;
+}
+
+:is(body.home, body.pc-contact) .nm-contact-1-right {
+	display: flex;
+	flex-direction: column;
+}
+
+:is(body.home, body.pc-contact) .nm-contact-1-social.has-contact-3 {
+	margin-bottom: 0;
+}
+
+:is(body.home, body.pc-contact) .nm-contact-1-info.mt-85 {
+	margin-top: 14px;
+	gap: 14px;
+}
+
+/* Info cards, v3 — every part keyed to ONE divider position (measured off
+ * the client's mockup: the divider sits ~13% in, ~73px at this size, on all
+ * three cards):
+ *
+ *   |  (o)  |       [   tab   ]        |   the tab is centred over the TEXT
+ *   |       |                          |   area right of the divider — never
+ *   |       |      value, centred      |   across the divider line
+ *
+ *   --pc-div  divider's distance from the card's left edge
+ *   icon      centred in the space before the divider
+ *   tab       centred over the space after it
+ */
+:is(body.home, body.pc-contact) .nm-contact-1-info-single {
+	--pc-div: 73px;
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 148px;
+	padding: 58px 16px 18px calc(var(--pc-div) + 12px);
+	border: var(--pc-edge-w) solid rgba(255, 255, 255, 0.72); /* client mockup: a solid outline */
+	border-radius: 16px;
+	background:
+		linear-gradient(160deg, rgba(36, 36, 36, 0.85) 0%, rgba(12, 12, 12, 0.94) 60%);
+	box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+}
+
+/* Email is the wide card: ~4.3 : 1. */
+:is(body.home, body.pc-contact) .nm-contact-1-info .nm-contact-1-info-single:first-child {
+	min-height: 128px;
+}
+
+/* The divider: the shared ring's ::after, re-used as a vertical fade line. */
+:is(body.home, body.pc-contact) .nm-contact-1-info-single::after {
+	top: 18px;
+	bottom: 18px;
+	left: var(--pc-div);
+	right: auto;
+	width: var(--pc-line-w);
+	height: auto;
+	padding: 0;
+	border-radius: 0;
+	background: var(--pc-line-v);
+	opacity: 0.85;
+	-webkit-mask: none;
+	        mask: none;
+}
+
+:is(body.home, body.pc-contact) .nm-contact-1-info-single .icon {
+	position: absolute;
+	top: 50%;
+	left: calc(var(--pc-div) / 2);
+	transform: translate(-50%, -50%);
+	width: 42px;
+	height: 42px;
+	margin: 0;
+	font-size: 17px;
+	color: rgba(255, 255, 255, 0.9);
+	background: rgba(255, 255, 255, 0.14);
+	border: 0;
+	box-shadow: none;
+}
+
+:is(body.home, body.pc-contact) .nm-contact-1-info-single .icon::after {
+	display: none;
+}
+
+/* The tab, centred over the text area (between the divider and the right
+   edge), so it never crosses the divider. */
+:is(body.home, body.pc-contact) .nm-contact-1-info-single .title {
+	position: absolute;
+	top: calc(-1 * var(--pc-edge-w));
+	left: calc(var(--pc-div) + (100% - var(--pc-div)) / 2);
+	transform: translateX(-50%);
+	z-index: 2;
+	width: calc((100% - var(--pc-div)) * 0.72);
+	height: 46px;
+	margin: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 18px;
+	white-space: nowrap;
+	color: #fff;
+	border-radius: 0 0 26px 26px;
+	background: rgba(52, 152, 219, 0.2);
+	box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.14);
+}
+
+:is(body.home, body.pc-contact) .nm-contact-1-info .nm-contact-1-info-single:nth-child(n+2) .title {
+	width: calc((100% - var(--pc-div)) * 0.86);
+	font-size: 17px;
+}
+
+:is(body.home, body.pc-contact) .nm-contact-1-info .nm-contact-1-info-single:nth-child(2) .title {
+	background: rgba(11, 114, 54, 0.2);
+}
+
+:is(body.home, body.pc-contact) .nm-contact-1-info .nm-contact-1-info-single:nth-child(3) .title {
+	background: rgba(255, 167, 0, 0.2);
+}
+
+/* The value: centred in the text area, below the tab. */
+:is(body.home, body.pc-contact) .nm-contact-1-info-single .disc {
+	margin: 0;
+	text-align: center;
+	font-size: clamp(16px, 1.65vw, 25px);
+	line-height: 1.3;
+	color: #fff;
+	overflow-wrap: anywhere;
+}
+
+:is(body.home, body.pc-contact) .nm-contact-1-info .nm-contact-1-info-single:nth-child(n+2) .disc {
+	font-size: clamp(15px, 1.7vw, 25px);
+}
+
+:is(body.home, body.pc-contact) .nm-contact-1-info-single .disc a {
+	color: #fff;
+}
+
+/* Business Hours: time large on top, days small beneath (stored order is
+   days first; the text itself is unchanged). */
+:is(body.home, body.pc-contact) .nm-contact-1-info-single .disc .pc-hours-days,
+:is(body.home, body.pc-contact) .nm-contact-1-info-single .disc .pc-hours-time {
+	display: block;
+}
+
+:is(body.home, body.pc-contact) .nm-contact-1-info-single .disc:has(.pc-hours-time) {
+	display: flex;
+	flex-direction: column-reverse;
+	gap: 4px;
+}
+
+:is(body.home, body.pc-contact) .nm-contact-1-info .nm-contact-1-info-single .disc .pc-hours-time {
+	font-size: clamp(15px, 1.45vw, 22px);
+	line-height: 1.25;
+}
+
+:is(body.home, body.pc-contact) .nm-contact-1-info-single .disc .pc-hours-time > span {
+	display: block;
+	white-space: nowrap;
+}
+
+:is(body.home, body.pc-contact) .nm-contact-1-info-single .disc .pc-hours-days {
+	font-size: 12px;
+	color: rgba(255, 255, 255, 0.82);
+}
+
+/* Below 1200px the photo and the cards stack (theme behaviour): the photo
+   keeps its landscape ratio at full width. */
+@media (max-width: 1199px) {
+	:is(body.home, body.pc-contact) .nm-contact-1-img {
+		align-self: auto;
+		margin-bottom: 30px;
+	}
+}
+
+/* ================================================================== *
+ * Lines and dividers — the client's gradient, white only
+ * ================================================================== */
+
+/* Section subtitle rule ("About Production Connections ———"). */
+body.home .nm-subtitle-2 .line {
+	height: var(--pc-line-w);
+	background: var(--pc-line-h);
+}
+
+/* Footer: under the wordmark and above the social row. */
+body .nm-footer-4-area .nm-footer-4-top,
+body .nm-footer-4-area .nm-footer-4-bottom {
+	border-image: var(--pc-line-h) 1;
+	border-width: var(--pc-line-w);
+}
+
+/* Footer "Get in Touch". The theme caps the list at 250px, narrower than
+   the email (hello@productionconnectionsllc.com, ~310px at 18px), so it
+   broke mid-word ("connecti / onsllc") with its icon stranded on the second
+   line (client, 2026-10-15). The cap goes, the address stays on one line,
+   and the first column (the blurb) gives up the width instead: its flex
+   basis drops so the four columns still fit one row at 1200px+. Icons sit
+   on the first line of each item. Only on very narrow phones may the email
+   wrap, and then anywhere rather than spilling out of the screen. */
+body .nm-footer-4-area .nm-footer-4-contact {
+	max-width: none;
+}
+
+body .nm-footer-4-area .nm-footer-4-contact li {
+	align-items: flex-start;
+	min-width: 0;
+}
+
+body .nm-footer-4-area .nm-footer-4-contact li > img {
+	flex: none;
+	margin-top: .35em;
+}
+
+body .nm-footer-4-area .nm-footer-4-contact li a[href^="mailto:"] {
+	white-space: nowrap;
+}
+
+@media (min-width: 1200px) {
+	body .nm-footer-4-area .nm-footer-4-wrap {
+		gap: 80px;
+	}
+	body .nm-footer-4-area .nm-footer-4-widget:nth-child(1) {
+		flex: 1 1 260px;
+		max-width: 420px;
+	}
+}
+
+@media (max-width: 400px) {
+	body .nm-footer-4-area .nm-footer-4-contact li a[href^="mailto:"] {
+		white-space: normal;
+		overflow-wrap: anywhere;
+	}
+}
+
+/* ================================================================== *
+ * Header chrome (site-wide)
+ * ================================================================== */
+
+/* The bar: frosted dark glass on a ::before (the header turns
+   position:fixed when it sticks; a backdrop-filter on the header itself would
+   make it the containing block for anything fixed inside). Its lower edge is
+   the client's line. */
+body .nm-header-3-area {
+	background: transparent;
+}
+
+body .nm-header-3-area::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	background:
+		var(--pc-line-h) bottom / 100% 2px no-repeat,
+		linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 100%),
+		rgba(10, 9, 8, 0.62);
+	-webkit-backdrop-filter: blur(16px) saturate(140%);
+	        backdrop-filter: blur(16px) saturate(140%);
+	pointer-events: none;
+}
+
+/* Dropdowns: frosted, but near-solid (client, 2026-10-13: at .72 the page
+   read through the open menu). .92 tint + a heavy 30px blur leaves only a soft
+   haze behind, so the menu is the only thing legible. The selector carries
+   the theme's `:is(.has-header-3)` to match its specificity. */
+body .nm-main-navigation:is(.has-header-3) .navbar-nav li .dropdown-menu {
+	background-color: rgba(18, 16, 14, 0.92);
+	background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0) 50%);
+	border-color: transparent;
+	-webkit-backdrop-filter: blur(30px) saturate(140%);
+	        backdrop-filter: blur(30px) saturate(140%);
+	box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+}
+
+/* Hovered menu item: an amber glass PILL inset inside the panel. The theme
+   slides the hovered link `translateX(5px)`; once the row was filled gold
+   that pushed it past the panel's right edge, into the flyout gap, and it
+   read as overlapping (client, 2026-10-15). The slide is dropped; the row is
+   inset 8px each side with rounded ends, and the text nudges right with
+   padding instead, so the gold never leaves the panel. */
+body .nm-main-navigation:is(.has-header-3) .navbar-nav li .dropdown-menu > li > a {
+	width: calc(100% - 16px);
+	margin: 0 8px;
+	padding-left: 22px;
+	border-radius: 10px;
+	transition: background 0.25s ease, color 0.25s ease, padding 0.25s ease;
+}
+
+body .nm-main-navigation:is(.has-header-3) .navbar-nav li .dropdown-menu li:hover > a {
+	transform: none;
+	padding-left: 27px;
+}
+
+body .nm-main-navigation:is(.has-header-3) .navbar-nav li .dropdown-menu > li > a:hover,
+body .nm-main-navigation:is(.has-header-3) .navbar-nav li .dropdown-menu > li > a:focus-visible {
+	background:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 60%),
+		var(--pc-amber);
+	color: #fff;
+}
+
+/* Dividers between the top-level menu items: a vertical line of the client's
+   gradient, centred in the 35px gap.
+   The theme only makes items WITH a dropdown `position: relative`; without
+   this, the dividers of Case Studies and Contact Us anchored to the whole menu
+   and stacked up at its left edge, before Home. */
+body .nm-main-navigation:is(.has-header-3) .navbar-nav > li {
+	position: relative;
+}
+
+body .nm-main-navigation:is(.has-header-3) .navbar-nav > li + li::before {
+	content: "";
+	position: absolute;
+	left: -18px;
+	top: 50%;
+	width: 2px;
+	height: 26px;
+	transform: translateY(-50%);
+	background: var(--pc-line-v);
+	opacity: 0.75;
+	pointer-events: none;
+}
+
+/* First-level dropdowns open just BELOW the header bar. The theme hangs them
+   at `top: 100%` of the menu item, which ends ~13px above the bar's bottom
+   edge, so the dropdown's top cut straight through the header's bottom line
+   (client, 2026-10-14). The ::before bridges the gap for the pointer. */
+body .nm-main-navigation:is(.has-header-3) .navbar-nav > li > .dropdown-menu {
+	top: calc(100% + 16px);
+}
+
+body .nm-main-navigation:is(.has-header-3) .navbar-nav > li > .dropdown-menu::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: -16px;
+	height: 16px;
+}
+
+/* Second-level flyouts (Services > Design & Development > ...): open 10px
+   clear of their parent dropdown. The theme puts them at `left: 100%`, flush
+   against the parent, so the flyout's edge sat ON the parent's right border
+   and visibly cut its box (client, 2026-10-14). Each box now shows whole.
+   The ::before is an invisible bridge over the gap, so the pointer can cross
+   from the parent item to the flyout without the hover — and the flyout —
+   dropping. */
+body .nm-main-navigation:is(.has-header-3) .navbar-nav li .dropdown-menu li .dropdown-menu {
+	left: calc(100% + 10px);
+}
+
+body .nm-main-navigation:is(.has-header-3) .navbar-nav li .dropdown-menu li .dropdown-menu::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: -10px;
+	width: 10px;
+	height: 100%;
+}
+
+/* Dividers between submenu items: a horizontal line of the same gradient. */
+body .nm-main-navigation:is(.has-header-3) .navbar-nav li .dropdown-menu > li {
+	position: relative;
+}
+
+body .nm-main-navigation:is(.has-header-3) .navbar-nav li .dropdown-menu > li + li::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 20px;
+	right: 20px;
+	height: 2px;
+	background: var(--pc-line-h);
+	opacity: 0.35;
+	pointer-events: none;
+}
+
+/* ================================================================== *
+ * No backdrop-filter (old browsers): solid colours, readable without blur.
+ * ================================================================== */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+	body .nm-header-3-area .nm-pr-btn-2.has-v3,
+	body.home .nm-hero-3-content .nm-pr-btn-2.has-v3,
+	body.home .nm-cta-2-content .nm-pr-btn-2.has-v3,
+	body.home .nm-portfolio-2-content .nm-pr-btn-2.has-v3,
+	body .nm-footer-4-area .nm-pr-btn-4.nm-footer-4-btn {
+		background-color: rgb(150, 106, 44) !important;
+	}
+	body .nm-header-3-area .nm-pr-btn-2.has-v3 .icon,
+	body.home .nm-hero-3-content .nm-pr-btn-2.has-v3 .icon,
+	body.home .nm-cta-2-content .nm-pr-btn-2.has-v3 .icon,
+	body.home .nm-portfolio-2-content .nm-pr-btn-2.has-v3 .icon,
+	body .nm-footer-4-area .nm-pr-btn-4.nm-footer-4-btn .icon {
+		background: rgb(0, 0, 0) !important;
+	}
+	body .nm-header-3-area .nm-offcanvas-btn-1 {
+		background-image: linear-gradient(90deg, rgb(166, 128, 70) 0%, rgb(132, 90, 30) 100%);
+	}
+	body.home .nm-trial-2-form-btn {
+		background: linear-gradient(rgb(255, 255, 255) 0%, rgb(127, 127, 127) 100%);
+	}
+	:is(body.home, body.pc-contact) .nm-contact-1-social.has-contact-3 .link-elm::after,
+	body .wa-back-to-top {
+		background: rgb(45, 45, 45);
+	}
+	body.home .nm-testimonial-2-right-inner .nm-slider-btn-1 {
+		background: rgb(31, 31, 31);
+	}
+	body.home .nm-about-2-disc::before,
+	body.home .nm-about-2-right-inner-div.has-about-3::before,
+	body.home .nm-services-2-card,
+	body.home .nm-trial-2-wrap,
+	body.home .nm-testimonial-2-wrap {
+		background: rgb(14, 14, 14);
+	}
+	body.home .nm-choose-2-card.has-choose-3::before {
+		background: linear-gradient(134deg, rgb(14, 14, 14) 0%, rgb(46, 46, 46) 100%);
+	}
+	body.home .nm-choose-2-card.has-choose-3 .icon,
+	:is(body.home, body.pc-contact) .nm-contact-1-info-single .icon {
+		background: linear-gradient(110deg, rgb(20, 20, 20) 0%, rgb(67, 67, 67) 100%);
+	}
+	body.home .nm-steps-2-card.has-steps-3::before {
+		background: rgb(22, 20, 18);
+	}
+	body.home .nm-steps-2-card.has-steps-3 .card-icon {
+		background: linear-gradient(rgb(51, 51, 51) 0%, rgb(67, 67, 67) 100%);
+	}
+	body.home .nm-portfolio-2-card .card-content {
+		background-color: rgb(28, 28, 28);
+	}
+	body.home .nm-portfolio-2-card .item-categories {
+		background: linear-gradient(0deg, rgb(66, 67, 66), rgb(39, 38, 38));
+	}
+	body.home .nm-portfolio-2-card .card-btn {
+		background: linear-gradient(rgb(20, 20, 20) 0%, rgb(67, 67, 67) 100%);
+	}
+	body.home .nm-testimonial-2-img-slider-single .author-rating {
+		background: linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(105, 105, 105) 100%);
+	}
+	body.home .nm-trial-2-form input.wpcf7-email {
+		background-color: rgb(12, 12, 13);
+	}
+	body.home .nm-trial-2-counter-single.has-trial-3 {
+		background: linear-gradient(90deg, rgb(20, 20, 20) 0%, rgb(67, 67, 67) 100%);
+	}
+	:is(body.home, body.pc-contact) .nm-contact-1-info-single {
+		background: rgb(20, 18, 16);
+	}
+	body .nm-header-3-area::before {
+		background: var(--pc-line-h) bottom / 100% 2px no-repeat, rgba(0, 0, 0, 0.78);
+	}
+	body .nm-main-navigation:is(.has-header-3) .navbar-nav li .dropdown-menu {
+		background-color: rgb(23, 22, 25);
+	}
+}
+
+/* ── Gold 3D ornaments (client, 2026-10-14) ───────────────────────────────
+   The theme's silver sphere (Why Us, Contact, and since 2026-10-15 Case
+   Studies, where it replaced a 3D tube the client disliked)
+   is recoloured gold by the #pc-gold gradient map (printed in the footer by
+   inc/home-copy-render.php): shadows map to deep gold and highlights to
+   white, so no black shading survives. The glow sits on the wrapper so it
+   never fights the theme's parallax transform on the <img>: a crisp light
+   rim, a warm halo and a wide soft aura that breathe slowly. */
+:is(body.home, body.pc-contact) img[src*="c2-3d-shape-2"] {
+	filter: url(#pc-gold);
+}
+
+:is(body.home, body.pc-contact) :has(> img[src*="c2-3d-shape-2"]) {
+	filter: drop-shadow(0 0 1.5px rgba(255, 244, 214, .85)) drop-shadow(0 0 14px rgba(255, 205, 110, .45)) drop-shadow(0 0 40px rgba(240, 170, 60, .25));
+	animation: pcGoldShine 6s ease-in-out infinite;
+}
+
+@keyframes pcGoldShine {
+	0%, 100% {
+		filter: drop-shadow(0 0 1.5px rgba(255, 244, 214, .85)) drop-shadow(0 0 14px rgba(255, 205, 110, .45)) drop-shadow(0 0 40px rgba(240, 170, 60, .25));
+	}
+	50% {
+		filter: drop-shadow(0 0 2px rgba(255, 248, 228, 1)) drop-shadow(0 0 20px rgba(255, 212, 125, .6)) drop-shadow(0 0 56px rgba(240, 175, 70, .35));
+	}
+}
+
+/* Brand mark (client, 2026-10-15): ONE play-button icon where the theme had
+   spinning glass plates (Capabilities, Process, Contact). It moves like the
+   site loader: grows from small to full size while turning, then keeps
+   rotating slowly.
+   The theme spins these images with `waRotation360minus 40s` on
+   `.nm-*-bg-shape img` (0,1,1); this selector (0,2,2) replaces it.
+   The intro waits until the icon scrolls into view: the inline script in
+   inc/home-copy-render.php adds `pc-in` (and `pc-js` on <html>, so without
+   JS nothing is held paused and the icon simply plays). */
+:is(body.home, body.pc-contact) img[data-pc-brand-spin] {
+	animation:
+		pcBrandIn 2.2s cubic-bezier(0.16, 0.84, 0.24, 1) both,
+		pcBrandSpin 30s linear 2.2s infinite;
+	filter: drop-shadow(0 0 18px rgba(120, 230, 240, 0.22)) drop-shadow(0 0 36px rgba(255, 190, 70, 0.16));
+	transform-origin: 50% 50%;
+}
+
+html.pc-js :is(body.home, body.pc-contact) img[data-pc-brand-spin]:not(.pc-in) {
+	animation-play-state: paused;
+}
+
+/* The theme parks these shapes half off-screen (right: -143px in
+   Capabilities, left: -186px and -158px in Process and Contact). A ring
+   still read when cut in half; a single mark did not, so each is drawn back
+   in by its overhang. `translate` is its own property, so it stacks with
+   the transform the zoom-and-spin animates instead of replacing it. */
+@media (min-width: 992px) {
+	body.home .nm-services-2-bg-shape-1 img[data-pc-brand-spin] {
+		translate: -175px 0;
+	}
+	body.home .nm-steps-2-bg-3d-shape img[data-pc-brand-spin] {
+		translate: 190px 0;
+	}
+	:is(body.home, body.pc-contact) .nm-contact-2-bg-3d-shape img[data-pc-brand-spin] {
+		translate: 165px 0;
+	}
+}
+
+/* Like the site loader: the mark grows from small to full size WHILE
+   turning (same direction as the slow spin that follows), easing out so
+   the handoff to the steady rotation is smooth (client, 2026-10-15). */
+@keyframes pcBrandIn {
+	0% {
+		transform: scale(0.08) rotate(540deg);
+		opacity: 0;
+	}
+	25% {
+		opacity: 1;
+	}
+	100% {
+		transform: scale(1) rotate(0deg);
+		opacity: 1;
+	}
+}
+
+@keyframes pcBrandSpin {
+	from { transform: rotate(0deg); }
+	to   { transform: rotate(-360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	:is(body.home, body.pc-contact) img[data-pc-brand-spin] {
+		animation: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	:is(body.home, body.pc-contact) :has(> img[src*="c2-3d-shape-2"]) {
+		animation: none;
+	}
+}
+
+/* Case Studies slider: the Hedrick Law photo is a 1920x544 banner, cropped
+   into a near-square slide. Centred, the crop showed bare stonework and half
+   a shoulder; the subject stands ~69% across, so the crop follows him. */
+body.home img[src*="Law-Firm-Image"] {
+	object-position: 69% 30%;
+}
+
+/* ── Responsive safety (2026-10-15 sweep) ─────────────────────────────────
+   At 375px two headings ran off the right edge: the Process title ("How We
+   Take Over Your Market", 489px in a 351px column) sits in a flex row whose
+   items will not shrink, and the theme's heading style is word-break:
+   break-all; the About kicker pill ("About Production Connections") would
+   not let its text shrink either. Flex children may shrink and wrap, and
+   home headings break between words, never inside them. */
+body.home [class*="sec-title"] > :is(h1, h2, h3) {
+	flex-shrink: 1;
+	min-width: 0;
+}
+
+/* The kicker pill on phones. Below 768px nimo-core stretches the pill and
+   its line to full width but keeps the text from shrinking (flex 0 0 auto),
+   so "About Production Connections" ran off a 375px screen. Here the text
+   may shrink down to its longest word (min-width stays auto: with 0 the
+   letters stacked one per line), and the line, with a huge shrink factor,
+   gives way first. Desktop keeps the theme's own sizing. */
+@media (max-width: 767px) {
+	body.home .nm-subtitle-2 .text {
+		flex-shrink: 1;
+	}
+	body.home .nm-subtitle-2 .line {
+		flex: 0 1000 auto;
+		min-width: 24px;
+	}
+}
+
+body.home :is(h1, h2, h3, h4, h5) {
+	word-break: normal;
+	overflow-wrap: break-word;
+}
+
+/* ── Mobile off-canvas menu (client, 2026-10-15: "opens in white") ────────
+   inc/offcanvas-panel.php darkens the panel, but its CSS is inlined on the
+   parent style.css, which prints BEFORE nimo-core.css; at equal specificity
+   nimo-core's `background: #fff` won, leaving the near-white links on white.
+   Restated here (glass.css loads after nimo-core) with a body prefix: the
+   site's dark glass, a fade-line left edge, white close cross. */
+body .wa-offcanvas-area {
+	background-color: rgba(14, 12, 10, 0.97);
+	background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0) 45%);
+	-webkit-backdrop-filter: blur(24px) saturate(140%);
+	        backdrop-filter: blur(24px) saturate(140%);
+	color: #fff;
+	box-shadow: -18px 0 40px rgba(0, 0, 0, 0.5);
+}
+
+body .wa-offcanvas-area::before {
+	content: "";
+	position: fixed;
+	top: 0;
+	bottom: 0;
+	left: 0; /* the panel is transformed, so it is the containing block */
+	width: 2px;
+	background: var(--pc-line-v);
+	opacity: 0.6;
+	pointer-events: none;
+}
+
+body .wa-offcanvas-area .wa-offcanvas-close span {
+	background: #fff;
+}
+
+body .wa-offcanvas-area .wa-offcanvas-close:hover span {
+	background: #D29737;
+}
+
+body .wa-offcanvas-area .mobile-main-navigation ul li:not(:last-child) {
+	border-bottom-color: transparent;
+	border-image: var(--pc-line-h) 1;
+	border-bottom-width: var(--pc-line-w);
+}
+
+/* The panel's call button joins the site's buttons: amber glass, white text. */
+body .wa-offcanvas-area .pc-offcanvas-call {
+	background:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 60%),
+		var(--pc-amber);
+	color: #fff;
+	border-radius: 100px;
+}
+
+body .wa-offcanvas-area .pc-offcanvas-call:hover,
+body .wa-offcanvas-area .pc-offcanvas-call:focus {
+	background: #fff;
+	color: #111;
+}
+
+/* ── Phone fixes (client, 2026-10-15) ─────────────────────────────────────
+   Below 768px every block here was still at desktop scale. */
+@media (max-width: 767px) {
+
+	/* Capabilities cards: one column (title, photo, text, features, note)
+	   ran 760-930px tall with a 36px title that dropped its asterisk onto a
+	   second line. Tightened so a card reads as one unit on a phone. */
+	body.home .nm-services-2-card {
+		padding: 0 12px 14px;
+		border-radius: 18px;
+	}
+	body.home .nm-services-2-card .card-title {
+		margin: 0 -12px 14px;
+		padding: 16px 12px 14px;
+		font-size: 24px;
+	}
+	body.home .nm-services-2-card .card-img {
+		min-height: 170px;
+		margin-bottom: 14px;
+		border-radius: 12px;
+	}
+	body.home .nm-services-2-card .card-disc {
+		padding-left: 4px;
+		font-size: 14px;
+		line-height: 1.5;
+	}
+	body.home .nm-services-2-card .card-features {
+		margin-top: 6px;
+		padding-left: 4px;
+	}
+	body.home .nm-services-2-card .card-features li {
+		gap: 8px;
+		padding-bottom: 9px;
+		font-size: 15px;
+	}
+	body.home .nm-services-2-card .card-features li:not(:last-child) {
+		margin-bottom: 9px;
+	}
+	body.home .nm-services-2-card .card-features li::before {
+		font-size: 16px;
+	}
+	body.home .nm-services-2-card .pc-card-note {
+		margin-left: 4px;
+		margin-right: 4px;
+		font-size: 12px;
+	}
+
+	/* Why Us: the theme caps the cards at 325px, leaving them off-centre,
+	   and tucks each big number behind the card's top-right corner, so only
+	   its top half showed. Full width, number sitting inside the corner,
+	   and the gold sphere (which overlapped the cards' edge) hidden. */
+	body.home .nm-choose-2-card {
+		max-width: none;
+		width: 100%;
+	}
+	body.home .nm-choose-2-card.has-choose-3 .number {
+		top: 12px;
+		right: 16px;
+		left: auto; /* the right-hand column (04-06) is mirrored to the left on desktop */
+		z-index: 2;
+		font-size: 40px;
+		color: rgba(255, 255, 255, 0.22);
+		-webkit-text-fill-color: rgba(255, 255, 255, 0.22);
+	}
+	body.home .nm-choose-2-card .icon-x-title {
+		padding-right: 56px;
+	}
+	body.home .nm-choose-2-bg-shape-1,
+	body.home .nm-choose-2-bg-shape-2 {
+		display: none;
+	}
+
+	/* Case Studies: a 600px-tall photo filled more than the screen, and the
+	   client thumbnails got a 131px strip between the arrows (one photo
+	   showing). Shorter photo, tighter row; the inline script in
+	   home-copy-render.php shows three thumbnails at a time. */
+	body.home .nm-testimonial-2-img-slider-single {
+		height: 420px;
+	}
+	body.home .nm-testimonial-2-right-inner {
+		gap: 8px;
+	}
+	body.home .nm-testimonial-2-right-inner .nm-testimonial-2-preview-slider {
+		flex: 1 1 0;
+		min-width: 0;
+	}
+
+	/* Contact: one ordinary line of text on the left, the button on the
+	   right (client: "sidha, normal"), not the three-line split. */
+	:is(body.home, body.pc-contact) .nm-contact-2-area .nm-contact-1-social.has-contact-3 {
+		gap: 14px;
+	}
+	:is(body.home, body.pc-contact) .nm-contact-2-area .pc-contact-kicker {
+		order: -1;
+		flex: 1 1 0;
+		min-width: 0;
+		padding-left: 0;
+		font-size: 15px;
+		line-height: 1.4;
+	}
+	:is(body.home, body.pc-contact) .nm-contact-2-area .pc-contact-kicker::before {
+		display: none;
+	}
+	:is(body.home, body.pc-contact) .nm-contact-2-area .pc-contact-kicker span {
+		display: inline;
+	}
+	:is(body.home, body.pc-contact) .nm-contact-2-area .pc-contact-kicker span + span::before {
+		content: " ";
+	}
+	:is(body.home, body.pc-contact) .nm-contact-2-area .nm-contact-1-social a {
+		flex: none;
+		gap: 10px;
+		padding: 10px 12px 10px 16px;
+		font-size: 15px;
+		white-space: nowrap;
+	}
+	:is(body.home, body.pc-contact) .nm-contact-2-area .nm-contact-1-social a .icon {
+		width: 30px;
+		height: 30px;
+	}
+}
+
+/* ── "Our Network" (client, 2026-10-16: Figma cards) ──────────────────────
+   Printed after Case Studies by inc/home-network.php. On the dark page, each
+   network sits in the client's own glass card (exported from Figma as SVG:
+   55% #1C1814 fill, a faint sheen, the white fade border, a soft drop shadow,
+   dark logos already white). Five in view (three on tablets, two on phones);
+   every 3s the track slides one step, the first card fading out on the left
+   as the next comes in on the right. */
+body.home .pc-network-area {
+	--pc-net-n: 5;
+	--pc-net-gap: 40px;
+	position: relative;
+	z-index: 1;
+	padding: 80px 0 40px;
+}
+
+body.home .pc-network-head {
+	margin-bottom: 30px;
+}
+
+body.home .pc-network-kicker {
+	margin: 0 0 10px;
+	font-size: 12px;
+	font-weight: 500;
+	letter-spacing: 0.3em;
+	color: rgba(255, 255, 255, 0.7);
+}
+
+body.home .pc-network-title {
+	margin: 0;
+	font-family: var(--nm-font-2);
+	font-size: clamp(26px, 2.2vw, 36px);
+	font-weight: 600;
+	line-height: 1.2;
+	color: #fff;
+}
+
+/* Clips the strip at the sides, but leaves room above and below for the
+   cards' drop shadow (the negative margins give the space back). */
+body.home .pc-network-viewport {
+	overflow: hidden;
+	margin: -20px 0 -40px;
+	padding: 20px 0 70px;
+}
+
+body.home .pc-network-track {
+	display: flex;
+	align-items: center;
+	column-gap: var(--pc-net-gap);
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	will-change: transform;
+}
+
+body.home .pc-network-item {
+	flex: 0 0 calc((100% - (var(--pc-net-n) - 1) * var(--pc-net-gap)) / var(--pc-net-n));
+	transition: opacity 0.9s ease, transform 0.9s ease;
+}
+
+body.home .pc-network-item.is-leaving {
+	opacity: 0;
+	transform: scale(0.9);
+}
+
+/* The card SVG: a 381x310 canvas with the 221x150 card at (80, 50) and the
+   shadow around it. Scaled so the CARD fills the slot exactly; the margins
+   (percentages of the slot width) let the shadow area hang outside it. */
+body.home .pc-network-cardimg {
+	display: block;
+	width: calc(381 / 221 * 100%);
+	max-width: none;
+	height: auto;
+	margin: calc(-50 / 221 * 100%) 0 calc(-110 / 221 * 100%) calc(-80 / 221 * 100%);
+	pointer-events: none;
+}
+
+/* Fallback for a network without a card: its logo, or its name, on the same
+   glass. */
+body.home .pc-network-card {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	aspect-ratio: 221 / 150;
+	padding: 8% 10%;
+	border-radius: 20px;
+	background-color: rgba(28, 24, 20, 0.55);
+	background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0) 45%);
+	box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+}
+
+body.home .pc-network-card img {
+	max-width: 100%;
+	max-height: 100%;
+	object-fit: contain;
+}
+
+body.home .pc-network-name {
+	font-family: var(--nm-font-2);
+	font-size: clamp(18px, 2vw, 26px);
+	font-weight: 700;
+	color: #fff;
+	text-align: center;
+}
+
+@media (max-width: 991px) {
+	body.home .pc-network-area {
+		--pc-net-n: 3;
+		--pc-net-gap: 28px;
+		padding: 64px 0 30px;
+	}
+}
+
+@media (max-width: 575px) {
+	body.home .pc-network-area {
+		--pc-net-n: 2;
+		--pc-net-gap: 16px;
+		padding: 48px 0 24px;
+	}
+	body.home .pc-network-head {
+		margin-bottom: 22px;
+	}
+	body.home .pc-network-kicker {
+		font-size: 11px;
+	}
+}
+
+/* Contact email card on narrow phones: small enough to stay on one line
+   ("...llc.com" wrapped onto its own line at 375px). */
+@media (max-width: 400px) {
+	:is(body.home, body.pc-contact) .nm-contact-1-info .nm-contact-1-info-single:first-child .disc {
+		font-size: 13px;
+	}
+}
+
+/* Why Us, desktop: the photo marquee between the two card columns sat in a
+   fixed 700px window while the columns run ~1050px, so beside the last two
+   cards there was only empty space (client, 2026-10-15). The window now
+   stretches to the full height of its grid row, first card to last. */
+@media (min-width: 992px) {
+	body.home .nm-choose-2-wrap .nm-choose-2-img-wrap {
+		height: auto;
+		align-self: stretch;
+		/* ...but its own (very tall, scrolling) content must not size the row:
+		   without this the row grew to the marquee's full 3000px. */
+		contain: size;
+	}
+}
+
+/* Header logo (client, 2026-10-15): the lockup GIF carries a partner row
+   (abc, Apple TV+, hulu, iHeartMedia) under the wordmark, which at header
+   size forced the whole mark down to 75px wide. The header now shows only
+   the wordmark and tagline: the image is cropped to its top 61% (the
+   partner row starts just below), so the mark can be drawn ~2x wider in
+   the same bar height. Same file, so its animation still plays; the footer
+   and menu panel keep the full lockup. Width stays under the theme's
+   inline 142px cap on `.tx-logo img`. */
+body .nm-header-3-area .pc-logo {
+	width: 138px;
+	height: auto;
+	aspect-ratio: 343 / 122;
+	object-fit: cover;
+	object-position: top;
+}
+
+@media (max-width: 767px) {
+	body .nm-header-3-area .pc-logo {
+		width: 108px;
+	}
+}
+
+
+/* ── One border weight, home leftovers (client, 2026-10-26) ──────────────
+   The About photo's 4px grey frame becomes the gradient edge (on ::before:
+   the theme uses ::after), and the Portfolio section's faint solid bottom
+   rule becomes the fade line. */
+body.home .nm-about-2-img {
+	border-color: transparent;
+	border-width: 0;
+}
+
+body.home .nm-about-2-img::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 3;
+	padding: var(--pc-edge-w);
+	border-radius: inherit;
+	background: var(--pc-edge);
+	-webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+	-webkit-mask-composite: xor;
+	        mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+	pointer-events: none;
+}
+
+body.home .nm-portfolio-2-area {
+	border-bottom-color: transparent;
+	border-image: var(--pc-line-h) 1;
+	border-bottom-width: var(--pc-line-w);
+}

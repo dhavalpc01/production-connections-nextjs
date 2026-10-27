@@ -5,6 +5,10 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   // WordPress URLs end in a slash; keep them identical so links and rankings carry over.
   trailingSlash: true,
+  // Each ported WordPress page is its own root layout, so 404s need a global page.
+  experimental: {
+    globalNotFound: true,
+  },
   turbopack: {
     rules: {
       "*.css": {
@@ -28,6 +32,8 @@ const nextConfig: NextConfig = {
         permanent: true,
       })),
       { source: "/our-services/", destination: "/services/", permanent: true },
+      // The first Next.js scaffold used /contact-us/; WordPress serves /contact/.
+      { source: "/contact-us/", destination: "/contact/", permanent: true },
     ];
   },
 };

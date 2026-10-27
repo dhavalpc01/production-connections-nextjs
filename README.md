@@ -22,7 +22,10 @@ npm run lint
 
 | Path | What it is |
 |---|---|
-| `src/app/` | Routes. One folder per WP URL, trailing slash kept (`trailingSlash: true`). |
+| `src/app/` | Routes. One folder per WP URL, trailing slash kept (`trailingSlash: true`). Ported pages are route groups with their own root layout: `(home)`, `(about)`, `(contact)`; the rest are placeholders in `(site)`. |
+| `src/wp/` | Pages ported from WordPress: generated section components, shared chrome, `WpDocument` (stylesheets + body classes) and `WpRuntime` (theme JS, forms, popups). |
+| `public/wp/` | The WordPress CSS, JS, fonts and images those pages use, at their `wp-content` paths. |
+| `scripts/wp-port/` | The porting tools: snapshots, `capture-assets.mjs`, `html-to-jsx.mjs`, `generate.mjs`. |
 | `src/app/api/leads/route.ts` | Form capture → Supabase (`form_submissions`, `newsletter_signups`). |
 | `src/components/layout/` | Header (desktop dropdowns + flyouts), MobileNav, Footer. |
 | `src/components/PagePlaceholder.tsx` | Stand-in for routes not converted yet. |
