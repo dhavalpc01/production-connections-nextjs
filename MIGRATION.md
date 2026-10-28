@@ -25,7 +25,8 @@ actually renders, so the result matches it pixel for pixel:
   hydration, in WordPress's order, and replaces the server-side parts:
   forms post to `/api/leads`, Popup Maker's click trigger, current-menu marking.
 - **Isolation** — every ported page is its own root layout
-  (`src/app/(home)`, `(about)`, `(contact)`), so navigating between them is a
+  (`src/app/(home)`, `(about)`, `(contact)`, `(services)`, and `(service)` whose
+  root layout picks the page by slug), so navigating between them is a
   full page load as on WordPress and no page's CSS leaks into another.
 
 To port another page:
@@ -34,9 +35,12 @@ To port another page:
 2. `node scripts/wp-port/capture-assets.mjs http://localhost:8090 <page>`
 3. Add its jobs (page content selector, breadcrumb) to `scripts/wp-port/generate.mjs`
    and run `node scripts/wp-port/generate.mjs`.
-4. Add `src/app/(<page>)/layout.tsx` with `WpDocument` (page id from the
-   snapshot's `page-id-N` body class) and the route's `page.tsx` with its
-   title / description from the snapshot. Remove the placeholder route.
+4. Add `src/app/(<page>)/layout.tsx` rendering `<WpDocument page="<page>">`
+   and the route's `page.tsx` with `export const metadata = wpMetadata("<page>", "/<path>/")`.
+   Body classes, title, description, share image and Yoast's JSON-LD come
+   from the snapshot via `src/wp/assets.json`. Remove the placeholder route.
+   For a family of same-template pages (like `/services/<slug>/`), put the
+   root layout in the `[slug]` folder so it can pick the page from `params`.
 5. `npm run build`, run it, and compare with the mirror at 1366×657, 768 and
    375 wide: page height and each section's height should match.
 6. Tick the box below.
@@ -53,7 +57,7 @@ Header, footer, preloader, back-to-top and the contact popup are shared
 | [x] | `/` | `scripts/apply-home-copy.php`, `inc/home-copy-render.php`, `inc/home-network.php` | `home-viewport.css`, `glass.css` |
 | [x] | `/about-us/` | `scripts/apply-about-copy.php` | `about.css`, `about-cards-reveal.js` |
 | [x] | `/contact/` | contact page + `[pc_contact_form]` (see Forms) | `contact.css` |
-| [ ] | `/services/` | `services` archive, `inc/service-page.php` | `services-stack.css`, `pc-service-index.js` |
+| [x] | `/services/` | `services` archive, `inc/service-page.php` | `services-stack.css`, `pc-service-index.js` |
 | [ ] | `/industries/` | `build-industries-page.php` (repo root) | `industries.css`, `industry-card-reveal.js` |
 | [ ] | `/blog/` | DB only (posts are not in scripts) — export first | `inc/blog-grid-order.php` |
 | [ ] | `/privacy-policy/` | `scripts/lib/pc-legal-builder.php` | `legal.css` |
@@ -66,20 +70,20 @@ script: `service-detail.js`.
 
 | Done | Slug | Category | WP content file |
 |---|---|---|---|
-| [ ] | `website-design` | Design & Development | `scripts/content/website-design.php` |
-| [ ] | `website-development` | Design & Development | `scripts/content/website-development.php` |
-| [ ] | `logo-design` | Design & Development | `scripts/content/logo-design.php` |
-| [ ] | `brand-identity` | Design & Development | `scripts/content/brand-identity.php` |
-| [ ] | `search-engine-optimization` | Marketing & Advertising | `scripts/content/search-engine-optimization.php` |
-| [ ] | `ai-search-optimization` | Marketing & Advertising | `scripts/content/ai-search-optimization.php` |
-| [ ] | `pay-per-click` | Marketing & Advertising | `scripts/apply-ppc-copy.php`, `scripts/build-ppc-templates.php` |
-| [ ] | `social-media-marketing` | Marketing & Advertising | `scripts/content/social-media-advertising.php` |
-| [ ] | `email-marketing` | Marketing & Advertising | `scripts/content/email-marketing.php` |
-| [ ] | `ai-automation-systems` | Marketing & Advertising | `scripts/content/ai-marketing-automation.php` |
-| [ ] | `digital-strategy-marketing` | Marketing & Advertising | `scripts/apply-strategy-copy.php`, `scripts/build-strategy-templates.php` |
-| [ ] | `media-production` | Marketing & Advertising | `scripts/content/media-production.php` |
-| [ ] | `targeted-tv-advertising` | Marketing & Advertising | `scripts/content/targeted-tv-advertising.php` |
-| [ ] | `billboard-advertising` | Marketing & Advertising | `scripts/content/billboard-advertising.php` |
+| [x] | `website-design` | Design & Development | `scripts/content/website-design.php` |
+| [x] | `website-development` | Design & Development | `scripts/content/website-development.php` |
+| [x] | `logo-design` | Design & Development | `scripts/content/logo-design.php` |
+| [x] | `brand-identity` | Design & Development | `scripts/content/brand-identity.php` |
+| [x] | `search-engine-optimization` | Marketing & Advertising | `scripts/content/search-engine-optimization.php` |
+| [x] | `ai-search-optimization` | Marketing & Advertising | `scripts/content/ai-search-optimization.php` |
+| [x] | `pay-per-click` | Marketing & Advertising | `scripts/apply-ppc-copy.php`, `scripts/build-ppc-templates.php` |
+| [x] | `social-media-marketing` | Marketing & Advertising | `scripts/content/social-media-advertising.php` |
+| [x] | `email-marketing` | Marketing & Advertising | `scripts/content/email-marketing.php` |
+| [x] | `ai-automation-systems` | Marketing & Advertising | `scripts/content/ai-marketing-automation.php` |
+| [x] | `digital-strategy-marketing` | Marketing & Advertising | `scripts/apply-strategy-copy.php`, `scripts/build-strategy-templates.php` |
+| [x] | `media-production` | Marketing & Advertising | `scripts/content/media-production.php` |
+| [x] | `targeted-tv-advertising` | Marketing & Advertising | `scripts/content/targeted-tv-advertising.php` |
+| [x] | `billboard-advertising` | Marketing & Advertising | `scripts/content/billboard-advertising.php` |
 
 Category assignment comes from the WP `service-category` taxonomy (DB); the
 four Design / ten Marketing split matches the theme's nav notes. Confirm
@@ -186,3 +190,11 @@ Validation rules: `src/lib/forms/rules.ts` (from `inc/form-rules.php`).
 - Blog posts and any DB-only pages need an export from the WP database
   before they can be ported.
 - `public/images/pillar/` is ~89 MB of JPGs, unoptimised; consider re-encoding.
+- **Service pages' blog grid.** WordPress shows three random posts there on
+  every request (`inc/blog-grid-order.php`, `orderby => rand`); the port shows
+  the three from the snapshot. WordPress's own note accepts this: behind a page
+  cache the order freezes the same way. That one section's height therefore
+  differs by a line between requests on WordPress.
+- **Services archive title.** WordPress's `<title>` for `/services/` is the
+  theme demo's "Nimo Services Archive - Production Connections"; it is copied
+  as-is. Change it in Yoast and re-capture, or override it in the route.

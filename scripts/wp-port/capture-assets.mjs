@@ -235,7 +235,21 @@ for (const page of pages) {
     scripts.push(`/wp/inline/${keep.name}-${hash}.js`);
   }
 
-  manifest[page] = { styles, scripts };
+  // What the page's root layout and metadata need, as WordPress rendered them.
+  // The body class is taken after the WooCommerce script has run (no-js -> js).
+  const meta = (selector, attr) => doc.querySelector(selector)?.getAttribute(attr) ?? null;
+  const ogImage = meta('meta[property="og:image"]', "content");
+  // Yoast's schema graph, pointed at the production domain instead of the mirror.
+  const jsonLd = scriptDoc.querySelector('script[type="application/ld+json"]')?.rawText.trim() ?? null;
+  manifest[page] = {
+    jsonLd: jsonLd ? jsonLd.replaceAll(origin.replaceAll("/", "\\/"), "https:\\/\\/productionconnections.com").replaceAll(origin, "https://productionconnections.com") : null,
+    bodyClass: (doc.querySelector("body")?.getAttribute("class") ?? "").replace("woocommerce-no-js", "woocommerce-js").trim(),
+    title: doc.querySelector("title")?.text.trim() ?? "",
+    description: meta('meta[name="description"]', "content"),
+    ogImage: ogImage ? rewriteCss(ogImage).replace(origin, "") : null,
+    styles,
+    scripts,
+  };
   console.log(`  ${styles.length} stylesheets, ${scripts.length} scripts, ${assetRefs.size} asset refs`);
 }
 

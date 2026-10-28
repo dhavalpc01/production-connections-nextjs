@@ -1,0 +1,3120 @@
+/**
+ * Service Detail page — dark surface treatment, typography system, layout fixes.
+ *
+ * WHY THIS FILE EXISTS
+ * --------------------
+ * The Home 04 sections are authored for a LIGHT page background (Home 04 sets
+ * #f5f5f5 on its own body). A Service Detail page sets no page background, so it
+ * falls back to the theme's dark --nm-clr-black-2 (#111). The "-4" suite then
+ * paints headings var(--nm-clr-h-4) = #0A0A0A and body #4C5258 — dark text on a
+ * dark background, which read as large empty bands.
+ *
+ * The theme has no dark variant of these sections, so there is nothing to reuse.
+ * This is the only CSS the project adds, and it is loaded ONLY on
+ * is_singular('services') (see inc/enqueue.php) so the homepages are untouched.
+ *
+ * SCOPE — deliberately narrow. Only three sections are affected:
+ *   .nm-about-4-area  .nm-price-4-area  .nm-blog-4-area
+ * The Services (#0a0a0a), Approach (#000) and CTA (#efefef) sections already
+ * carry their own backgrounds with matching text, and are left alone.
+ *
+ * --nm-clr-h-4 is NOT redefined: it has 34 usages in nimo-core.css and several
+ * are `background: var(--nm-clr-h-4)` for dark cards and buttons. Flipping it to
+ * white would turn those surfaces white.
+ */
+
+body.single-services {
+	--pc-heading: #fff;
+	--pc-body: var(--nm-clr-p-1);          /* #b5b5b5 — brand body text */
+	--pc-accent: var(--nm-clr-pr-1);       /* brand gold */
+	--pc-rule: rgba(255, 255, 255, 0.14);
+	--pc-panel: var(--nm-clr-black-4);     /* #1a1a1a */
+
+	/* One vertical rhythm for the whole page — see section 0. */
+	--pc-space: 110px;
+}
+
+@media (max-width: 991px) {
+	body.single-services { --pc-space: 80px; }
+}
+
+@media (max-width: 767px) {
+	body.single-services { --pc-space: 60px; }
+}
+
+/* ------------------------------------------------------------------ *
+ * 0. Vertical rhythm
+ *
+ * The page composes sections from three different homepages, each with its
+ * own padding scale. Measured on the built page that produced gaps between
+ * sections ranging from 125px to 250px:
+ *
+ *   about-4  135/125    about-1  80/0     services-4 125/115
+ *   price-4  135/135    process-5 100/0   blog-4 135/135   contact-5 100/100
+ *
+ * Giving every section the same top and bottom padding makes the gap between
+ * any two adjacent sections identical by construction (2 x --pc-space).
+ *
+ * The hero is excluded: its large top padding clears the fixed header and is
+ * part of the hero composition, not section rhythm.
+ * ------------------------------------------------------------------ */
+
+body.single-services section[class*="-area"]:not(.nm-hero-4-area):not(.nm-cta-2-area),
+body.single-services .nm-steps-1-area,
+body.single-services .e-con:has(> .pc-faq-title),
+body.single-services .e-con:has(> .pc-sec-title) {
+	padding-top: var(--pc-space);
+	padding-bottom: var(--pc-space);
+}
+
+/*
+ * `.nm-steps-1-area` is named explicitly because tx_service_section style_3
+ * renders a <div>, not a <section>, so the attribute selector above never
+ * reaches it — it was sitting at the theme's own 95/130 against the page's
+ * 110/110.
+ */
+
+/* ------------------------------------------------------------------ *
+ * 0b. Hero — fit the viewport
+ *
+ * `.nm-hero-4-title-1`/`-2` are sized (168px / 164px by default, only
+ * stepping down at narrower breakpoints) for the Home 04 demo's headline —
+ * two or three words, one or two lines. This page's headline ("Your
+ * Marketing Strategy Is Costing You A Fortune") is eight words: at the
+ * theme's size it wraps 4 lines and the title alone runs ~520px tall.
+ * Stacked under the 290px top padding and the content block above it, the
+ * section measured ~1286px against a 720–900px viewport — the hero ran
+ * nearly double the screen and cut off mid-sentence.
+ *
+ * The header is `position: absolute` and only ~80px tall (measured 31px to
+ * 79px from the top), so the 290px padding-top was never about clearing
+ * it — it is headroom tuned for the demo's short title. Scaling the title
+ * down with `clamp()` keeps the composition (huge right-aligned type
+ * stacked over the trust copy) while letting it fit one screen regardless
+ * of how long a given service's headline runs.
+ *
+ * The title wrap's `margin-left/-right: -232px` bleeds the demo's 168px
+ * type past the container edge on purpose; at this page's smaller clamp()
+ * size that same bleed just pushes the right-aligned text flush against
+ * the browser edge, so it is zeroed out alongside the font size.
+ *
+ * Height: `min-height`, not `height`, so the box still grows if a longer
+ * service headline needs more than the viewport — nothing can clip. It
+ * started at a flat `100vh`, then trimmed twice on request to close a sliver
+ * of empty background under the fold — first to `-15px`, now `-30px`.
+ *
+ * Composition: bottom-anchored, as Home 04 has it — trust copy and CTA sit
+ * at the top of the hero, the big type is pinned to the bottom edge via
+ * `margin-top: auto` on the title wrap below, and any surplus height opens
+ * up between them rather than padding the whole block. `align-items:
+ * stretch` (not `center`) is required for that: the container has to fill
+ * the hero's height before anything inside it can be pushed to the bottom
+ * edge — with `center` the container shrink-wraps its content and the
+ * `margin-top: auto` has no free space to consume.
+ *
+ * `padding-top` stays at 140px rather than the theme's 170px: the header is
+ * absolutely positioned and only ~80px tall, so the extra was headroom tuned
+ * for the demo's much shorter title, not clearance.
+ *
+ * `padding-bottom` is BACK TO 40px, and the reason it briefly was not is worth
+ * recording, because the same trap will return the moment anything animated is
+ * bottom-anchored here again.
+ *
+ * The CTA (`.hero-btn`) carries the theme's `wow slideInUp2`, whose keyframes
+ * start at `translateY(100%)` — 100% of the button's OWN height, measured at
+ * 48px. For one round the CTA sat at the bottom of the hero, so its entrance
+ * began 48px below its resting place, 8px past a hero that is `overflow:
+ * hidden`, and the first frames were clipped (measured: button bottom 697px at
+ * frame 0 against a 689px clip edge). 56px was the fix.
+ *
+ * The CTA is now in row 2, grouped under the headline, and the element at the
+ * bottom is the trust paragraph — whose reveal masks each line INSIDE its own
+ * box and never translates the box itself. Nothing overshoots the bottom edge
+ * any more, so the 16px has no job and is given back rather than left in place
+ * with a justification that has quietly stopped being true.
+ *
+ * IF SOMETHING ANIMATED EVER GOES BACK AT THE BOTTOM: this padding has to be at
+ * least that element's travel, or the entrance gets clipped with no error and no
+ * obvious cause.
+ */
+body.single-services .nm-hero-4-area {
+	display: flex;
+	align-items: stretch;
+	min-height: calc(100vh - 30px);
+	padding-top: 140px;
+	padding-bottom: 40px;
+}
+
+/*
+ * A THREE-ROW GRID, and why this is not a flex column any more.
+ *
+ * The composition asked for is: headline top-left, CTA directly under it on the
+ * left, and the trust paragraph ALONE at the bottom right. That splits a pair of
+ * elements the theme's markup keeps together — `.nm-hero-4-content` wraps BOTH
+ * the paragraph and `.hero-btn`, so as long as that wrapper is a box, the two
+ * can only ever move around the hero as one unit. A flex column over two
+ * children (content, title) cannot separate them at all.
+ *
+ * So `.nm-hero-4-content` is given `display: contents` (see its own rule below),
+ * which dissolves the wrapper and promotes the paragraph and the button to
+ * children of THIS grid. All three then place independently:
+ *
+ *     row 1   .nm-hero-4-title-wrap   left,  top
+ *     row 2   .hero-btn               left,  directly under the headline
+ *     row 3   .hero-disc (the <p>)    right, bottom  (1fr row + align-self: end)
+ *
+ * Grid rather than flex + `order`: `order` only sorts siblings along one axis,
+ * and this needs two of the three items on the left and one pushed to the
+ * opposite corner. Explicit `grid-row` also means the visual order no longer
+ * depends on source order at all — the markup is the theme's widget view (source
+ * order: paragraph, button, headline) and is not ours to re-emit, so the old
+ * `order: -1` that used to hoist the headline is gone in favour of naming rows.
+ *
+ * `grid-template-rows: auto auto 1fr` — the headline and button take their
+ * content height, and ALL the surplus hero height collects in row 3, which is
+ * what lets the paragraph sit against the bottom edge via `align-self: end`.
+ * That is the same bottom-anchor the flex `margin-top: auto` used to provide.
+ *
+ * `minmax(0, 1fr)` for the single column, not `1fr`: a bare `1fr` has an
+ * automatic minimum of min-content, and the headline's min-content is its
+ * longest unbreakable word at up to 84px — enough to force the track wider than
+ * the container and push the whole grid into the hero's `overflow: hidden`.
+ *
+ * `row-gap: 32px` is the separation between the headline and the CTA now that
+ * they read as one group. It applies to the row-3 boundary too, but that row
+ * absorbs surplus height anyway, so it only ever acts as a floor there.
+ */
+body.single-services .nm-hero-4-area > .container {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	grid-template-rows: auto auto 1fr;
+	row-gap: 32px;
+	width: 100%;
+}
+
+/*
+ * Trust copy — widened from the theme's 420px so the paragraph reads in 5
+ * lines instead of 7, and dropped a bit lower under the header.
+ *
+ * The width can't be tuned by eye against a live page and reloaded to
+ * check: the theme runs the trust copy through a GSAP SplitText reveal,
+ * which measures the element ONCE at page load and bakes each visual line
+ * into its own `.split-line` DOM block — after that, the "lines" are fixed
+ * DOM nodes, not wrapped text, so changing `max-width` on an already-loaded
+ * page does nothing (confirmed: toggling it live left the line count
+ * unchanged at 7). The width has to be correct in the stylesheet BEFORE
+ * the page loads, so SplitText measures the box at the right size and
+ * bakes in the matching line count. Found by reloading at a few widths and
+ * counting `.split-line` children directly: 420→7, 640→5, 760→4.
+ *
+ * Since then it was pushed wider (up to 703, the widest value that still
+ * held at 5 lines — 707 already tipped to 4), then asked back narrower
+ * than the original 640 while staying at 5. Same binary search on the
+ * other side: 600 held at 5, 550 tipped to 6, narrowing further found 568
+ * as the narrowest confirmed still-5 value (560 tipped to 6). Landed on
+ * 580, not 568 — deliberately not the exact boundary, to leave a small
+ * buffer rather than sit right against the point it tips to 6, the same
+ * way 703 sat right against 4 on the wide side.
+ *
+ * IMPORTANT: 580px is a MEASURED value, not a taste one, and it survives every
+ * move this block has been through. The line count depends only on the box's
+ * width — so as long as the box is still 580px wide when the page loads, the
+ * reveal still bakes 5 lines. Do not "tidy" it to a round number or a
+ * percentage. What HAS changed is which element carries it: see below.
+ *
+ * ---------------------------------------------------------------- *
+ * THE WRAPPER IS DISSOLVED — `display: contents`.
+ *
+ * `.nm-hero-4-content` is the theme's wrapper around BOTH the trust paragraph
+ * and the CTA. The composition now wants those two in opposite corners — CTA
+ * top-left under the headline, paragraph alone bottom-right — and a wrapper box
+ * makes that impossible: whatever you do to it, the two move together.
+ *
+ * `display: contents` removes this element's box from the layout while keeping
+ * its children in the DOM, so the paragraph and `.hero-btn` become grid items of
+ * `.nm-hero-4-area > .container` directly and place themselves independently.
+ * The markup is the theme's `tx_hero_section` widget view, so re-nesting them
+ * for real is not an option; this is the CSS-only equivalent.
+ *
+ * CONSEQUENCE THAT WILL BITE — this element can no longer carry ANY visual
+ * property. `display: contents` generates no box, so `max-width`, margins,
+ * padding, background and borders on this selector are all inert. Two real
+ * values had to move off it rather than being deleted:
+ *
+ *   - the 580px width cap -> now on `.hero-disc` (the paragraph itself), where
+ *     it still governs what SplitText measures. This is the one that matters:
+ *     leave it here and the paragraph silently goes full-width, SplitText bakes
+ *     3 lines instead of 5, and no error appears anywhere.
+ *   - the bottom-anchor -> now `align-self: end` on the paragraph against the
+ *     grid's `1fr` third row, replacing `margin-top: auto` in the old flex
+ *     column.
+ *
+ * It also quietly disposes of two THEME rules that were only ever noise here:
+ * `max-width: 420px`, and a `padding-left: 30px; margin-left: -30px` pair that
+ * nimo-core applies above 1400px. Both target this box, and there is no box.
+ */
+body.single-services .nm-hero-4-content {
+	display: contents;
+}
+
+/*
+ * The trust paragraph — the ONLY thing at the bottom right now.
+ *
+ * `grid-row: 3` + `align-self: end` puts it against the hero's bottom padding —
+ * row 3 is the `1fr` that soaks up surplus height, so `end` lands on the bottom
+ * edge. That replaces the `margin-top: auto` the old flex column used.
+ *
+ * THE WIDTH IS `width: min(580px, 100%)`, NOT `max-width: 580px`, and the
+ * difference is the whole reason this comment is long. Two separate attempts at
+ * the right-pin both silently produced a 540px column instead of 580px:
+ *
+ *   1. `justify-self: end` + `max-width: 580px`  -> 540px
+ *   2. `margin-left: auto` + `max-width: 580px`  -> 540px
+ *
+ * Both fail the same way. A grid item only STRETCHES to its area while its size
+ * is `auto` AND neither inline margin is `auto` — set `justify-self` to anything
+ * but stretch, or set one margin to `auto`, and the item is sized fit-content
+ * instead, i.e. `min(max-content, available)`. `max-width` can only clamp that
+ * result; it cannot widen it.
+ *
+ * And this paragraph's max-content is not what it looks like. By the time the
+ * box settles, SplitText has replaced the text with baked `.split-line` divs, so
+ * max-content is the widest BAKED LINE rather than the original unbroken run of
+ * text — here, 540px. So the box shrink-wraps to the lines it already has.
+ *
+ * The line BREAKS were still right, because the box genuinely was 580px at load
+ * when SplitText measured it. Only the rendered column was wrong, 40px narrower
+ * than the value the rest of this comment is about, and it would drift again on
+ * any copy edit. A definite `width` sidesteps the whole mechanism: it is not
+ * subject to fit-content, so the auto margin has real free space to absorb and
+ * pins the box right at a true 580px.
+ *
+ * `min(580px, 100%)` rather than a flat `580px` so the column can never be wider
+ * than its grid area — the tablet band has ~696px of container to work with,
+ * which is enough today, but a flat width would overflow silently if that ever
+ * narrows.
+ *
+ * The TEXT inside stays left-aligned. The column sits on the right; its contents
+ * are not flush-right, and that is deliberate — flush-right across 5 lines
+ * leaves a ragged LEFT edge with no consistent start position for the eye to
+ * return to. That is the exact objection section 0c (b) raises against
+ * right-aligned type on narrow columns, and it applies to a 580px paragraph at
+ * any viewport width. The headline can be flush-aligned; the paragraph cannot.
+ *
+ * `margin-bottom: 0` overrides the theme's `margin-bottom: 30px` on
+ * `.hero-disc`. That 30px existed to separate the paragraph from the CTA
+ * directly beneath it — they are no longer adjacent, and left in place it would
+ * hold the paragraph 30px off the bottom edge that `align-self: end` exists to
+ * reach.
+ */
+body.single-services .nm-hero-4-content .hero-disc {
+	grid-row: 3;
+	align-self: end;
+	width: min(580px, 100%);
+	margin-left: auto;
+	margin-right: 0;
+	margin-bottom: 0;
+}
+
+/*
+ * The CTA — grouped with the headline on the left, not with the paragraph.
+ *
+ * `grid-row: 2` places it immediately under the title wrap, separated by the
+ * container's 32px `row-gap`; `justify-self: start` keeps it at the left edge
+ * and stops it stretching to the full container width (a grid item's default
+ * `stretch` would make the button's hit area span the whole hero).
+ *
+ * Note it is `.hero-btn` — the wrapper div the theme emits around the anchor —
+ * that is the grid item, not the `<a>`. The `wow slideInUp2` entrance is on that
+ * same wrapper, and it still works: `display: contents` on the grandparent
+ * changed who lays this element out, not what animates it. Its `translateY(100%)`
+ * travel is still what the hero's `padding-bottom` is sized against (see the
+ * `.nm-hero-4-area` rule) — the button's row moved, but the animation did not.
+ */
+body.single-services .nm-hero-4-content .hero-btn {
+	grid-row: 2;
+	justify-self: start;
+}
+
+/*
+ * THE HEADLINE IS NOW TOP-LEFT, grouped with the CTA below it.
+ *
+ * `grid-row: 1` puts it first regardless of source order (which is paragraph ->
+ * CTA -> H1); see the container rule for why this is a grid and not flex +
+ * `order`. `margin-left: 0` + `margin-right: auto` pins it to the LEFT edge —
+ * the mirror of the `margin-left: auto` it carried while it was a right-hand
+ * column — and overrides the theme's `.nm-hero-4-title-wrap { margin-left:
+ * -232px }`, which is a deliberate bleed for the demo's composition and would
+ * drag the type 232px into the hero's clip region here.
+ *
+ * `max-width: 900px` STAYS. Left-pinned it could run the full container width,
+ * but 900px is what keeps the H1 to two or three lines instead of one very long
+ * one, and — as with everything else that sizes a box in this file — the width
+ * is what SplitText measures at load to bake its `.split-line` blocks. Widening
+ * it is a line-count change, not a cosmetic one.
+ *
+ * The text alignment is flipped to left in its own rule below, because beating
+ * SplitText's inline style needs `!important` and that is worth stating once,
+ * loudly, rather than burying here.
+ *
+ * `margin-top: 0` rather than the old `auto`: `auto` was the bottom-anchor from
+ * the flex era, and in row 1 of the grid it has no free space to consume anyway.
+ * It is stated explicitly to override the theme's own value rather than left to
+ * chance.
+ *
+ * ---------------------------------------------------------------- *
+ * HISTORY, kept because both nudges are easy to reintroduce by eye.
+ *
+ * THE HORIZONTAL NUDGE IS GONE. It used to be
+ * `transform: translate(56px, 24px)`, and the 56px existed for exactly one
+ * reason: to drag the headline clear of the zigzag icon illustration that
+ * used to sit under it. That illustration is now `display: none` at every
+ * width (see the rule below), so the nudge has nothing left to dodge — and
+ * it was never free. `.nm-hero-4-area` is `overflow: hidden` and the title's
+ * flush-right edge sits only ~58px inside the hero's own right edge, so 56px
+ * was deliberately parked one or two pixels off the clipping threshold.
+ *
+ * That threshold is computed from the CONTAINER's slack, which shrinks as the
+ * viewport does, so the same 56px that measured 2px of clearance at 1440px
+ * measured 38px of OVERFLOW at 992px — the headline was being cut off down
+ * the whole tablet band, the same defect section 0c was written to fix on
+ * phones. Confirmed by measurement at both widths before and after.
+ *
+ * Zeroing X restores ~58px of clearance at every width instead of 2px at one
+ * of them. The vertical 24px stays: it has the 40px `padding-bottom` as its
+ * ceiling and is nowhere near it.
+ *
+ * THE VERTICAL NUDGE IS GONE TOO, and for a related reason: `translateY(24px)`
+ * existed to spend part of the hero's `padding-bottom` while this block was
+ * pinned to the bottom edge. It is no longer at the bottom edge, so a 24px
+ * downward shift at the TOP of the hero is an arbitrary offset with nothing left
+ * to justify it — it would only eat into the 140px header clearance that was
+ * measured deliberately.
+ *
+ * `order: -1` is gone as well, replaced by `grid-row: 1`. It did the same job —
+ * hoist the headline ahead of a source order that puts it last — but `order`
+ * only sorts siblings along a single axis, and this composition needs items in
+ * two different corners. Naming rows says where things go instead of what
+ * sequence they fall in.
+ */
+body.single-services .nm-hero-4-title-wrap {
+	grid-row: 1;
+	margin-top: 0;
+	margin-left: 0;
+	margin-right: auto;
+	max-width: 900px;
+	transform: none;
+}
+
+/*
+ * Flush LEFT, at every width — and it needs `!important` to stick.
+ *
+ * The theme's own alignment for this block is `text-align: right`, which is what
+ * the composition wanted while the headline was a right-hand column. Now that it
+ * is pinned to the left edge, right-aligned text would leave a ragged left edge
+ * running down two or three lines of 84px display type — the eye gets no
+ * consistent start position to return to, which is the same objection section
+ * 0c (b) has been raising against right-aligned type on phones since the mobile
+ * pass. The paragraph on the other side of the composition is left-aligned for
+ * the same reason.
+ *
+ * This has to be set on `.split-line`, not just the titles, and it needs
+ * `!important`. The theme runs both titles through a GSAP SplitText reveal that
+ * bakes `text-align: right` into each generated `.split-line` div as an INLINE
+ * style (confirmed in the live DOM). No selector specificity beats an inline
+ * style — only `!important` does. Same class of trap as the paragraph's baked
+ * line count: SplitText's output is DOM, not live text, so it has to be
+ * overridden as DOM.
+ *
+ * This rule used to live inside the `max-width: 767px` block, where it was the
+ * mobile-only correction described at 0c (b). It is now the base behaviour at
+ * every width, so the mobile copy is gone rather than duplicated — a restatement
+ * that silently agrees with its base is what gets "cleaned up" on one side only.
+ *
+ * AND `text-align` IS NOT ENOUGH FOR THE H2 — see the separate rule below.
+ */
+body.single-services .nm-hero-4-title-1,
+body.single-services .nm-hero-4-title-2,
+body.single-services .nm-hero-4-title-1 .split-line,
+body.single-services .nm-hero-4-title-2 .split-line {
+	text-align: left !important;
+}
+
+/*
+ * The H2 is a FLEX CONTAINER, so `text-align` does not move it.
+ *
+ * `.nm-hero-4-title-2` is `display: flex; flex-wrap: nowrap` in nimo-core — the
+ * theme needs it to keep "Money You're [rule] Not Making" on one line, with the
+ * `span.text-line` rule as a flex item between the words. Its `justify-content`
+ * is `end`, which is the right-hand composition's alignment.
+ *
+ * `text-align` has no effect on how a flex container distributes its ITEMS, so
+ * with the block moved left the H1 obeyed the rule above and the H2 stayed
+ * stubbornly flush right — measured 900px wide with its first child starting at
+ * x=560 instead of x=82. Two properties, two mechanisms; the fix is
+ * `justify-content: flex-start` and there is no way to get there with alignment
+ * on the text.
+ *
+ * `text-align: left` above is still needed as well, for the wrapped case: it
+ * governs the text INSIDE each flex item, which is what a longer service
+ * headline falls back to when `nowrap` finally gives out.
+ */
+body.single-services .nm-hero-4-title-2 {
+	justify-content: flex-start;
+}
+
+body.single-services .nm-hero-4-title-1 {
+	font-size: clamp(34px, 5.4vw, 84px);
+	line-height: 1.08;
+}
+
+body.single-services .nm-hero-4-title-2 {
+	font-size: clamp(24px, 3.6vw, 56px);
+	line-height: 1.08;
+}
+
+/*
+ * The zigzag-and-icons illustration is REMOVED — at every width.
+ *
+ * `.nm-hero-4-bg-img` holds `hero-strategy-illustration.svg`: a rising
+ * zigzag line with icon pills on each vertex and a target with concentric
+ * rings at the top. Removed at the requester's direction, because that is
+ * exactly what it reads as — a line graph — rather than as the abstract
+ * hero art the composition wanted. Nothing in the hero's message depends on
+ * it, and dropping it also settles a long-running fight over where it sat.
+ *
+ * It went in two steps: hidden below 768px first (where it covered the
+ * entire headline band on a narrow screen), then everywhere once the same
+ * "it looks like a graph" objection was raised against the desktop view.
+ * The mobile-only rule that used to live in section 0c is now this one.
+ *
+ * `display: none`, not `opacity: 0` or `visibility: hidden`: those keep the
+ * element in layout and keep the browser decoding the asset. The `<img>` is
+ * emitted by the theme's widget view, so it is still fetched either way —
+ * this only stops it painting and reflowing.
+ *
+ * WHAT THIS REPLACED, kept because the reasoning is easy to re-break:
+ *
+ * There used to be a `.wa_magnetic_btn_v2-1_elm { width: 72%; margin-right:
+ * 6% }` rule positioning this illustration. It is deliberately gone rather
+ * than left as dead code — its only target is inside this hidden element.
+ * Two things it encoded are worth keeping if the illustration ever returns:
+ *
+ *   1. Size and position it with `width`/`margin`, NEVER `transform`. This
+ *      img carries `.wa_magnetic_btn_v2-1_elm`, and nimo-core.js attaches a
+ *      magnetic-hover effect to the hero that GSAP-tweens this element's
+ *      `x`/`y` on every mousemove. GSAP takes ownership of `transform` once
+ *      it starts animating, decomposing the existing matrix against its own
+ *      transform-origin bookkeeping — so a stylesheet `transform` here
+ *      visibly jumped to a different size and position the instant a cursor
+ *      crossed the hero. `width`/`margin-right` are layout properties the
+ *      hover effect never writes, so nothing can knock them off.
+ *
+ *   2. `margin-right` had to REPLACE the theme's `-32%` outright rather than
+ *      adjust it: `.nm-hero-4-bg-img` is `text-align: center`, so the final
+ *      position was the negative margin AND the centring math acting on the
+ *      same box. Values were found empirically against the live layout —
+ *      25% cleared the title with room to spare, 14.5% was the last
+ *      non-overlapping value, and anything below that put the chat icon and
+ *      the diagonal line on top of "Your".
+ *
+ * NOTE for whoever touches the hero next: `.nm-hero-4-title-wrap`'s
+ * `transform: translate(56px, 24px)` above was pushed that far specifically
+ * to get the headline clear of this illustration, and it sits right against
+ * the point where `overflow: hidden` starts clipping. With the illustration
+ * gone that nudge no longer has a reason to be that large. It is left alone
+ * here because changing it is a composition decision, not a consequence of
+ * this removal.
+ */
+body.single-services .nm-hero-4-bg-img {
+	display: none;
+}
+
+/* ------------------------------------------------------------------ *
+ * 0c. Hero — the mobile composition
+ *
+ * Everything above this point is a DESKTOP composition: a full-viewport
+ * section with the trust copy pinned top-left, huge right-aligned type
+ * pinned bottom-right, and the illustration bled underneath it so the two
+ * deliberately overlap. All three of those decisions fail on a 375px
+ * viewport, and one of them fails hard enough to make the page's primary
+ * heading unreadable. Measured on iPhone-class 375x812, this section is
+ * where each is undone.
+ *
+ * ---------------------------------------------------------------- *
+ * (a) The H1 was being CUT OFF — the actual reported bug.
+ *
+ * `.nm-hero-4-title-wrap` above carries `margin-left: auto` +
+ * `transform: translate(56px, 24px)`, and `.nm-hero-4-area` is
+ * `overflow: hidden`. On desktop the 56px nudge is sized against the hero's
+ * own bleed width and stops just short of clipping (see section 0b — it is
+ * deliberately right up against that ceiling). At 375px there is no bleed
+ * left to spend:
+ *
+ *     container inner right edge   353px
+ *     hero clip edge               365px
+ *     title right edge after +56   409px   -> 44px cut off
+ *
+ * 44px is roughly two glyphs at the 34px clamp floor, which is exactly what
+ * the screenshot shows: "Marketing" -> "Marketi", "Costing" -> "Costi",
+ * "Fortune" -> "Fortu", "Guesswork" -> "Guessw". Zeroing the transform and
+ * the auto-margin is the fix; both exist only to serve the desktop pin.
+ *
+ * ---------------------------------------------------------------- *
+ * (b) Right-aligned display type, undone.
+ *
+ * Flush-right is what pushes the type into that clip edge in the first
+ * place, and on a column this narrow the headline wraps to 3-4 lines — a
+ * ragged LEFT edge across four lines gives the eye no consistent start
+ * position to return to. Left-align on mobile, keep flush-right on desktop
+ * where it is a one-or-two-line banner and reads as composition.
+ *
+ * This has to be set on `.split-line`, not on the title, and it needs
+ * `!important`. The theme runs both titles through a GSAP SplitText reveal
+ * that bakes `text-align: right` into each generated `.split-line` div as an
+ * INLINE style (confirmed in the live DOM). No selector specificity beats an
+ * inline style — only `!important` does. Same class of trap as the trust
+ * copy's baked line count in section 0b: SplitText's output is DOM, not
+ * live text, so it has to be overridden as DOM.
+ *
+ * ---------------------------------------------------------------- *
+ * (c) The headline leads.
+ *
+ * Source order is trust copy -> CTA -> H1, which on desktop is fine: the
+ * whole composition is one glance, and the eye lands on the 84px type first
+ * regardless of where it sits in the DOM. On mobile there is no glance —
+ * it is a scroll, and source order IS reading order, so the visitor met a
+ * five-line paragraph and a "Book The Damn Call" button before being told
+ * what the page is about. `order: -1` on the title wrap puts the H1 first.
+ *
+ * `order` rather than reordering the markup: `.nm-hero-4-area > .container`
+ * is already `display: flex; flex-direction: column` (section 0b), the two
+ * blocks are its only children, and the markup is the theme's widget view —
+ * not ours to re-emit. `margin-top: auto` has to go with it, or the bottom-
+ * anchor would push the now-first element back down the column.
+ *
+ * ---------------------------------------------------------------- *
+ * (d) The illustration gets its own band instead of sitting on the type.
+ *
+ * `.wa_magnetic_btn_v2-1_elm`'s `margin-right: 6%` is a deliberate overlap
+ * on desktop, set at the requester's direction (section 0b documents that it
+ * is knowingly in the overlapping state). At 375px the illustration's box
+ * (top 427px, 304px tall) covered the entire title band (553-715px), so the
+ * zigzag and the icon pills ran straight through the headline.
+ *
+ * Rather than shrink it to nothing, it is given a strip of its own: the
+ * image is pinned to the BOTTOM of the hero (`top: auto; bottom: 0`) with a
+ * fixed height, and the hero's `padding-bottom` is opened to clear it. Text
+ * occupies the top of the section, art occupies the bottom, and they cannot
+ * collide no matter how many lines a longer service headline wraps to —
+ * which a hand-tuned offset could not promise.
+ *
+ * Full width and centred, since it no longer has to dodge anything: the 72%
+ * + 6% right margin were both there to buy horizontal clearance from the
+ * title, and that job is now done vertically.
+ *
+ * ---------------------------------------------------------------- *
+ * (e) Headroom, and why `min-height: 0` stays.
+ *
+ * `min-height: calc(100vh - 30px)` plus the bottom-anchor is the desktop
+ * stretch — surplus height opens between the copy and the type. On a narrow
+ * viewport both blocks run to several lines, so there is little surplus to
+ * distribute, and forcing the stretch anyway just inserted a bare ~100px gap
+ * (measured: content ending 481px, title starting 579px, on 812px tall).
+ * Sizing to content is correct here and predates this section.
+ *
+ * `padding-top` drops 140px -> 96px for the same reason the 290px original
+ * came down: the header is `position: absolute` and ~80px tall, so anything
+ * past ~96px is headroom tuned for the demo's short title, not clearance.
+ * On a 812px screen 140px of empty background above the fold is most of a
+ * thumb-scroll spent on nothing.
+ * ------------------------------------------------------------------ */
+@media (max-width: 767px) {
+
+	body.single-services .nm-hero-4-area {
+		min-height: 0;
+
+		/*
+		 * Clearance for the header, measured rather than inherited.
+		 *
+		 * The header is `position: absolute`, so it contributes nothing to
+		 * layout and this padding is the ONLY thing holding the headline off
+		 * it. The logo block sits at 42-75px from the top of the viewport
+		 * (`pc-logo.gif`, 34px tall). The desktop 140px was tuned for the
+		 * demo's short two-word title; an earlier pass here cut it to 96px,
+		 * which put the H1's cap-height at 95px — a 20px gap to the logo,
+		 * tight enough that the two read as one crowded block.
+		 *
+		 * 128px puts the headline at ~127px: a 52px gap, which is
+		 * comfortably more than the logo's own height and reads as
+		 * deliberate separation rather than a near-miss.
+		 */
+		padding-top: 128px;
+
+		/*
+		 * Down from the desktop 40px + the 236px this briefly held while the
+		 * illustration still had a strip reserved below the CTA. With the art
+		 * gone (see (d)) nothing needs clearing, and 72px left a visibly
+		 * empty band under the button. 48px is ordinary breathing room
+		 * between the CTA and the trust strip that follows the hero — close
+		 * to the 32px rhythm used between blocks INSIDE the hero, a step
+		 * larger because this gap separates two sections rather than two
+		 * parts of one.
+		 */
+		padding-bottom: 48px;
+	}
+
+	/*
+	 * The grid loses its `1fr` row: `auto auto auto` sizes every row to its
+	 * content.
+	 *
+	 * The base grid's third row is `1fr` so that surplus hero height collects
+	 * there and the paragraph can sit against the bottom edge. That is a
+	 * desktop device and it depends on there BEING surplus — with `min-height:
+	 * 0` above there is none, and reserving a flexible row here would only
+	 * reintroduce the bare gap described at (e).
+	 *
+	 * `row-gap: 32px` is then the single spacing knob between all three blocks,
+	 * with no margin bookkeeping on any of them.
+	 */
+	body.single-services .nm-hero-4-area > .container {
+		grid-template-rows: auto auto auto;
+		row-gap: 32px;
+	}
+
+	/*
+	 * (a) — un-pin from the 900px column and let it span the full width.
+	 *
+	 * (b) and (c) are no longer this rule's job. The left pin, `grid-row: 1`,
+	 * `margin-top: 0`, `transform: none` and the `text-align: left !important`
+	 * that beats SplitText's inline style have ALL moved to the base rules in
+	 * section 0b — the headline leads, and reads left, at every width now. They
+	 * are left out rather than restated: a duplicate that silently agrees with
+	 * its base is the kind of thing that gets "cleaned up" on one side only.
+	 *
+	 * What is still breakpoint-specific is just the width cap. 900px is a
+	 * desktop line-count target; on a 375px viewport there is no column to cap.
+	 */
+	body.single-services .nm-hero-4-title-wrap {
+		margin-right: 0;
+		max-width: none;
+	}
+
+	/*
+	 * READING ORDER FLIPS BACK: headline -> paragraph -> CTA.
+	 *
+	 * The base grid is headline (row 1), CTA (row 2), paragraph (row 3) — a
+	 * two-corner composition where the CTA belongs visually with the headline
+	 * on the left and the paragraph sits alone in the opposite corner. On a
+	 * phone there are no corners; the column is one scroll, and source order IS
+	 * reading order. Putting the CTA second would ask for the click before the
+	 * paragraph has said what the page is about, which is the same mistake
+	 * (c) was written to fix when the H1 came third.
+	 *
+	 * So the two swap rows here, and the paragraph gives up the pinning that
+	 * only made sense against a `1fr` row and a right-hand edge: `align-self:
+	 * auto` drops the bottom-anchor, `width: auto` drops the 580px column (a
+	 * desktop line-count target, with nothing to cap at this width), and
+	 * `margin-left: 0` drops the right pin.
+	 *
+	 * All three are stated rather than relying on one to neutralise another —
+	 * `width: auto` alone would already make the auto margin resolve to 0, but
+	 * that coupling is exactly what made the base rule take three tries to get
+	 * right, so nothing here depends on it.
+	 *
+	 * The theme's own `margin-bottom: 30px` on this element stays overridden to 0
+	 * by the base rule; the container's `row-gap: 32px` is now the only thing
+	 * separating the paragraph from the CTA beneath it, which is what (e) wants —
+	 * one spacing knob, no margin bookkeeping.
+	 */
+	body.single-services .nm-hero-4-content .hero-disc {
+		grid-row: 2;
+		align-self: auto;
+		width: auto;
+		margin-left: 0;
+	}
+
+	body.single-services .nm-hero-4-content .hero-btn {
+		grid-row: 3;
+	}
+
+	/*
+	 * Sized against the viewport rather than left at the clamp floors from
+	 * section 0b (34px/24px), which were picked as a desktop lower bound and
+	 * happen to be what every phone width lands on. The vw term lets a 430px
+	 * phone read bigger than a 320px one instead of both getting the floor;
+	 * the caps stop it colliding with the 768px breakpoint above.
+	 */
+	body.single-services .nm-hero-4-title-1 {
+		font-size: clamp(32px, 9.2vw, 46px);
+		line-height: 1.1;
+	}
+
+	body.single-services .nm-hero-4-title-2 {
+		font-size: clamp(22px, 6.4vw, 32px);
+		line-height: 1.15;
+	}
+
+	/*
+	 * "In [rule] Guesswork" back onto one line.
+	 *
+	 * The H2's source is a single line — the word "In", a white rule
+	 * (`span.text-line`), then an italic "Guesswork". SplitText measured it
+	 * at this width, decided it was THREE visual lines, and baked each into
+	 * its own block-level `.split-line` div. Two of those blocks hold a word
+	 * and the third holds only the rule — which nimo-core already hides
+	 * below this breakpoint, so it renders as an empty 331x0 block that
+	 * still forces "In" and "Guesswork" apart. Result on screen: "In" alone
+	 * on one line, "Guesswork" on the next, with a dead row between them.
+	 *
+	 * `inline-block` rather than `inline`: the reveal animates each
+	 * character inside these blocks with a `translateY(120%)` that is masked
+	 * by the line box, and only a block-ish box clips it. inline-block keeps
+	 * the mask and the `position: relative` intact while letting the two
+	 * words share a line.
+	 *
+	 * `!important` for the same reason `text-align` above needs it —
+	 * SplitText writes `display: block` into the inline `style` attribute
+	 * alongside the alignment, and nothing but `!important` outranks an
+	 * inline declaration. Verified: without it the computed display stayed
+	 * `block` and the two words kept their own lines.
+	 *
+	 * The word gap has to be an explicit margin — the split-lines are emitted
+	 * with no whitespace between them, so inline-block gives no natural
+	 * space to collapse. Scoped to title-2 only: title-1's split-lines are
+	 * genuine wrapped lines of a long headline and MUST keep stacking.
+	 */
+	body.single-services .nm-hero-4-title-2 .split-line {
+		display: inline-block !important;
+		margin-right: 0.3em;
+	}
+
+	body.single-services .nm-hero-4-title-2 .split-line:has(> .text-line) {
+		display: none !important;
+	}
+
+	/*
+	 * There is deliberately NO `.nm-hero-4-content` rule here any more.
+	 *
+	 * It used to reset `max-width`, `margin-top` and `margin-left` on this
+	 * wrapper. The base now gives it `display: contents`, so it generates no box
+	 * and not one of those properties would do anything — a rule that looks like
+	 * it is holding the mobile layout together while having zero effect is worse
+	 * than no rule at all. The equivalent resets moved onto `.hero-disc`, which
+	 * is a real box; see the row-swap rule above.
+	 */
+
+	/*
+	 * (d) — the illustration used to be hidden here, mobile-only, because at
+	 * 375px its box (top 427px, 304px tall) covered the entire headline band
+	 * (553-715px). It is now hidden at EVERY width — see the rule in section
+	 * 0b — so there is nothing breakpoint-specific left to do. Two
+	 * intermediate positions were tried before it was dropped outright:
+	 * shrinking it, then giving it a fixed 210px strip below the CTA with the
+	 * hero's `padding-bottom` reserving room. Both worked geometrically; at
+	 * that size the artwork was just a handful of 12px icons on a hairline
+	 * path, and it still cost ~240px of scroll before the real content.
+	 */
+
+	/*
+	 * (g) — the ribbon sweeps the whole hero instead of banding the bottom.
+	 *
+	 * `.nm-hero-4-bg-svg` is the drawn-on curved stroke. nimo-core gives it
+	 * `position: absolute; bottom: -100px; left: 0; width: 100%` and NO
+	 * height, and the `<svg>` carries `viewBox="0 0 1920 986"` with no
+	 * width/height attributes — so its height is derived from its width at
+	 * the viewBox's ~1.95:1 ratio. Width drives, height follows.
+	 *
+	 * That is fine while the hero is wide and works out badly when it is not:
+	 *
+	 *     1440px desktop   svg 1413 wide -> 726 tall   ~83% of an 870px hero
+	 *      375px mobile    svg  355 wide -> 182 tall    26%, pinned bottom
+	 *
+	 * Same rule, same asset — the ribbon only collapses into a thin band at
+	 * the bottom because the section got narrow. Desktop needs no fix and
+	 * gets none.
+	 *
+	 * The fix is to swap which axis drives: give it `height: 100%` and let
+	 * `width: auto` derive from the SAME ratio, which resolves to 1346px
+	 * against a 691px hero (691 x 1920/986 — confirmed against the computed
+	 * value, not just the arithmetic). The ribbon then overflows ~490px past
+	 * each side, so it is centred with `left: 50%` + `translateX(-50%)`
+	 * rather than pinned to one edge, and the hero's `overflow: hidden`
+	 * crops the rest. What is left on screen is the middle of the curve at
+	 * full height — an arc across the section rather than a strip under it.
+	 *
+	 * `bottom: auto` is required, not tidiness: without it the theme's
+	 * `bottom: -100px` and this `top: 0` would both apply and over-constrain
+	 * the box against `height: 100%`.
+	 *
+	 * Overriding `transform` is safe. The theme's own value is a static
+	 * `scaleX(101%)` — it is not animated, and it is re-applied here so
+	 * centring does not silently drop it. The draw-on reveal is a separate
+	 * property: `@keyframes drawLine` animates `stroke-dashoffset` only, and
+	 * the 6000-unit dasharray is in viewBox units against a 4918-unit path,
+	 * so it still covers the whole stroke at any rendered size.
+	 */
+	body.single-services .nm-hero-4-bg-svg {
+		top: 0;
+		bottom: auto;
+		left: 50%;
+		width: auto;
+		height: 100%;
+		transform: translateX(-50%) scaleX(1.01);
+	}
+
+	/*
+	 * (f) — the gold glow that was making the hero green is not overridden
+	 * here any more. It briefly was, scoped to this breakpoint, but once the
+	 * teal was brought up on desktop as well the glow was removed from the
+	 * base `::after` rule outright. Nothing breakpoint-specific is left to
+	 * say about the hero background; see the note on that rule.
+	 */
+}
+
+/*
+ * The hero BACKGROUND — let the photograph's teal through.
+ *
+ * The section's own `background-image` is `h4-bg-img.webp`, the Nimo Home 04
+ * hero photograph, which is a deep teal. Sampled off the file rather than
+ * guessed: the flat areas average #245f6b and the dominant colours cluster
+ * around #276b7b. That teal is the "blue background" from the demo, and it
+ * has been sitting under this overlay the whole time — not missing, just
+ * buried.
+ *
+ * This treatment has now moved four times: brand gold via `mix-blend-mode:
+ * color`, then a light cream wash (which needed the trust copy and titles
+ * flipped to dark to stay legible — see the removed "Text colour" rule that
+ * used to sit above this one), then a near-black scrim at 82% with a warm
+ * gold radial glow for a "stage light" feel, and now this. The 82% is what
+ * crushed #276b7b to roughly #0a1418 and made the hero read as black.
+ *
+ * WHY 0.30, and why a scrim at all. Bare, the image matches the demo
+ * exactly, but it is a gradient, not a flat colour — its brightest region
+ * reaches #35acc4, well above the #276b7b the flat areas sit at, and white
+ * body copy crossing that region drops below AA. So the scrim is a
+ * legibility floor, not a mood: it pulls the bright end down far enough
+ * that no part of the hero fails, while leaving the whole thing plainly
+ * teal.
+ *
+ * The value was measured, not eyeballed — every pixel of the asset composited
+ * against this scrim and scored for contrast against white:
+ *
+ *     scrim   brightest pixel   worst ratio   average swatch   avg ratio
+ *     0.25    #2a8395           4.39:1        #215a66          7.72:1   <- 0.20% of pixels fail AA
+ *     0.28    #287e8f           4.70:1        #205762          8.07:1
+ *     0.30    #277b8c           4.89:1        #1f5560          8.31:1
+ *     0.40    #236a79           6.16:1        #1c4a53          9.75:1
+ *
+ * 0.28 is the lowest value that clears 4.5:1 everywhere. 0.30 is used
+ * instead — deliberately not the exact boundary, the same way the trust
+ * copy's 580px max-width sits a little inside its own tipping point rather
+ * than right on it. At 0.30 the headline clears AA-large with enormous room
+ * and the body copy clears AA body across the entire section.
+ *
+ * THE GOLD GLOW IS GONE, and its removal is the point rather than a side
+ * effect. Gold at 45% over a teal photograph mixes to olive — that was the
+ * green cast reported across the hero, a colour nothing specified and two
+ * layers multiplied into. It was removed on mobile first (where section 0c
+ * had already dropped the illustration it was placed to light), then here
+ * outright once the teal was brought up on desktop too: a lighter scrim
+ * makes the teal stronger, which would only have made the green worse.
+ * `background-image` is dropped entirely rather than set to `none`.
+ *
+ * The theme's own white text/title colours stay correct as shipped, same as
+ * they were under the near-black — which is why there is still no text
+ * colour override here.
+ *
+ * `z-index: -2` is what scopes this to the background alone, and it is the
+ * whole trick. nimo-core puts both `.nm-hero-4-bg-svg` (the curved stroke)
+ * and `.nm-hero-4-bg-img` (the figure) at `z-index: -1`. A layer at -1
+ * paints last among equals and would wash them too. At -2 it sits above the
+ * section's own `background-image` (backgrounds paint at the bottom of their
+ * stacking context) but BELOW both -1 layers, so the stroke and the figure
+ * are untouched.
+ *
+ * The hero is `position: relative; z-index: 1`, so it is a stacking context
+ * and this cannot leak onto anything outside the section. `.container` is
+ * at `auto`, well above, so the headline, trust copy and CTA are untouched.
+ */
+body.single-services .nm-hero-4-area::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background-color: rgba(8, 8, 8, 0.30);
+	z-index: -2;
+	pointer-events: none;
+}
+
+/*
+ * The FAQ block is not one of the theme's `-area` sections — tx_faq's only
+ * styled view emits a bare `.nm-accordion` with no section wrapper — so it is
+ * named explicitly above to join the rhythm, and given the container geometry
+ * the theme's own sections get from `.nm-container-3`.
+ *
+ * Matched with `:has()` on its heading child rather than a class of its own:
+ * Elementor applies `_css_classes` to widgets but silently drops it on
+ * containers, so the class never reaches the wrapper. The heading inside it is
+ * the stable, readable handle.
+ *
+ * `.pc-sec-title` / `.pc-sec-eyebrow` are the GENERIC pair, added when the
+ * Pay Per Click page needed a second block of this shape (its comparison
+ * table, section 17). Same chrome, same container geometry, no FAQ in the
+ * name. New blocks should use those; `.pc-faq-*` stays because the strategy
+ * page's markup already ships with it.
+ */
+body.single-services .e-con:has(> .pc-faq-title),
+body.single-services .e-con:has(> .pc-sec-title) {
+	max-width: 1344px; /* 1320 container + the 12px gutters below. */
+	margin-inline: auto;
+	padding-left: 12px;
+	padding-right: 12px;
+}
+
+body.single-services .pc-faq-eyebrow .elementor-heading-title,
+body.single-services .pc-sec-eyebrow .elementor-heading-title {
+	font-family: var(--nm-font-2);
+	font-size: 16px;
+	font-weight: 500;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--pc-accent);
+	margin-bottom: 14px;
+}
+
+body.single-services .pc-faq-title .elementor-heading-title,
+body.single-services .pc-sec-title .elementor-heading-title {
+	font-family: var(--nm-font-1);
+	font-size: clamp(28px, 3.4vw, 48px);
+	line-height: 1.1;
+	font-weight: 700;
+	color: var(--pc-heading);
+	margin-bottom: 40px;
+}
+
+/*
+ * Prose blocks.
+ *
+ * Most of the page copy now lives in real theme components. Two fragments
+ * cannot, because no widget view renders them: the hero's view-4 prints no
+ * `sub_title` (the trust strip) and the About view-4 prints neither
+ * `description` nor `short_description` (the Quick Answer's second half).
+ * Those two ride as text-editor widgets styled here.
+ *
+ * They share the FAQ's container geometry via the same `:has()` handles, since
+ * Elementor drops `_css_classes` on containers.
+ */
+body.single-services .e-con:has(> .pc-prose),
+body.single-services .e-con:has(> .pc-trust-strip) {
+	max-width: 1344px;
+	margin-inline: auto;
+	padding-left: 12px;
+	padding-right: 12px;
+}
+
+/*
+ * A single lead paragraph, not a section — it continues the Quick Answer
+ * directly above it, so it takes a fraction of the section rhythm rather than
+ * the full `--pc-space`, which would read as a gap between two unrelated
+ * blocks.
+ */
+body.single-services .e-con:has(> .pc-lead) {
+	padding-top: 0;
+	padding-bottom: calc(var(--pc-space) * 0.4);
+}
+
+body.single-services .pc-prose {
+	font-family: var(--nm-font-2);
+	font-size: 18px;
+	line-height: 1.7;
+	color: var(--pc-body);
+}
+
+/*
+ * The reading measure goes on the children, not the widget.
+ *
+ * Two things rule out the obvious targets: Elementor emits per-post CSS for
+ * each element (`.elementor-NNN .elementor-element…`) carrying
+ * `max-width: 100%`, which outranks anything this file can put on the widget
+ * itself — a `max-width` there computed to 100% and ran the copy to the full
+ * 1320px container. And this Elementor version's text-editor renders its
+ * paragraphs as DIRECT children with no `.elementor-widget-container` wrapper,
+ * so that hook does not exist either.
+ *
+ * `> *` covers both markup shapes.
+ */
+body.single-services .pc-prose > * {
+	max-width: 62ch;
+}
+
+body.single-services .pc-prose p:not(:last-child) {
+	margin-bottom: 1.1em;
+}
+
+body.single-services .pc-prose strong {
+	color: var(--pc-heading);
+	font-weight: 700;
+}
+
+/*
+ * The trust strip belongs to the hero but view-4 has no slot for it, so it sits
+ * directly beneath as its own thin rule — no section padding, just breathing
+ * room, so it still reads as part of the hero rather than a section of its own.
+ */
+body.single-services .e-con:has(> .pc-trust-strip) {
+	padding-top: 22px;
+	padding-bottom: 22px;
+}
+
+body.single-services .pc-trust-strip {
+	font-family: var(--nm-font-2);
+	font-size: 15px;
+	letter-spacing: 0.02em;
+	color: var(--pc-body);
+	border-top: 1px solid var(--pc-rule);
+	border-bottom: 1px solid var(--pc-rule);
+	padding: 14px 0;
+}
+
+body.single-services .pc-trust-strip p {
+	margin: 0;
+}
+
+/* ------------------------------------------------------------------ *
+ * 9. The Outcome accordion — section header on the dark page
+ *
+ * `nm-services-5` is Home 05's scroll-driven accordion, authored for that
+ * page's light background: its section eyebrow, title and description all
+ * compute to `rgb(0, 0, 0)`, which is invisible here.
+ *
+ * The accordion ROWS are deliberately left alone. `.nm-services-5-item` is
+ * `#efefef` and `.nm-services-5-item-title` / `.content-wrap` are `#fff` with
+ * black type — a light island by design, exactly like the pricing cards in §4.
+ * Recolouring those would break a working panel.
+ * ------------------------------------------------------------------ */
+
+body.single-services .nm-services-5-area .nm-sec-title-5 {
+	color: var(--pc-heading);
+}
+
+body.single-services .nm-services-5-area :is(.nm-subtitle-5, .nm-subtitle-5 .text) {
+	color: var(--pc-accent);
+}
+
+body.single-services .nm-services-5-area .sec-disc {
+	color: var(--pc-body);
+}
+
+/* ------------------------------------------------------------------ *
+ * 1. Typography system
+ *
+ * The page composes sections from three homepages, and each suite picks a
+ * different heading face — Mona Sans (-4), Inter (-1), Space Grotesk (-5).
+ * Unify on the pairing the live site uses: Space Grotesk for headings,
+ * Inter for body and eyebrows.
+ * ------------------------------------------------------------------ */
+
+body.single-services :is(
+	.nm-sec-title-1, .nm-sec-title-4, .nm-sec-title-5,
+	.nm-h-1, .nm-h-4, .nm-h-5,
+	.nm-hero-4-title-1, .nm-hero-4-title-2
+),
+body.single-services :is(.nm-pr-btn-1, .nm-pr-btn-4, .nm-pr-btn-5) .text {
+	font-family: var(--nm-font-1);
+}
+
+body.single-services :is(
+	.nm-p-1, .nm-p-3, .nm-p-4, .nm-p-5,
+	.nm-subtitle-1, .nm-subtitle-4, .nm-subtitle-5
+) {
+	font-family: var(--nm-font-2);
+}
+
+/*
+ * Eyebrow labels read as small accent type across every suite.
+ *
+ * MOBILE ONLY — and that restriction is load-bearing, not caution.
+ * `.nm-about-4-sec-title` and its siblings are `display: flex;
+ * justify-content: space-between` with no wrapping, so the eyebrow and the
+ * section title share one fixed row. Widening the eyebrow takes width directly
+ * from the title. Measured at a 936px wrap:
+ *
+ *     theme      letter-spacing .15px, no uppercase   eyebrow 117px  title 858px  4 lines
+ *     with this  letter-spacing 1.2px + uppercase     eyebrow 137px  title 778px  5 lines
+ *
+ * Those 20px re-wrapped the desktop About heading onto an extra line. Below
+ * 768px the row stacks, the two no longer compete for width, and the treatment
+ * costs nothing.
+ */
+@media (max-width: 767px) {
+	body.single-services :is(.nm-subtitle-1, .nm-subtitle-4, .nm-subtitle-5),
+	body.single-services :is(.nm-subtitle-1, .nm-subtitle-4, .nm-subtitle-5) .text {
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+}
+
+/* ------------------------------------------------------------------ *
+ * 2. Section headers on the dark page
+ * ------------------------------------------------------------------ */
+
+body.single-services :is(
+	.nm-about-4-sec-title, .nm-price-4-sec-title, .nm-blog-4-sec-title
+) .nm-sec-title-4 {
+	color: var(--pc-heading);
+}
+
+/*
+ * Applied to EVERY `.wa_bg_position` on the page, not just the `-4` suite: the
+ * Home 01 About title (`.nm-sec-title-1`) uses the generic nimo-core rule, whose
+ * resting colour is grey — so a suite-specific override left it looking unstyled
+ * next to the others. One rule keeps all split-reveal titles consistent.
+ *
+ * The scroll reveal on these titles does NOT use `color`. SplitText wraps each
+ * line in a div which nimo-core paints with a gradient clipped to the text:
+ *
+ *   .nm-sec-title-4:is(.wa_bg_position) div {
+ *     color: transparent;
+ *     background-clip: text;
+ *     background-image: linear-gradient(to right,
+ *         var(--nm-clr-h-4) 50%, rgba(104,104,104,.7) 50%);
+ *   }
+ *
+ * so it wipes from grey to #0A0A0A — invisible on a dark page, and immune to any
+ * `color` rule. Repoint the gradient at the brand gold; the animation itself
+ * (a background-position sweep) is untouched.
+ *
+ * `!important` is required here, not laziness: Elementor emits per-post CSS
+ * (post-NNN.css) for the widget's own background controls, which resets
+ * `background-image` on `.tx-title` at a higher specificity than any selector
+ * this file can reach.
+ *
+ * Stop order matters: the element starts at `background-position-x: 100%`, which
+ * shows the SECOND stop, and the scroll tween sweeps to 0% to reveal the FIRST.
+ * So first = scrolled state, second = resting state:
+ *     resting  = brand gold
+ *     scrolled = white
+ */
+body.single-services .wa_bg_position,
+body.single-services .wa_bg_position div,
+body.single-services .wa_bg_position .split-line {
+	background-image: linear-gradient(
+		to right,
+		#fff 50%,
+		var(--pc-accent) 50%
+	) !important;
+	background-size: 200% 100%;
+	background-clip: text;
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+}
+
+body.single-services :is(
+	.nm-about-4-sec-title, .nm-price-4-sec-title, .nm-blog-4-sec-title
+) :is(.nm-subtitle-4, .nm-subtitle-4 .text) {
+	color: var(--pc-accent);
+}
+
+body.single-services :is(
+	.nm-about-4-sec-title, .nm-price-4-sec-title, .nm-blog-4-sec-title
+) .nm-p-4 {
+	color: var(--pc-body);
+}
+
+/* ------------------------------------------------------------------ *
+ * 3. About (Home 04) body content — feature boxes, counters, links
+ * ------------------------------------------------------------------ */
+
+body.single-services .nm-about-4-area .nm-h-4:not(.nm-pr-btn-4):not(.card-btn),
+body.single-services .nm-about-4-area .nm-h-4 a,
+body.single-services .nm-about-4-area .counter {
+	color: var(--pc-heading);
+}
+
+body.single-services .nm-about-4-area :is(.nm-p-4, .nm-p-3):not(.nm-pr-btn-4 *) {
+	color: var(--pc-body);
+}
+
+body.single-services .nm-about-4-area .nm-about-4-left-line {
+	background: var(--pc-rule);
+}
+
+/*
+ * The three feature-box icons (target / eye / rocket) were all but invisible.
+ *
+ * Not a colour problem in the artwork — nimo-core sets
+ * `.nm-about-4-features-single .icon img { opacity: 16% }` at rest, lifting to
+ * `1` on hover. On Home 04's LIGHT page that reads as a pale grey watermark
+ * that darkens when you hover the row. These are dark SVGs, so at 16% on this
+ * page's near-black background they disappear entirely.
+ *
+ * Two changes, keeping the theme's rest -> hover emphasis idea intact:
+ * tint the artwork to the brand gold, and raise the resting opacity to
+ * something that actually reads on dark while still leaving hover a step up.
+ *
+ * `filter` rather than `fill` or `color`: these are `<img src="*.svg">`, not
+ * inline SVG, so the document cannot style their internals at all — the same
+ * reason section 8.8a tints the footer contact icons this way. The filter
+ * chain is that exact one: `brightness(0)` flattens the artwork to solid
+ * black first, so the invert/sepia/hue-rotate that follows lands on a known
+ * starting colour and resolves to the brand gold regardless of what the
+ * source SVG was drawn in.
+ */
+body.single-services .nm-about-4-features-single .icon :is(img, i) {
+	opacity: 0.55;
+	filter: brightness(0) saturate(100%) invert(60%) sepia(95%) saturate(1612%)
+		hue-rotate(356deg) brightness(106%) contrast(105%);
+}
+
+body.single-services .nm-about-4-features-single:hover .icon :is(img, i) {
+	opacity: 1;
+}
+
+/*
+ * The rule separating the icon column from the copy is
+ * `border-right: 1px solid rgba(10, 10, 10, 0.16)` — near-black at 16%, so it
+ * vanished on this background the same way the icons did. `--pc-rule` is the
+ * light-on-dark equivalent this file already uses for every other divider.
+ */
+body.single-services .nm-about-4-features-single .icon {
+	border-right-color: var(--pc-rule);
+}
+
+/* ------------------------------------------------------------------ *
+ * 4. Pricing — centre two cards, and make the card legible on dark
+ *
+ * The theme lays this out as `1fr 1fr 1fr` above 992px. With only the two
+ * cards the spec asks for, the three tracks still fill the container exactly,
+ * so `justify-content` alone has nothing to centre — the count has to drop to
+ * two. Below 992px the theme already switches to 2 then 1 column, so those
+ * breakpoints need no help.
+ *
+ * .card-top keeps its white panel and its existing dark text.
+ * ------------------------------------------------------------------ */
+
+@media (min-width: 992px) {
+	body.single-services .nm-price-4-wrap {
+		grid-template-columns: repeat(2, minmax(0, 416px));
+		justify-content: center;
+	}
+}
+
+/*
+ * The card is a WHITE panel with black type and icons — a deliberate light
+ * island on the dark page, which is how the pricing block reads best and what
+ * the design calls for. The card-top keeps the theme's own tinted header.
+ */
+body.single-services .nm-price-4-card {
+	background: #fff;
+	border: 1px solid rgba(10, 10, 10, 0.12);
+	border-radius: 12px;
+	overflow: hidden;
+}
+
+body.single-services .nm-price-4-card .card-body {
+	padding: 28px 24px 24px;
+}
+
+/* Price, plan name, feature list and icons all sit on white. */
+body.single-services .nm-price-4-card :is(.nm-h-4, .nm-h-4 span, .nm-p-3):not(.card-btn):not(.card-btn span) {
+	color: var(--nm-clr-h-4);
+}
+
+body.single-services .nm-price-4-card :is(.wa-ul li, .nm-p-4) {
+	color: #4c5258;
+}
+
+body.single-services .nm-price-4-card .price-wrap {
+	border-color: rgba(10, 10, 10, 0.12);
+}
+
+/* Feature bullets and the plan icon are dark artwork on the white card. */
+body.single-services .nm-price-4-card :is(.wa-ul li i, .wa-ul li svg) {
+	color: var(--nm-clr-h-4);
+}
+
+body.single-services .nm-price-4-card .package-x-icon .icon {
+	background: rgba(10, 10, 10, 0.05);
+}
+
+/*
+ * Card hierarchy — two options, not two equals. The copy already frames them
+ * that way ("Not Us" vs "Now We Are Talking"); the first card recedes and the
+ * second is the one the page wants booked.
+ *
+ * A gold border + lift for the second card, not a size or column-span change:
+ * the grid centres exactly two 416px tracks (`@media (min-width: 992px)`
+ * above), and resizing one card would break that centring. Elevation reads as
+ * "the one to pick" without touching layout.
+ */
+body.single-services .nm-price-4-wrap .nm-price-4-card:first-child {
+	opacity: 0.82;
+}
+
+body.single-services .nm-price-4-wrap .nm-price-4-card:last-child {
+	border-color: var(--pc-accent);
+	box-shadow: 0 24px 48px -20px rgba(0, 0, 0, 0.4);
+}
+
+/*
+ * The primary CTA inverts to dark so it reads against the white card.
+ * The label is a nested span, so it needs colouring explicitly — inheriting
+ * left it dark-on-dark and the text vanished.
+ */
+body.single-services .nm-price-4-card .card-btn,
+body.single-services .nm-price-4-card .card-btn span,
+body.single-services .nm-price-4-card .card-btn .text {
+	background-color: var(--nm-clr-h-4);
+	color: #fff;
+}
+
+/*
+ * Hover recolours the label gold and leaves the dark background alone,
+ * rather than swapping the whole pill to a gold fill — `.card-btn` already
+ * carries `transition: all 0.5s var(--nm-cube-1)` from nimo-core.css, so the
+ * colour change animates smoothly with no transition rule of our own needed.
+ */
+body.single-services .nm-price-4-card .card-btn:hover,
+body.single-services .nm-price-4-card .card-btn:hover span,
+body.single-services .nm-price-4-card .card-btn:hover .text {
+	background-color: var(--nm-clr-h-4);
+	color: var(--pc-accent);
+}
+
+/*
+ * The arrow bubble is a white disc with a dark glyph — the theme's own
+ * `.nm-pr-btn-4 .icon` treatment, and the only combination that reads on both
+ * the dark resting button and the gold hover state.
+ *
+ * This previously set `background-color: transparent` with
+ * `color: var(--nm-clr-h-4)`, which painted a #0A0A0A arrow on the #0A0A0A
+ * button — the arrow was there but invisible.
+ *
+ * `.icon` is a <span>, so the button-wide rule above hands it the button's own
+ * background; it has to be reset explicitly rather than left to inherit. The
+ * glyph is a nested <i>, hence the separate descendant rule.
+ */
+body.single-services .nm-price-4-card .card-btn .icon,
+body.single-services .nm-price-4-card .card-btn:hover .icon {
+	background-color: #fff;
+	color: var(--nm-clr-h-4);
+}
+
+body.single-services .nm-price-4-card .card-btn .icon *,
+body.single-services .nm-price-4-card .card-btn:hover .icon * {
+	background-color: transparent;
+	color: var(--nm-clr-h-4);
+}
+
+/* ------------------------------------------------------------------ *
+ * 5. Blog (Home 04) — section header only; the cards are white by design
+ * ------------------------------------------------------------------ */
+
+body.single-services .nm-blog-4-area .nm-blog-4-item-2 :is(.nm-h-4, .nm-p-4, a) {
+	color: var(--nm-clr-h-4);
+}
+
+/* ------------------------------------------------------------------ *
+ * 6. Interaction — white at rest, brand gold on hover
+ * ------------------------------------------------------------------ */
+
+body.single-services :is(
+	.nm-about-4-area, .nm-price-4-area, .nm-blog-4-area
+) a:not(.nm-pr-btn-4):not(.card-btn):not(.nm-blog-4-item-2 a):hover,
+body.single-services :is(
+	.nm-about-4-area, .nm-price-4-area, .nm-blog-4-area
+) .nm-h-4 a:hover {
+	color: var(--pc-accent);
+}
+
+/* ------------------------------------------------------------------ *
+ * 7. Our Approach — the tablet band the theme never handled
+ *
+ * The GSAP pin that drives this section (`p5_pin_elm`) is guarded by
+ * `min-width: 1200px`. Below that no animation runs and the cards fall back to
+ * a plain wrapping flex row with `max-width: 420px; flex: 0 0 auto`, which the
+ * theme never sized for the intermediate widths. Measured:
+ *
+ *    1024px   ragged 2+1 — cards at L44 / L488 / L44, each stuck at 420px
+ *     768px   stacked, but 420px wide inside a 696px container
+ *     390px   correct — full width, 366px, no overflow
+ *
+ * Home 05 does exactly the same, so this is a gap in the theme rather than a
+ * regression; fixing it here is a deliberate, service-page-scoped deviation.
+ *
+ * One card per row, full width. The row gap comes from the theme's own
+ * `.nm-process-5-right { gap: 24px }` — nothing to restate.
+ *
+ * `width: 100%` is required alongside the column direction: as a `flex: 0 1
+ * auto` item the track otherwise shrink-wraps to the cards' max-content width
+ * (603px inside a 936px row at 1024px), leaving the column short of the
+ * container and misaligned with every other section's edge.
+ *
+ * The card background is an inline SVG with `preserveAspectRatio="none"` and a
+ * `0 0 420 320` viewBox, so it stretches to any width without distortion —
+ * verified filling the card exactly at 603px.
+ *
+ * >= 1200px is deliberately untouched: the `p5_pin_elm` pin and the
+ * `p5_ani_elm` cascade are correct there and are load-bearing.
+ * ------------------------------------------------------------------ */
+
+@media (min-width: 768px) and (max-width: 1199px) {
+	body.single-services .nm-process-5-right {
+		flex-direction: column;
+		width: 100%;
+	}
+
+	body.single-services .nm-process-5-card {
+		flex: 0 0 auto;
+		max-width: none;
+		width: 100%;
+	}
+}
+
+/* ------------------------------------------------------------------ *
+ * 7b. Our Approach — the STEPS watermark ran into the pinned block
+ *
+ * At >= 1200px the section is a 1600px scroll runway. `.p5_pin_elm` is pinned
+ * at the top for the first 900px (nimo-core.js: `end: "900px"`), the STEPS
+ * watermark is absolutely positioned against the section's BOTTOM edge, and it
+ * scrolls up behind the pinned block for the whole pin. Whether the two collide
+ * is therefore decided by one subtraction, evaluated at the end of the pin:
+ *
+ *     watermark top  =  height + |bottom| - font-size - 900
+ *     block bottom   =  padding-top + block height
+ *
+ * The theme tuned those constants against a THREE-LINE description. Home 05's
+ * left column is 322px tall, and 1600px of runway lands the watermark 2px under
+ * the block. Our copy in that slot runs ten lines, so the column is 394-441px
+ * and the block reaches 86-173px into the watermark — the overlap in the
+ * report. Measured at the end of the pin, ours against Home 05:
+ *
+ *              block h    Home 05    before    after
+ *     1240px      404        +2        +94       +2
+ *     1440px      394        +4        +86       +4
+ *     1680px      441       +44       +173      +44
+ *     1855px      441        -6       +123       -6
+ *
+ * (Home 05's own +44 at 1680 is the 450px font band, where the theme lets the
+ * ascenders ride behind the cards on purpose. We match it rather than improve
+ * on it — this section is meant to layer.)
+ *
+ * The fix is to stop deriving the watermark's anchor from a constant that
+ * assumed a fixed block height. Two changes, and the block height cancels out
+ * of the subtraction entirely:
+ *
+ *   - `height: auto` + a fixed `padding-bottom` makes the section as tall as
+ *     its content plus a constant, instead of a constant. A taller column now
+ *     pushes the section's bottom edge — and the watermark anchored to it —
+ *     down by exactly the amount it grew.
+ *
+ *   - `bottom` becomes a pixel value. The theme's -5%/-8% resolve against the
+ *     section height, so leaving them as percentages would have re-introduced
+ *     the dependency the line above just removed. -80px and -128px are what
+ *     those percentages already computed to at 1600px, so the watermark keeps
+ *     the theme's exact bleed past the section edge.
+ *
+ * 1178px is the runway that reproduces Home 05's numbers: 900px of pin, plus
+ * the 278px of post-pin scroll the theme has between the block and the
+ * watermark. It holds for any column height, so re-measuring is not required
+ * when this section's copy changes.
+ *
+ * Scoped to >= 1200px because that is where the pin is registered; below it the
+ * theme already switches to `height: auto` and section 8.10 handles clearance.
+ *
+ * `.tx-section` was added to the selector for weight, to outrank section 0's
+ * rhythm rule (`padding-bottom: var(--pc-space)`) on the same element — at
+ * the time, section 0 carried one `:not(.nm-hero-4-area)`, one fewer class
+ * than this selector's four. That balance broke the day section 0 gained a
+ * second exclusion (`:not(.nm-cta-2-area)`, for the CTA-2 dark-band fix):
+ * both selectors then carried four classes, and section 0's tie-break win —
+ * it also matches the bare `section` element, one more component than this
+ * selector has — silently put the 1200px+ section back to 110px of padding,
+ * reopening the exact watermark collision this rule exists to prevent.
+ *
+ * `!important` on `padding-bottom` alone is the actual fix now — chasing
+ * class-count parity between two unrelated rules in this file is exactly
+ * what broke last time, and will break again the next time either selector
+ * changes. `.tx-section` stays in the selector; removing it would only
+ * widen the gap section 0 needs to close to win again.
+ * ------------------------------------------------------------------ */
+
+@media (min-width: 1200px) {
+	body.single-services .nm-process-5-area.p5_pin_elm_trigger.tx-section {
+		height: auto;
+		padding-bottom: 1178px !important;
+	}
+
+	body.single-services .nm-process-5-area .nm-process-5-big-title {
+		bottom: -128px;
+	}
+}
+
+@media (min-width: 1200px) and (max-width: 1399px) {
+	body.single-services .nm-process-5-area .nm-process-5-big-title {
+		bottom: -80px;
+	}
+}
+
+/* ------------------------------------------------------------------ *
+ * 8. Values the theme only ever got right at demo dimensions
+ *
+ * Each of these is a fixed pixel value, or a desktop-only decoration, that the
+ * theme never revisits at smaller widths. Grouped here because they share a
+ * cause, not a section.
+ * ------------------------------------------------------------------ */
+
+/*
+ * 8.1 About — the column divider.
+ *
+ * `.nm-about-4-left::after` is a 1px full-height radial-gradient rule pinned to
+ * `right: 0`, separating the text column from the image column. Once the two
+ * columns stack it is no longer separating anything, and reads as a stray
+ * border down the right edge of the content.
+ */
+@media (max-width: 991px) {
+	body.single-services .nm-about-4-left::after {
+		display: none;
+	}
+}
+
+@media (max-width: 767px) {
+	/*
+	 * 8.2 About — the bordered video panel.
+	 *
+	 * 292px wide inside a 366px container, so all 74px of slack collected on
+	 * the right and it read as left-aligned against a centred section.
+	 */
+	body.single-services .nm-about-4-video {
+		margin-inline: auto;
+	}
+
+	/*
+	 * 8.4 Pricing — the Monthly / Yearly switch.
+	 *
+	 * The theme already wraps and centres this below 768px but keeps
+	 * `border-radius: 100px` and `padding: 8px 26px 8px 8px` from the
+	 * single-line desktop pill. On the wrapped two-line box (366x94) the pill
+	 * radius reads as a lozenge and the 26px right padding throws the centring
+	 * off. A rounded rectangle with even padding is what the wrapped shape
+	 * actually needs.
+	 */
+	body.single-services .nm-price-4-btn-wrap {
+		border-radius: 28px;
+		padding: 10px 14px;
+		gap: 6px;
+
+		/*
+		 * Hug the switch and centre it rather than span the row. The two rows
+		 * are 235px and 112px inside a 366px container, so a full-width box
+		 * left a pale slab with two small rows floating in it.
+		 *
+		 * An explicit cap rather than `fit-content`: because the container
+		 * wraps, its max-content width is both rows on ONE line
+		 * (235 + 6 + 112 + 28 = 381px), so `fit-content` resolved to the full
+		 * 360px and hugged nothing. 280px clears the 235px toggle plus padding
+		 * and lets the offer line centre beneath it.
+		 */
+		max-width: 280px;
+		margin-inline: auto;
+	}
+
+	body.single-services .nm-price-4-btn-wrap .nm-price-2-btn-offer {
+		font-size: 13px;
+	}
+
+	/*
+	 * 8.10 Approach — clearance above the STEPS watermark.
+	 *
+	 * The watermark is absolutely positioned against the section's bottom edge
+	 * (`bottom: -2%`), while the cards sit in normal flow. At mobile the two
+	 * collided: the word started 22px ABOVE the last card's bottom edge.
+	 *
+	 * Padding on the card track lengthens the section, which moves the
+	 * watermark's anchor down while leaving the cards where they are — the one
+	 * lever that opens a gap without touching the theme's positioning model.
+	 */
+	body.single-services .nm-process-5-wrap {
+		padding-bottom: 72px;
+	}
+
+	/*
+	 * 8.11 Footer — the text wordmark was being clipped.
+	 *
+	 * `.nm-footer-4-top` is a fixed `height: 87px` with `overflow: hidden`,
+	 * sized for the demo's single-line logo IMAGE. `inc/branding.php` replaces
+	 * that image with real text, which wraps to two lines (67.8px) at mobile
+	 * and, bottom-aligned with a -14px margin, ran 13px past the box — cutting
+	 * "Connections" in half.
+	 *
+	 * Letting the row size to its content fixes it without shrinking the
+	 * wordmark. The PC watermark keeps its intentional bleed.
+	 *
+	 * `height: auto` alone is not enough: the wordmark also carries
+	 * `margin-bottom: -14px`, an optical nudge that pulls its box below the
+	 * container's content edge, where `overflow: hidden` still cuts it. That
+	 * nudge is tuned for the single-line logo and has to go at this width.
+	 */
+	body.single-services .nm-footer-4-top {
+		height: auto;
+	}
+
+	body.single-services .nm-footer-4-top-logo {
+		margin-bottom: 0;
+	}
+
+	/*
+	 * 8.7 Approach — the oversized STEPS watermark.
+	 *
+	 * At 120px the word renders 355px wide inside a section with
+	 * `overflow: hidden`. That clears a 390px viewport by 35px and clips on
+	 * anything narrower — 360px Android being the common case. Tying the size
+	 * to the viewport keeps the whole word visible at every mobile width while
+	 * staying as large as the theme intends. 28vw yields 109px at 390 and
+	 * 101px at 360, both comfortably inside the container.
+	 */
+	body.single-services .nm-process-5-big-title {
+		font-size: min(120px, 28vw);
+	}
+
+	/*
+	 * 8.8b Footer — spacing.
+	 *
+	 * `padding-bottom: 125px` is a desktop value the theme never reduces,
+	 * leaving a 124px dead gap above the social/copyright bar. The widgets also
+	 * wrapped to ragged widths (242 / 96 / 186 / 250); the two link lists pair
+	 * naturally as halves, the prose blocks want the full width.
+	 */
+	body.single-services .nm-footer-4-wrap {
+		padding-bottom: 60px;
+		gap: 40px;
+	}
+
+	body.single-services .nm-footer-4-widget {
+		flex: 1 1 100%;
+	}
+
+	body.single-services .nm-footer-4-widget:nth-child(2),
+	body.single-services .nm-footer-4-widget:nth-child(3) {
+		flex: 1 1 calc(50% - 20px);
+	}
+}
+
+/*
+ * 8.3 Services — image corners.
+ *
+ * The wrapper already carries `overflow: hidden`, so rounding it is enough;
+ * the <img> inside needs nothing. 20px matches `.nm-process-5-card`, keeping
+ * one corner radius across the page's card-like surfaces.
+ *
+ * Mobile only — this was reported against the mobile layout, and desktop keeps
+ * the theme's square corners.
+ */
+@media (max-width: 767px) {
+	body.single-services .nm-services-4-item .item-img {
+		border-radius: 20px;
+	}
+}
+
+/*
+ * 8.5 Pricing used as a two-way comparison.
+ *
+ * The Marketing Strategy page reuses this widget for "Is This Actually For
+ * You?", which has no prices. view-2.php renders `.price-wrap` unconditionally
+ * — there is no `empty()` guard — so with the price fields blank it leaves a
+ * bordered empty band above the feature list.
+ *
+ * Driven by an Elementor CSS class on the widget (`pc-no-price`) rather than a
+ * post ID, so it travels with the widget if the section is copied and never
+ * touches a page that does show prices.
+ */
+body.single-services .pc-no-price .nm-price-4-card .price-wrap {
+	display: none;
+}
+
+/*
+ * 8.6 Approach — the step number.
+ *
+ * The card's background is an inline SVG whose top edge dips into a notch for
+ * this number. In the `0 0 420 320` viewBox the notch's flat span runs
+ * x=83.104 to x=120.646, centre **101.875 — 24.26% of the card width**.
+ *
+ * The theme pins the number at a hardcoded `left: 88px`; its centre lands at
+ * 101px, which matches only on the demo's 420px card. Because the SVG has
+ * `preserveAspectRatio="none"` the notch moves with the card while the number
+ * does not:
+ *
+ *     366px card   notch centre 89px    number 101px    12px off
+ *     696px card   notch centre 169px   number 101px    68px off
+ *     936px card   notch centre 227px   number 101px   126px off
+ *
+ * The two wide cases are the tablet band widened in §7 — cards this project
+ * made wider — so the correction has to cover them too.
+ *
+ * Capped at 1199px: from 1200px up the theme's own 420px card is in play and
+ * `left: 88px` is already correct there, so desktop keeps the theme's value
+ * untouched. The percentage resolves to 101.9 vs the theme's 101 anyway, but
+ * scoping it means desktop is provably unchanged rather than merely equivalent.
+ */
+@media (max-width: 1199px) {
+	body.single-services .nm-process-5-card .number {
+		left: 24.26%;
+		transform: translateX(-50%);
+	}
+}
+
+/*
+ * 8.8a Footer — contact icons.
+ *
+ * `map-pin/email/call/clock.webp` are monochrome raster icons with the demo's
+ * teal baked into the files, so neither `color` nor `fill` reaches them.
+ *
+ * `brightness(0) saturate(100%)` flattens each icon to solid black while
+ * preserving its alpha; the rest of the chain tints that black to the brand
+ * gold. A filter chain approximates a colour numerically — it cannot read
+ * `--nm-clr-pr-1`, so **if the brand colour changes this chain must be retuned
+ * to the new hex**. Target: #ffa201.
+ *
+ * Retuned for #ffa201 and verified exact: the chain now resolves to
+ * rgb(255, 162, 1). Worth knowing the PREVIOUS chain did NOT hit its stated
+ * target — it landed on #D69D45, 14 high on blue. Both chains rely on `saturate`
+ * railing red to 255 and blue to 0, which is unavoidable reaching a fully
+ * saturated colour from grey.
+ *
+ * `mask-image` would track the variable, but it needs each icon's URL, which
+ * is an uploads path that differs per install and would not survive deployment.
+ */
+body.single-services .nm-footer-4-contact li img {
+	filter: brightness(0) saturate(100%) invert(60%) sepia(95%) saturate(1612%)
+		hue-rotate(356deg) brightness(106%) contrast(105%);
+}
+
+/*
+ * 8.9 Back-to-top — the last of the demo lime.
+ *
+ * `.wa-back-to-top` hardcodes `rgba(214, 243, 69, …)` — #D6F345, the demo lime —
+ * in its border and glow. The Round 3 palette audit reported "0 lime" because
+ * it swept Theme Options and the inline-SVG literals; this element is neither,
+ * it is a fixed-position global chrome element styled straight from
+ * nimo-core.css, so nothing in that sweep reached it.
+ *
+ * `color-mix()` keeps this tracking Theme Options, so the glow follows the
+ * brand colour like everything else. The plain rgba declaration above each one
+ * is the fallback for engines without `color-mix` — they take the first, newer
+ * engines take the second.
+ *
+ * The hover rule fades the same shadow to nothing; restated here so the lime
+ * does not reappear mid-transition.
+ */
+body.single-services .wa-back-to-top {
+	border-color: rgba(255, 162, 1, 0.4);
+	border-color: color-mix(in srgb, var(--pc-accent) 40%, transparent);
+	box-shadow: 1.782px 0.908px 32.2px 2.8px rgba(255, 162, 1, 0.23);
+	box-shadow: 1.782px 0.908px 32.2px 2.8px
+		color-mix(in srgb, var(--pc-accent) 23%, transparent);
+}
+
+body.single-services .wa-back-to-top:hover {
+	box-shadow: 1.782px 0.908px 32.2px 2.8px transparent;
+}
+
+/*
+ * The same miss, in the Home 01 eyebrow dot. Its `background` already reads
+ * `var(--nm-clr-pr-1)` and recoloured with the palette; only the glow around it
+ * was hardcoded lime, so a gold dot sat inside a lime halo.
+ *
+ * nimo-core.css carries 12 `rgba(214, 243, 69, …)` glows in total. A computed
+ * -style sweep of every element on the rendered page found exactly these two
+ * reachable from a Service Detail page; the rest belong to header-1, hero-1,
+ * testimonial-1 and footer-1, none of which this page uses.
+ */
+body.single-services .nm-subtitle-1 .dot {
+	box-shadow: 0 3px 5.52px 0.48px rgba(255, 162, 1, 0.46);
+	box-shadow: 0 3px 5.52px 0.48px
+		color-mix(in srgb, var(--pc-accent) 46%, transparent);
+}
+
+/* ------------------------------------------------------------------ *
+ * 10. Icon rendering — SVG icons need an explicit fill
+ *
+ * The same bug fixed for the pricing card CTA in section 4 above
+ * (`.card-btn .icon` — "the arrow was there but invisible"), found again in
+ * two more places on the built page.
+ *
+ * nimo-core's CSS styles every icon-bearing element with `color`, on the
+ * assumption Icons_Manager always renders an `<i>` font glyph, which inherits
+ * `color` for free. It sometimes renders inline `<svg class="e-font-icon-svg">`
+ * instead — Elementor's own choice per icon value, not something either
+ * nimo-core or this project controls — and an SVG's `fill` does NOT inherit
+ * from `color`. With no `fill` rule anywhere, the browser default applies:
+ * solid black. On a light circle that reads as a (coincidentally correct)
+ * dark icon; on a dark circle it is black-on-near-black and disappears.
+ *
+ * Confirmed invisible before this rule: the hero and About "Book The Damn
+ * Call" buttons (`.nm-pr-btn-4 .icon`, black arrow on the #0A0A0A circle) and
+ * the footer's Instagram/Twitter/LinkedIn icons (`.nm-footer-4-social`,
+ * black-on-transparent against the dark footer) — the latter reproduces
+ * identically on the untouched Home 04 one-page demo, so it is a pre-existing
+ * theme/Elementor-version quirk, not a regression from this project's work.
+ * Facebook in the same row is unaffected only because that one value happens
+ * to render as `<i>`.
+ *
+ * `currentColor` is correct rather than a fixed value: nimo-core already sets
+ * a distinct `color` per button context — e.g. white icon on the hero's dark
+ * circle vs `.nm-services-4-sec-title .nm-pr-btn-4 .icon`'s dark icon on a
+ * white circle for "More Services" — so the fix has to follow `color`, not
+ * override it. Scoped to these two known-broken selectors rather than every
+ * `.e-font-icon-svg` on the page: the pricing card's own
+ * `.package-x-icon .icon` (section 4) renders a dark icon against a
+ * near-white chip using an inherited grey body-text `color` that was never
+ * meant to apply to an icon fill — a blanket rule would have swapped its
+ * correct black for that grey.
+ */
+body.single-services .nm-pr-btn-4 .icon svg,
+body.single-services .nm-footer-4-social .link-elm svg {
+	fill: currentColor;
+}
+
+/*
+ * …and the same icons also had no usable SIZE, which is the arrow that read
+ * as a black wedge rather than a chevron.
+ *
+ * Elementor's own `.e-font-icon-svg { height: 1em }` never reaches these
+ * elements on this install — enumerating every readable stylesheet finds no
+ * such rule, though `elementor/assets/css/frontend.min.css` contains it and
+ * is enqueued. With no author sizing and no `width`/`height` ATTRIBUTES on
+ * the markup, the SVGs fall back to CSS replaced-element defaults: `width`
+ * resolves to 100% of the container and `height` follows from the viewBox
+ * ratio. For Font Awesome's `angle-right` that viewBox is `0 0 256 512` —
+ * 1:2 — so a 40px circle produced a 40x80 glyph, twice the circle's height,
+ * and `.nm-pr-btn-4 .icon`'s `overflow: hidden` cropped it to the solid
+ * wedge that was reported.
+ *
+ * Measured across the page: 14 of 23 `.e-font-icon-svg` elements were
+ * mis-sized. 40x80 in the button circles (viewBox 256x512), 40x46 in the
+ * category buttons (448x512), and — worst — the footer's Instagram/Twitter/
+ * LinkedIn collapsed to **0x0**, which is why the `fill` fix above did not
+ * make them appear. Facebook is unaffected only because that one icon value
+ * renders as `<i>`, and it gives the target: 10x16 at the inherited 16px.
+ *
+ * `height: 1em; width: auto` is Elementor's intended sizing restated, so the
+ * SVG icons render at exactly the size their `<i>` siblings do. `width: auto`
+ * rather than a second `1em`: it lets each glyph keep its own aspect ratio
+ * (chevron 8x16, arrow 14x16) instead of being letterboxed into a square.
+ *
+ * Deliberately scoped to these three contexts rather than every
+ * `.e-font-icon-svg`: the pricing card's plan icon (viewBox 576x512) and the
+ * `wa_magnetic_btn_2_elm` icons currently size themselves correctly against
+ * their larger 48px/42px boxes, and a blanket `1em` would shrink them.
+ */
+body.single-services .nm-pr-btn-4 .icon svg,
+body.single-services .nm-cta-2-area .nm-pr-btn-2 .icon svg,
+body.single-services .nm-footer-4-social .link-elm svg {
+	height: 1em;
+	width: auto;
+}
+
+/* ------------------------------------------------------------------ *
+ * 11. The closing CTA's button, restyled to match every other CTA
+ *
+ * `tx_cta` has exactly one view, and that view hardcodes `class="nm-pr-btn-2
+ * ... has-v3"` — a different, more elaborate component than the
+ * `nm-pr-btn-4` pill used everywhere else on the page (hero, About, Services,
+ * pricing cards): a rounded-square icon box with a gradient/shimmer
+ * background, and a two-icon slide-swap on hover driven by
+ * `.icon i:nth-child(1)` / `i:nth-child(2)`.
+ *
+ * It doesn't even render as designed here. The slide-swap CSS targets the
+ * `<i>` tag specifically; the icon value Elementor renders for this button
+ * comes out as inline `<svg>` (the same rendering quirk fixed in section 10),
+ * so neither positioning rule matches and both icon copies show at once,
+ * stacked and unstyled. `--nm-clr-gd-3` also isn't set, so the `has-v3`
+ * gradient background painted nothing (`background-image: none`, confirmed
+ * against the computed style) — this button has likely never looked like its
+ * own design on this install.
+ *
+ * Restyled to the `nm-pr-btn-4` pattern instead of repairing the vendor
+ * two-icon markup: the ask is for this CTA to match the others on the page,
+ * and nm-pr-btn-4 is what they all already use.
+ */
+body.single-services .nm-cta-2-area .nm-pr-btn-2 {
+	position: relative;
+	background: #fff;
+	color: #141414;
+	padding: 10px 24px 10px 57px;
+	border-radius: 100px;
+}
+
+body.single-services .nm-cta-2-area .nm-pr-btn-2 .icon {
+	width: 40px;
+	height: 40px;
+	background: #0a0a0a;
+	border-radius: 50%;
+	position: absolute;
+	top: 50%;
+	left: calc(3% - 0px);
+	transform: translateY(-50%);
+}
+
+body.single-services .nm-cta-2-area .nm-pr-btn-2 .icon svg {
+	fill: #fff;
+}
+
+/* The second copy exists only for the vendor's slide-swap; one visible icon
+ * is what every other nm-pr-btn-4 instance on the page shows. */
+body.single-services .nm-cta-2-area .nm-pr-btn-2 .icon svg:nth-child(2) {
+	display: none;
+}
+
+/* ------------------------------------------------------------------ *
+ * 12. LAST THING — the last hardcoded demo colour
+ *
+ * `.nm-contact-5-box::before` / `::after` are two blurred glow blobs behind
+ * the black card, both `background: #FD3F00` — a flat orange-red, not this
+ * project's gold. HANDOFF flagged this exact rule in the Round 12 writeup as
+ * one of ten remaining un-rebranded nimo-core glows, left alone at the time
+ * because contact-5 was not yet in use anywhere on the site: "if those
+ * layouts ever get used." It is now the shared CTA on every service page.
+ *
+ * A flat colour, not the `color-mix(...)`-over-rgba pattern used for the
+ * other lime fixes in this file (sections 8.9 / 8.9-dot): those glows are
+ * `box-shadow` with an alpha channel already carrying the transparency; these
+ * are opaque `background` blobs that get their softness entirely from
+ * `filter: blur(52px)`, so `--pc-accent` on its own reproduces the same
+ * blurred-blob look the orange had, just gold.
+ */
+body.single-services .nm-contact-5-box::before,
+body.single-services .nm-contact-5-box::after {
+	background: var(--pc-accent);
+}
+
+/* ------------------------------------------------------------------ *
+ * 12b. `position: sticky` was dead page-wide — the real cause of the
+ *      Outcome section's black gap AND the Truth cards not stacking
+ *
+ * nimo-core registers a `page_overflow` Elementor DOCUMENT control
+ * (element-init.php) with `'default' => 'hidden'`, whose selector is
+ * `{{WRAPPER}} .page-wrapper => overflow: {{VALUE}}`. Every service page
+ * therefore ships `body.elementor-page-NNN .page-wrapper{overflow:hidden;}`
+ * in its generated `post-NNN.css`. The imported demo pages (330 / 334 / 336)
+ * carry no such rule, which is why the same components stick correctly there
+ * and not here — this is a difference between our pages and the demos, not a
+ * theme-wide trait.
+ *
+ * Why that one declaration kills sticky: `overflow: hidden` makes
+ * `.page-wrapper` a scroll container, and it becomes the nearest scrolling
+ * ancestor for every `position: sticky` descendant. Because the wrapper is
+ * never itself scrollable (measured `scrollHeight === clientHeight === 22131`
+ * — it grows to fit its content), there is no scrollport for anything to
+ * stick within, so sticky elements silently behave as `static` and scroll
+ * away with the page. Measured before this rule: `.nm-services-5-pin`'s top
+ * tracked its parent's top 1:1 across the whole 6000px runway, and the three
+ * `.a1_card_trigger_elm` cards marched 280 -> -20 -> -320 -> -620 instead of
+ * clamping at their 100/190/100 stick points.
+ *
+ * The fix is `clip` rather than `visible`: `overflow: clip` still clips the
+ * decorative bleed the `hidden` was presumably there for, but — unlike
+ * `hidden` — it does NOT create a scroll container, so sticky resolves
+ * against the viewport again.
+ *
+ * BOTH axes must be restated. Overriding only `overflow-x` would leave
+ * `overflow-y: hidden` from the shorthand, and per spec a `hidden` on one
+ * axis with `visible` on the other computes the `visible` side to `auto` —
+ * recreating the very scroll container this removes. `clip` + `visible` is
+ * the one pairing that is valid and creates nothing.
+ *
+ * `.page-wrapper.main-wrapper` (0,3,1) deliberately outranks Elementor's
+ * `body.elementor-page-NNN .page-wrapper` (0,2,1) so this holds regardless of
+ * stylesheet order — Elementor's per-post CSS is regenerated on its own
+ * schedule and can be enqueued after this file.
+ */
+body.single-services .page-wrapper.main-wrapper {
+	overflow-x: clip;
+	overflow-y: visible;
+}
+
+/* ------------------------------------------------------------------ *
+ * 13. The Outcome accordion — nothing to override here, and why
+ *
+ * This section previously carried two attempts to close a black gap in the
+ * pinned accordion. Both are gone: the gap was never a spacing problem, it
+ * was section 12b's dead `position: sticky`, and once sticky works the
+ * theme's own values are already correct.
+ *
+ * Kept as a note because both attempts made things worse in instructive ways,
+ * and the numbers are easy to talk yourself back into:
+ *
+ *   1. `top: 50%` + `translateY(-50%)` — the usual sticky-centring idiom.
+ *      Wrong here twice over: `top: 50%` moves the release point to
+ *      `heightEl - (50% + pinHeight)`, which let go 309px BEFORE the last
+ *      accordion step finished animating, and `transform` moves the painted
+ *      box while sticky resolves against the LAYOUT box, lifting the card a
+ *      further 405px. About 714px of *added* black.
+ *
+ *   2. `height: 100vh` + flex centring. This did align the sticky release
+ *      with the animation's end (both `heightEl - viewport`) — but only
+ *      because sticky was broken and released at the wrong place to begin
+ *      with. With sticky working, a sticky element already comes to rest
+ *      bottom-aligned with its parent, so there is no trailing runway to
+ *      correct. All the 100vh box bought was 262px of dead space between the
+ *      section header and the first item — the flex centring padding a
+ *      1000px box around 476px of content — which is the gap that was
+ *      reported next.
+ *
+ * Measured with the theme's own `top: 50px` and auto height, after 12b:
+ * header-to-first-item 50px (the section's own margin, nothing added), pin
+ * holds at exactly 50px from the viewport top across the whole runway, and an
+ * `elementsFromPoint` sweep of the entire section finds zero fully-blank
+ * viewports.
+ *
+ * If this ever needs revisiting: measure the blank band empirically first,
+ * and check whether sticky is actually engaging, before reaching for `top`
+ * or `height`.
+ * ------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------ *
+ * 14. The doubled divider above "The Truth"
+ *
+ * `.nm-about-1-line` is a decorative rule the theme absolutely positions at a
+ * section's top edge, with a `.has-v2` variant pinned to the bottom edge. It
+ * draws a 1px white gradient hairline (`.nm-about-1-line-border`, opacity
+ * .15) and hangs a gold `+` off it (`.nm-about-1-line-plus`).
+ *
+ * Because each section carries its own copy, two sections that both use the
+ * decoration stack a pair wherever they meet — one from the section above's
+ * bottom, one from the section below's top — which reads as a double line
+ * with two `+` marks a few pixels apart.
+ *
+ * On this page there are four in total, and only ONE pair collides: the
+ * Problem section's bottom rule at 5875 against The Truth's top rule at 5896,
+ * 21px apart. The other two (`.nm-steps-1-area`'s top and `.nm-about-1-area`'s
+ * bottom) each border a section that does not use the decoration, so they are
+ * single and are left alone.
+ *
+ * Hiding the upper of the two — the Problem section's `.has-v2` — rather than
+ * The Truth's own top rule: `.nm-about-1-area` uses the decoration as a
+ * matched pair top and bottom, so removing its top would leave that section
+ * with a rule under it and none over it.
+ */
+body.single-services .nm-steps-1-area .nm-about-1-line.has-v2 {
+	display: none;
+}
+
+/* ------------------------------------------------------------------ *
+ * 15. One dark surface, so no section boundary shows a seam
+ *
+ * The "gaps" between components were never whitespace — every boundary on
+ * this page measures exactly 0px. They were TONAL steps: the sections come
+ * from three different demo homepages, each of which sets its own dark
+ * background, and stacked together they cycle through four values:
+ *
+ *   body (shows through transparent sections)  #111111   luminance 17
+ *   .nm-steps-1-area                           #000000   luminance  0
+ *   .nm-services-4-area                        #0A0A0A   luminance 10
+ *   .nm-process-5-area                         #000000   luminance  0
+ *   .nm-cta-2-area                             #0E0E0E   luminance 14
+ *
+ * Seven boundaries changed background, and each one draws a visible edge
+ * across the full width — most obviously where `.nm-steps-1-area`'s pure
+ * black meets The Truth section's transparent #111.
+ *
+ * Clearing the four overrides lets every dark section show the one page
+ * surface, so the whole run from the hero to the contact block is a single
+ * continuous tone with nothing to catch the eye at a join.
+ *
+ * `transparent` rather than a literal colour on purpose: the page surface is
+ * the theme's own `--nm-clr-black-2`, driven by Theme Options like the rest of
+ * the palette, so this keeps tracking it instead of pinning a second source of
+ * truth that would drift if the brand background is ever changed.
+ *
+ * Two backgrounds are deliberately NOT touched:
+ *   - `.nm-hero-4-area` carries the hero photograph, not a flat colour.
+ *   - `.nm-contact-5-area` is #EFEFEF, the intentional light block that closes
+ *     the page — that contrast is the design, not a seam.
+ */
+body.single-services :is(
+	.nm-steps-1-area,
+	.nm-services-4-area,
+	.nm-process-5-area,
+	.nm-cta-2-area
+) {
+	background-color: transparent;
+}
+
+/*
+ * The other half of the same complaint: a real 20px gap between every
+ * stacked component.
+ *
+ * It is container PADDING, not a flex gap — worth stating because the flex
+ * gap is the obvious suspect and is a dead end. Each top-level Elementor
+ * container carries `padding-block: 10px` (Elementor's own default), so two
+ * adjacent ones contribute 10px each and every section boundary comes out
+ * 20px apart. Measured on the ancestor chain: the container's `row-gap`
+ * resolves to 0 and its margins are 0 — only `padding-top`/`padding-bottom`
+ * are non-zero.
+ *
+ * That 20px is invisible now the surface is continuous, but it quietly
+ * breaks the rhythm section 0 sets up: that comment promises the space
+ * between any two sections is "identical by construction (2 x --pc-space)",
+ * which the padding silently turns into 2 x --pc-space + 20. Zeroing it
+ * restores exactly the documented intent and leaves the sections' own
+ * padding as the single lever for vertical rhythm.
+ *
+ * Only the BLOCK padding is zeroed — the inline padding is the page gutter
+ * and has to stay. `row-gap` is deliberately not touched: containers that
+ * hold more than one widget (the FAQ block is headings + accordion) rely on
+ * it to separate them, and collapsing that would jam them together.
+ *
+ * The `:not(:has(...))` exclusion is load-bearing, not defensive. The five
+ * excluded classes are bare-content blocks: none of them is one of the theme's
+ * `-area` sections, so none brings padding of its own, and each gets its
+ * rhythm from a rule elsewhere in this file. Those rules are NOT all in
+ * section 0 — that was claimed here and is wrong, so to save the next person
+ * the grep:
+ *
+ *     .pc-faq-title, .pc-sec-title  -> section 0, the `var(--pc-space)` pair
+ *     .pc-prose                     -> the container + type rules in section 6
+ *     .pc-trust-strip               -> its own 22/22 pair, also section 6
+ *     .pc-lead                      -> its own pair in section 6
+ *
+ * `.pc-lead` is only ever emitted alongside `.pc-prose` (the builder enforces
+ * it) because on its own it gets neither the container geometry nor the prose
+ * type. Those rules and this one all compute to
+ * specificity (0,3,1) — `:has()` contributes only its argument's (0,1,0) — so
+ * with this rule sitting later in the file it won the tie and flattened the
+ * FAQ block's spacing to zero. Excluding them keeps this targeted at the
+ * container padding that actually doubles up between adjacent sections.
+ *
+ * ANY NEW BARE-CONTENT BLOCK MUST BE ADDED TO BOTH LISTS BELOW, not just to
+ * section 0. `.pc-sec-title` is here because the Pay Per Click comparison
+ * table (section 17) is exactly such a block; without it that section would
+ * sit flush against its neighbours while every other boundary kept its
+ * --pc-space, and the cause would look like a section-17 bug rather than a
+ * cascade tie decided 1700 lines away.
+ */
+body.single-services .elementor > .e-con:not(:has(> .pc-faq-title, > .pc-sec-title, > .pc-prose, > .pc-trust-strip, > .pc-lead)),
+body.single-services .elementor > .elementor-element:not(:has(> .pc-faq-title, > .pc-sec-title, > .pc-prose, > .pc-trust-strip, > .pc-lead)) {
+	padding-block: 0;
+}
+
+/* ------------------------------------------------------------------ *
+ * 11. CTA-2 — drop the dark band around the photo
+ *
+ * Reported as a dark/gray band between the FAQ block and the CTA photo (and
+ * again below the photo, before the next section). Two separate causes:
+ *
+ * 1. `.nm-cta-2-wrap::after` (nimo-core.css) is a full-cover `background:
+ *    #000; opacity:.6` sitting over the section's parallax photo itself —
+ *    it exists to keep `.sce-disc`'s light grey (#dbdbdb) body copy
+ *    readable over a busy photo. Removing it entirely trades that contrast
+ *    margin for the photo showing at full brightness, so keep an eye on
+ *    legibility if a future photo swap here is much lighter or busier than
+ *    the current one.
+ *
+ * 2. Section 0's rhythm rule was also landing on `.nm-cta-2-area` itself —
+ *    `padding-top/bottom: var(--pc-space)` (110px) stacking on top of the
+ *    section's own `margin-top: -90px` and the photo wrap's own 145px
+ *    internal padding. Neither of those two is part of section 0's rhythm
+ *    (they're the theme's own spacing for this specific section, tuned
+ *    against its neighbours), so the extra 110px just opened a gap of bare
+ *    section background — transparent, but reading as gray/dark against the
+ *    black FAQ block above and the bright photo below. `.nm-cta-2-area` is
+ *    now excluded from that rule (see the `:not()` in section 0) and given
+ *    its own zeroed padding here so nothing but the theme's original
+ *    spacing remains.
+ * ------------------------------------------------------------------ */
+body.single-services .nm-cta-2-wrap::after {
+	opacity: 0;
+}
+
+/*
+ * `margin-top: 0` overrides nimo-core's `margin-top: -10vh` on this section.
+ * That pull-up is the theme's own overlap trick for the demo, where the CTA
+ * followed a section it was meant to bite into. Here it follows the FAQ block,
+ * whose `padding-bottom: var(--pc-space)` (section 0) is the page's standard
+ * gap — and -10vh is 78px at a 780px viewport, so it swallowed nearly all of
+ * that, leaving the last FAQ card sitting flush against the photo. On mobile it
+ * overran the padding entirely and the two touched.
+ *
+ * Zeroing it hands the separation back to `--pc-space` (110/80/60px), so the
+ * gap here is the same one every other section boundary on this page uses,
+ * rather than a number picked for this seam. The section background is
+ * transparent, so what shows through is the page's own #111 — the gap reads as
+ * the FAQ block breathing, not as a band of its own.
+ */
+body.single-services .nm-cta-2-area {
+	margin-top: 0;
+	padding-top: 0;
+	padding-bottom: 0;
+}
+
+/*
+ * THE GREY BLOCK AT THE BOTTOM OF THE BAND — a notch cut by a mask, not an
+ * element. This is why it could not be found by inspecting the DOM.
+ *
+ * `.nm-cta-2-wrap` carries `mask-image: url(cta-2-mask-shape.webp)` with
+ * `mask-size: 100% 100%`, so a 1920x730 alpha stencil is stretched over the
+ * whole band. Reading that file's alpha channel: it is fully opaque down to
+ * 91.1% of its height, and below that a centred rectangle spanning 27.1%-72.9%
+ * of the width is TRANSPARENT. Stretched over an 894px-tall band at 1850px that
+ * lands at x 504-1339, y 814 to the bottom edge — measured on the live page as a
+ * block at x 503-1341, y 818-887, which is exactly what was reported.
+ *
+ * Where the mask is transparent the band's photograph is not painted, so what
+ * shows through is `body`'s own `background-color: #111` — a flat dark grey
+ * rectangle with no element behind it. Hit-testing that region returns only
+ * `.nm-cta-2-wrap` and the noise layer, both with transparent backgrounds, which
+ * is the tell that nothing is drawing it and something is subtracting instead.
+ *
+ * The notch is deliberate in the Nimo demo: Home 02 tucks the following
+ * section's centred card up into it, so the cut-out is filled and reads as an
+ * interlock. On a Service Detail page the next section is `.nm-contact-5-area`,
+ * whose box sits ~390px lower and never reaches it, so the notch is filled by
+ * nothing and reads as a stray grey slab bitten out of the photograph.
+ *
+ * `mask-image: none` restores the full-bleed frame. Both spellings, because the
+ * theme sets both and unprefixed `mask-image` alone leaves WebKit still masking.
+ *
+ * `!important` IS REQUIRED, and specificity cannot substitute for it here. The
+ * mask is not in a theme stylesheet and not an inline style — it is emitted by
+ * ELEMENTOR, per post, into `uploads/elementor/css/post-<id>.css` as:
+ *
+ *     .elementor-603 .elementor-element.elementor-element-5f9be44 .nm-cta-2-wrap
+ *
+ * That is four classes, `(0,4,0)`, against `(0,2,1)` for a `body.single-services`
+ * prefix — so the unmarked rule below simply lost, and the mask survived a
+ * reload with the hairlines already hidden (which is how this was caught).
+ * Matching that selector structurally is not an option either: BOTH the post id
+ * and the element id differ on every service page, so there is no stable chain
+ * to write. Elementor's declaration carries no `!important` of its own, so one
+ * `!important` here settles it on every page at once.
+ *
+ * THE TWO HAIRLINES GO WITH IT. `.nm-cta-2-wrap-line-1` (3px, full width) and
+ * `-line-2` (2px, 839px centred) are `#494949` rules that trace the notch's
+ * bottom and top edges — `-line-2` sits at y 827, right along the cut-out's top
+ * edge, and spans the same 502-1341. They are the outline of the shape, not
+ * dividers in their own right, so leaving them behind would strand a 2px grey
+ * line across the middle of the photograph and a 3px one along its foot. The
+ * notch and its outline are one decorative device and are removed as one.
+ */
+body.single-services .nm-cta-2-wrap {
+	-webkit-mask-image: none !important;
+	mask-image: none !important;
+}
+
+body.single-services .nm-cta-2-wrap-line-1,
+body.single-services .nm-cta-2-wrap-line-2 {
+	display: none;
+}
+
+/*
+ * WORDS BROKEN MID-WORD — the closing headline read "right n / ow.",
+ * "strate / gy.", "your mo / ney burns.", "sound li / ke everyone else."
+ *
+ * `nimo-extra.css` ships `.nm-sec-title-2 { word-break: break-all }`. `break-all`
+ * licenses a line break between ANY two characters, ignoring word boundaries
+ * entirely — so the moment a line runs out of room mid-word, it breaks there
+ * instead of moving the whole word down. It was reported on four service pages
+ * at once, which is the tell that it is one vendor rule and not four content
+ * problems.
+ *
+ * `word-break: normal` is the CSS initial value: break at word boundaries, the
+ * behaviour every one of these headlines wants.
+ *
+ * `overflow-wrap: break-word` is kept as the safety net `break-all` was
+ * presumably reaching for. The two are NOT the same and the difference is the
+ * whole point: `overflow-wrap` only breaks a word when it cannot fit on a line
+ * of its own, so ordinary copy keeps its word boundaries while a hypothetical
+ * unbreakable 40-character string still cannot overflow the band. It is also
+ * already the computed value here, so this states an existing behaviour rather
+ * than changing one — worth pinning so a future `word-break` edit cannot
+ * silently take the overflow guard with it.
+ *
+ * Scoped to `.nm-sec-title-2`, which on a Service Detail page resolves to
+ * exactly one element — the closing band's H2 (verified in the live DOM). This
+ * stylesheet only loads on `is_singular('services')`, so nothing else on the
+ * site is touched either way.
+ *
+ * NOT fixed by editing the copy. Adding `<br>` or `&nbsp;` to each headline
+ * would paper over four symptoms of one cause and would need redoing for every
+ * new service page, at a different width each time.
+ */
+body.single-services .nm-sec-title-2 {
+	word-break: normal;
+	overflow-wrap: break-word;
+}
+
+/*
+ * THE MOBILE BLACK-INK OVERRIDE IS GONE. The band's copy is white at every
+ * width now, the same as the desktop treatment.
+ *
+ * WHAT USED TO BE HERE, and why it was right at the time: a `max-width: 767px`
+ * block repointing the headline's gradient at `#000` and setting `.sce-disc` to
+ * `#000`. The band's photograph was cropped hard at narrow widths and what
+ * landed behind the copy was its brightest region — the demo image's window wall
+ * and the model's pale sweater — so white type washed out on a phone.
+ *
+ * TWO THINGS INVALIDATED IT. The demo photograph is long gone; every band now
+ * carries a purpose-picked dark image. And more decisively, section 18 added
+ * `.nm-cta-2-area::after { background-color: rgba(8, 8, 8, 0.78) }` at
+ * `max-width: 991px` — a scrim that crushes the whole band to near-black on
+ * exactly the viewports this rule covered. Black ink on a 78%-black scrim is
+ * black on black.
+ *
+ * Measured over the mobile crop (the centre column of the frame across the
+ * vertical span the copy occupies), with that scrim composited in, on all six
+ * service pages:
+ *
+ *     ink     mean contrast   95th pct   % of crop failing AA 4.5:1
+ *     white   18.6-19.7:1     13-19:1    0.0%   on every band
+ *     black    1.06-1.13:1    -          100%   on every band
+ *
+ * So the override was not merely unnecessary, it was making the closing headline
+ * and standfirst all but invisible on every phone. White needs no scrim of its
+ * own and no per-page exception: 0.0% failing is every band, including
+ * `ppc-cta.jpg`, which is the one image that measures poorly WITHOUT the scrim
+ * (8.3%) and is fine with it.
+ *
+ * IF THIS EVER HAS TO GO DARK AGAIN, the mechanism is not `color`. The headline
+ * carries `.wa_bg_position`, whose reveal (section 2) paints the SplitText line
+ * divs with a gradient clipped to the glyphs under `-webkit-text-fill-color:
+ * transparent` — `color` has nothing to paint. Repointing BOTH gradient stops at
+ * the same colour is what changes the ink, and it needs `!important` to beat
+ * section 2's own `!important`; a `(0,3,1)` selector clears its `(0,2,1)`.
+ * Removing the override simply lets section 2's white/accent reveal through,
+ * which is the desktop behaviour and now the only behaviour.
+ *
+ * `.sce-disc` returns to the theme's `#dbdbdb`, which is what the note on
+ * `.nm-cta-2-wrap::after` above already assumes it to be.
+ */
+
+/* ------------------------------------------------------------------ *
+ * 12. The Outcome — breathing room above the pinned card stack
+ *
+ * `.nm-services-5-pin` is `position: sticky; top: 50px` (nimo-core.css) —
+ * while its 600vh scroll runway (`.nm-services-5-height`, sized by
+ * nimo-core.js as `items.length * 100 + 200` vh) is in view, the card stack
+ * sticks 50px from the viewport top for the whole pin, while the REST of
+ * that runway keeps rendering as page height below it — which is the "space
+ * at the bottom" the 50px top offset visibly doesn't match. Bumped to
+ * 140px, comfortable enough to read as intentional breathing room rather
+ * than the theme's demo default.
+ *
+ * This is a constant offset, not a mirror of the bottom gap — the bottom
+ * space is the runway's remaining UNCONSUMED scroll distance, so it shrinks
+ * as the page scrolls and a fixed top value can only ever equal it at one
+ * scroll position. 140px is picked to look right at rest, not computed to
+ * match it exactly at any given moment.
+ * ------------------------------------------------------------------ */
+@media (min-width: 1200px) {
+	body.single-services .nm-services-5-pin {
+		top: 140px;
+	}
+}
+
+/* ------------------------------------------------------------------ *
+ * 16. The Timeline cards — matte panel, corner glass, ambient stars
+ *
+ * The four `.nm-steps-1-card .content` boxes were painted at #111111
+ * (`--nm-clr-black-2`) — the exact value section 15 puts on
+ * `.nm-steps-1-area` itself, so a card was only visible by its 1px 5%-white
+ * border; nothing separated "card" from "page". Lifting it one step to
+ * `--pc-panel` (#1a1a1a, defined at the top of this file but never used
+ * until now) reads as a distinct matte surface without turning it grey; the
+ * border gets the same small bump for the same reason.
+ *
+ * The corner glow is a second `background-image` layer, not a
+ * position:absolute pseudo-element. A pseudo would need `position:
+ * absolute` to sit in the corner, and CSS2.1 painting order puts
+ * non-positioned in-flow content (the card's own text) BEFORE positioned
+ * descendants — so an absolute glow pseudo paints on top of the copy, not
+ * under it. A background layer paints with the box's own background, always
+ * behind the content, so the text needs no z-index of its own to stay
+ * readable. Five soft stops fading all the way to `transparent` (not a
+ * two-stop hard edge) is what keeps the corner reading as a glow instead of
+ * a sticker dropped on the card.
+ *
+ * `background-size: 100% 100%` — not a smaller box like `75% 70%` — is
+ * deliberate: `background-size`/`-position` define a rectangular tile, and
+ * `no-repeat` simply stops painting at that tile's edge. A tile smaller than
+ * the card left a visible seam where the tile boundary cut across the
+ * gradient before it had fully faded — the "gray line" separating the glow
+ * from the flat panel colour was that cut edge, not a rendering bug. Sizing
+ * the tile to the full card removes the edge entirely: the gradient owns
+ * the whole box now, so it only ever fades out on its own terms (`transparent`
+ * at 85% of the distance to the far corner), never gets clipped mid-fade.
+ * The glow still reads as a corner accent rather than a wash because the
+ * colour stops themselves stay concentrated near the 100% 100% origin —
+ * that, not the tile size, is what controls how big the visible glow looks.
+ * The two 255,255,255 stops from the first version are gone for the same
+ * "gray line" complaint: at low alpha over a near-black panel, white and
+ * brand-gold read as two visibly different greys, so the handoff between
+ * them was a second seam of its own. One hue fading through five alphas
+ * removes that handoff — there is nothing left to blend, only degrees of
+ * the same colour.
+ *
+ * `!important` plus the long ancestor chain in the selector (rather than
+ * just `.nm-steps-1-card .content`) is not decoration — it is required to
+ * win against Elementor itself. This card sits inside the page's 5th
+ * top-level `.e-con.e-parent`, and Elementor ships a global, inline
+ * `<style>` block (its background-image lazy-load experiment) reading
+ * `.e-con.e-parent:nth-of-type(n+4):not(.e-lazyloaded):not(.e-no-lazyload) *
+ * { background-image: none !important; }` — every descendant of any 4th+
+ * container gets its background-image nulled until Elementor's own JS adds
+ * `.e-lazyloaded` to that container. On this install that class never gets
+ * added (confirmed: a console error in `nimo-core.js` on this page, and the
+ * class stays absent no matter how long or how far the section is
+ * scrolled into view), so any background-image here is permanently
+ * suppressed by that rule, not just on first paint. Beating an `!important`
+ * requires a higher-specificity `!important`: their selector resolves to
+ * (0,5,0) (`.e-con` `.e-parent` `:nth-of-type` `:not(.e-lazyloaded)`
+ * `:not(.e-no-lazyload)`, the trailing ` *` contributes nothing), so the
+ * selector below chains `.nm-steps-1-area` and `.nm-steps-1-wrap` — both
+ * already real ancestors, not added for this — onto `.nm-steps-1-card
+ * .content` to reach (0,5,1) via the leading `body` type selector, which
+ * only needs to equal their class count and then beats them on the
+ * element-selector tiebreaker. `background-color` needed none of this:
+ * Elementor's rule only targets `background-image`.
+ *
+ * The star field is one tiled pseudo-element on the section, not one per
+ * card, so it survives however many cards a given service page has — a
+ * small tile repeated with `background-size` is cheap over the section's
+ * ~2700px height, versus hand-placing dozens of individual gradients.
+ * `.nm-steps-1-wrap` gets `position: relative; z-index: 1` purely to win a
+ * stacking fight this introduces: `.nm-steps-1-area` already carries
+ * `z-index: 1` from the theme, and the star pseudo-element is itself
+ * `position: absolute`, so by the same painting-order rule as above it would
+ * otherwise land on top of the (position: static) card stack. The existing
+ * `.nm-Firefly-ani` / `.nm-about-1-line` decorations already sit at
+ * `z-index: -1`, so the star layer (z-index: 0) slots in above them and
+ * below the lifted cards without disturbing either.
+ */
+body.single-services .nm-steps-1-card .content {
+	background-color: var(--pc-panel);
+	border-color: rgba(255, 255, 255, 0.08);
+	background-repeat: no-repeat;
+	background-position: bottom right;
+	background-size: 100% 100%;
+}
+
+/*
+ * Alpha stops bumped up (38/24/11/3 → 55/36/17/5) on request for a more
+ * vivid glow — same colour, same five-stop fade shape (still ending at
+ * `transparent` by 85%, so section 16's "no hard edge" reasoning still
+ * holds), just more of it showing through at each stop.
+ */
+body.single-services .nm-steps-1-area .nm-steps-1-wrap .nm-steps-1-card .content {
+	background-image: radial-gradient(circle at 100% 100%,
+		rgba(255, 162, 1, 0.55) 0%,
+		rgba(255, 162, 1, 0.36) 28%,
+		rgba(255, 162, 1, 0.17) 48%,
+		rgba(255, 162, 1, 0.05) 65%,
+		transparent 85%) !important;
+	background-image: radial-gradient(circle at 100% 100%,
+		color-mix(in srgb, var(--pc-accent) 55%, transparent) 0%,
+		color-mix(in srgb, var(--pc-accent) 36%, transparent) 28%,
+		color-mix(in srgb, var(--pc-accent) 17%, transparent) 48%,
+		color-mix(in srgb, var(--pc-accent) 5%, transparent) 65%,
+		transparent 85%) !important;
+}
+
+body.single-services .nm-steps-1-card .content .disc {
+	color: #fff;
+}
+
+body.single-services .nm-steps-1-wrap {
+	position: relative;
+	z-index: 1;
+}
+
+body.single-services .nm-steps-1-area::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	pointer-events: none;
+	background-repeat: repeat;
+	background-size: 480px 480px;
+	background-image:
+		radial-gradient(1.3px 1.3px at 6% 18%, rgba(255, 255, 255, 0.85), transparent 60%),
+		radial-gradient(1px 1px at 24% 62%, rgba(255, 255, 255, 0.6), transparent 60%),
+		radial-gradient(1.5px 1.5px at 40% 30%, rgba(255, 255, 255, 0.75), transparent 60%),
+		radial-gradient(1px 1px at 58% 78%, rgba(255, 255, 255, 0.55), transparent 60%),
+		radial-gradient(1.2px 1.2px at 72% 14%, rgba(255, 255, 255, 0.8), transparent 60%),
+		radial-gradient(1px 1px at 86% 52%, rgba(255, 255, 255, 0.6), transparent 60%),
+		radial-gradient(1.4px 1.4px at 94% 86%, rgba(255, 255, 255, 0.7), transparent 60%),
+		radial-gradient(1px 1px at 15% 92%, rgba(255, 255, 255, 0.5), transparent 60%);
+	animation: pc-star-twinkle 4.5s ease-in-out infinite alternate;
+}
+
+@keyframes pc-star-twinkle {
+	from { opacity: 0.35; }
+	to { opacity: 0.75; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	body.single-services .nm-steps-1-area::before {
+		animation: none;
+		opacity: 0.55;
+	}
+}
+
+
+/* ------------------------------------------------------------------ *
+ * 17. How We Stack Up — a real table on the dark page
+ *
+ * Added for the Pay Per Click page and now also emitted by every page the
+ * service-page engine builds — `.pc-compare` is part of its standard block map,
+ * so this section is shared, not page-specific. It is scoped to
+ * `body.single-services` and carries no page-id selectors, so it stays inert on
+ * any page that does not emit the class.
+ *
+ * WHY A <table> AND NOT A COMPONENT. The strategy page renders its comparison
+ * with `tx_pricing_section` style_2 — two cards, `.pc-no-price` (section 8.5).
+ * That works when each side is a standalone list. This one is five LABELLED
+ * rows compared across two columns: "How they get paid", "The report", "After
+ * launch". Every theme component drops the row label, and the label is half
+ * the argument. It is tabular data, a screen reader should read it as such, so
+ * it is a real <table> with `<th scope="row">` in a text-editor widget.
+ *
+ * WHAT THE THEME GIVES US: nothing. nimo-core styles no <table> at all, so
+ * this starts from browser defaults, not from a component to override.
+ *
+ * COLOUR IS `background-color` ONLY, DELIBERATELY. Elementor ships a global
+ * inline <style> for its background-image lazy-load experiment:
+ *
+ *     .e-con.e-parent:nth-of-type(n+4):not(.e-lazyloaded):not(.e-no-lazyload) *
+ *       { background-image: none !important; }
+ *
+ * `.e-lazyloaded` is never added on this install, so ANY background-image on a
+ * descendant of the 4th-or-later top-level container is permanently
+ * suppressed. This block sits well past the 4th. That rules out the obvious
+ * mobile affordance — a right-edge gradient fade on the scroll container —
+ * which would simply never paint. The scroll cue is a styled scrollbar
+ * instead, which owes Elementor nothing.
+ *
+ * SCROLL, NOT STACK, ON MOBILE. Three columns of prose cannot reflow to 375px
+ * without either truncating cells or turning each row into a stacked card, and
+ * a stacked card destroys the side-by-side reading that is the entire point of
+ * the section — "A cut of whatever you spend" only lands next to "A flat fee".
+ * `overflow-x: auto` on the widget with a `min-width` on the table keeps the
+ * two columns adjacent and lets the reader drag.
+ *
+ * Note that makes `.pc-compare` a scroll container. Harmless here — nothing
+ * inside it is `position: sticky` — but check that before nesting anything
+ * new, because an ancestor with `overflow` other than `visible` silently
+ * kills sticky descendants.
+ *
+ * Every value below resolves from the custom properties at the top of this
+ * file, so the brand colour keeps tracking Theme Options and nothing here
+ * hardcodes a hex. `--pc-panel` had exactly one other user (section 16's
+ * timeline cards) before this.
+ * ------------------------------------------------------------------ */
+
+/*
+ * The widget IS the scroll container. This Elementor version's text-editor
+ * renders its content as DIRECT children with no `.elementor-widget-container`
+ * wrapper — the same finding section 6 records for `.pc-prose > *` — so there
+ * is no inner element to scroll instead.
+ */
+body.single-services .pc-compare {
+	overflow-x: auto;
+	font-family: var(--nm-font-2);
+	scrollbar-color: var(--pc-accent) rgba(255, 255, 255, 0.08);
+	scrollbar-width: thin;
+}
+
+body.single-services .pc-compare-table {
+	width: 100%;
+	/*
+	 * Below 640px the two comparison columns stop holding a readable line.
+	 * Originally measured against the paid-search page's longest cell; the
+	 * longest across all pages is now the AI search page's "Answer-first
+	 * content and video machines can cite", which measures 352px against a
+	 * 266px column at mobile and so wraps to two lines — the same tallest-row
+	 * height 640px was chosen for. Above it the table just fills its container.
+	 *
+	 * Re-measure this if a page introduces a longer cell than that one.
+	 */
+	min-width: 640px;
+	border-collapse: collapse;
+	font-size: 16px;
+	line-height: 1.6;
+	color: var(--pc-body);
+	text-align: left;
+}
+
+body.single-services .pc-compare-table th,
+body.single-services .pc-compare-table td {
+	padding: 18px 20px;
+	vertical-align: top;
+	border-bottom: 1px solid var(--pc-rule);
+}
+
+/* Column heads read as the page's eyebrow type, not as body copy. */
+body.single-services .pc-compare-table thead th {
+	font-size: 14px;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--pc-accent);
+	border-bottom-color: var(--pc-accent);
+	white-space: nowrap;
+}
+
+/* The row label is a heading, so it takes the heading face and colour. */
+body.single-services .pc-compare-table tbody th[scope="row"] {
+	font-family: var(--nm-font-1);
+	font-weight: 700;
+	color: var(--pc-heading);
+	width: 22%;
+}
+
+/*
+ * The "us" column is lifted — the same hierarchy trick section 8.5 uses on the
+ * two pricing cards: a panel tint and white type, so the eye lands on it
+ * without the table needing a second visual system.
+ *
+ * `nth-child(3)` rather than a class. The cells come from a text-editor string
+ * an editor may well retype in the WordPress admin, and a positional selector
+ * cannot be dropped by accident the way a class can. It does mean inserting a
+ * column would move the highlight — but a third comparison column would need
+ * this whole block rethinking anyway.
+ */
+body.single-services .pc-compare-table thead th:nth-child(3),
+body.single-services .pc-compare-table tbody td:nth-child(3) {
+	background-color: var(--pc-panel);
+	color: var(--pc-heading);
+}
+
+body.single-services .pc-compare-table tbody tr:last-child th,
+body.single-services .pc-compare-table tbody tr:last-child td {
+	border-bottom: 0;
+}
+
+/*
+ * Names the table for a screen reader without printing a caption, and hides
+ * the empty top-left corner cell's label. `clip-path: inset(50%)` rather than
+ * `display: none`, which would take it out of the accessibility tree too.
+ */
+body.single-services .pc-sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+	border: 0;
+}
+
+@media (max-width: 767px) {
+
+	body.single-services .pc-compare-table {
+		font-size: 15px;
+	}
+
+	body.single-services .pc-compare-table th,
+	body.single-services .pc-compare-table td {
+		padding: 14px;
+	}
+
+	/*
+	 * WebKit ignores `scrollbar-width`/`scrollbar-color` above, and an
+	 * overlay scrollbar that only appears mid-drag gives no hint the table
+	 * scrolls at all. These make the affordance permanent on touch.
+	 */
+	body.single-services .pc-compare::-webkit-scrollbar {
+		height: 6px;
+	}
+
+	body.single-services .pc-compare::-webkit-scrollbar-track {
+		background: rgba(255, 255, 255, 0.08);
+	}
+
+	body.single-services .pc-compare::-webkit-scrollbar-thumb {
+		background: var(--pc-accent);
+		border-radius: 3px;
+	}
+}
+
+/* ------------------------------------------------------------------ *
+ * 18. Text over photographs — the small-screen scrim
+ *
+ * MOBILE ONLY, deliberately. Desktop keeps the theme's composition and the
+ * 0.30 scrim set in section 6.
+ *
+ * THE BUG. On a phone the hero photograph and the hero copy occupy the same
+ * rectangle: section 0c stacks the composition, so the H1, the standfirst and
+ * the CTA all sit directly on top of the picture instead of beside it. At 0.30
+ * that was fine for the near-black demo figure it was tuned against, and it is
+ * not fine for a real photograph — the reported case was a hero whose subject
+ * is a lit screen, and the blue glow landed straight behind "Google's AI now".
+ *
+ * WHY A SCRIM AND NOT A DARKER PHOTOGRAPH. Every service page now carries its
+ * own hero, and there will be around forty of them, chosen by whoever writes
+ * the content file. A rule that only holds while everyone remembers to pick
+ * dark pictures is not a rule. This makes white-on-photo legible for any
+ * picture, so the choice of photograph goes back to being an editorial
+ * decision rather than a technical constraint.
+ *
+ * THE NUMBER, AND THE MISTAKE THAT PRODUCED THE FIRST ONE. White text is
+ * luminance 1.0, so contrast against a background of luminance L is
+ * 1.05 / (L + 0.05), and a black scrim at alpha a takes L to L(1 - a). WCAG AA
+ * wants 4.5:1 for body text, which needs L <= 0.183.
+ *
+ * This shipped at 0.62 first, on an ESTIMATE that a screen-lit photograph peaks
+ * around L 0.45. Then it was measured, and the estimate was wrong by a mile:
+ * sampling geo-hero.jpg over the actual rectangle the H1 occupies at 375px gives
+ * mean L 0.187 but 99th-percentile L 0.884 — the picture contains a blown-out
+ * monitor highlight. 0.62 against that is 2.72:1, a clear fail, and the mean
+ * being fine is exactly why it looked survivable.
+ *
+ * So the number comes from the 99th percentile, not the mean, and not a guess:
+ * 0.884 * (1 - 0.82) = 0.159 -> 5.0:1. A whole-image p99 of 0.988 needs 0.82 to
+ * clear 4.5:1 anywhere in frame, so 0.82 it is. Any future page's photograph is
+ * unknown, and this has to hold for all forty without anyone re-measuring.
+ *
+ * Yes, that is dark. The hero photograph is a mood behind a headline, not a
+ * subject, and an unreadable H1 is a worse outcome than a dim picture. The
+ * `text-shadow` below is belt-and-braces for local highlights that survive even
+ * this — it costs nothing and it is what saves the case where someone picks a
+ * photograph of a white wall.
+ *
+ * Colour is neutral #080808 rather than a tint: section 6 records a green cast
+ * that appeared when a lighter scrim let the theme's teal multiply through, and
+ * a neutral layer cannot reintroduce it at any opacity.
+ *
+ * This overrides only `background-color` on the existing `::after`. The
+ * `z-index: -2` that keeps the scrim off the curved stroke and the figure is
+ * set once in section 6 and is not repeated here — see the long note there
+ * before changing it.
+ * ------------------------------------------------------------------ */
+
+@media (max-width: 991px) {
+
+	body.single-services .nm-hero-4-area::after {
+		background-color: rgba(8, 8, 8, 0.82);
+	}
+
+	/*
+	 * Guards the glyph edges against a highlight the flat scrim cannot reach —
+	 * a spec-hilight, a white sky, a lit window directly behind a letter. Tight
+	 * and low-opacity so it reads as weight rather than as a drop shadow.
+	 */
+	body.single-services .nm-hero-4-area .nm-hero-4-title-wrap,
+	body.single-services .nm-hero-4-area .nm-hero-4-content {
+		text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+	}
+
+	/*
+	 * The closing band has the same shape of problem — `tx_cta` puts its
+	 * headline, standfirst and button over a full-bleed photograph — but it is
+	 * a different element with no `::after` of its own, so it gets one. Section
+	 * 11's own note explains why this area is excluded from the section-0
+	 * rhythm rule; nothing here touches that.
+	 *
+	 * `z-index: 0` with the content above it, rather than the hero's -2: this
+	 * section has no `-1` decoration layer to protect, and a plain stacking
+	 * order is easier to reason about than borrowing the hero's trick.
+	 */
+	body.single-services .nm-cta-2-area {
+		position: relative;
+	}
+
+	body.single-services .nm-cta-2-area::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background-color: rgba(8, 8, 8, 0.78);
+		z-index: 0;
+		pointer-events: none;
+	}
+
+	body.single-services .nm-cta-2-area > * {
+		position: relative;
+		z-index: 1;
+	}
+}
+
+/* ------------------------------------------------------------------ *
+ * 19. "Is This Actually For You" — align the two cards to each other
+ *
+ * THE REPORTED SYMPTOMS were three: the bullet lists in the two cards did not
+ * line up, the CTA buttons sat at different heights, and the cards looked
+ * different sizes. Measured at 1440, the cards were ALREADY identical — 845x416
+ * both, zero difference in either axis. Every visible problem traced to one
+ * cause worth writing down, because it will recur on every page:
+ *
+ *   `.card-top` is as tall as its copy. The left card's lead paragraph ran one
+ *   line longer than the right's, so that panel was 281px against 257px — and
+ *   that 24px pushed everything below it down by exactly 24px. The bullets
+ *   started 24px lower, and so did the button. Nothing was mis-sized; one
+ *   header was taller, and the rest inherited the offset.
+ *
+ * So the fix aligns the two cards' INTERNAL rows, rather than trying to
+ * equalise copy lengths across forty pages — which is not a thing anyone can
+ * promise, and would be a content constraint standing in for a layout fix.
+ *
+ * SUBGRID does exactly that. The wrap already lays the cards out in a grid
+ * (section 4 drops it to two tracks); giving it two explicit ROWS and letting
+ * each card adopt them means `.card-top` shares one row across both cards and
+ * `.card-body` shares the other. The taller header sets the row height and the
+ * shorter one grows to match, so the bodies start at the same y by
+ * construction. Verified: header, list and button offsets all went 24px -> 0.
+ *
+ * Scoped to >=992px because that is where section 4's two-column grid exists.
+ * Below it the theme stacks to two columns then one, and cards in separate rows
+ * have nothing to align with.
+ *
+ * THE BUTTON PIN IS SEPARATE, and deliberately NOT inside the media query. A
+ * card with fewer bullets than its neighbour would still float its button up
+ * mid-card even with the rows aligned, and on a stacked mobile layout there is
+ * no neighbour at all. Making `.card-body` a flex column and giving the button
+ * `margin-top: auto` pins it to the bottom of whatever space the card has, at
+ * every width and for any bullet count. Measured 25px from the card's bottom
+ * edge on both.
+ *
+ * `align-items: flex-start` on the bullets is the fourth fix, and the one that
+ * was not visible in the report: nimo-core centres each `li` (`align-items:
+ * center`), which is invisible while every bullet is one line and floats the
+ * star to the vertical middle the moment one wraps to two. The 4px nudge
+ * optically centres the 20px star on the first line rather than hanging it off
+ * the cap height. `flex: 0 0 auto` stops the star being squeezed by a long
+ * line — nimo-core leaves it at `flex-shrink: 1`.
+ * ------------------------------------------------------------------ */
+
+@supports (grid-template-rows: subgrid) {
+	@media (min-width: 992px) {
+		body.single-services .nm-price-4-wrap {
+			grid-template-rows: auto 1fr;
+		}
+
+		body.single-services .nm-price-4-card {
+			display: grid;
+			grid-template-rows: subgrid;
+			grid-row: span 2;
+		}
+	}
+}
+
+body.single-services .nm-price-4-card .card-body {
+	display: flex;
+	flex-direction: column;
+}
+
+body.single-services .nm-price-4-card .card-btn {
+	margin-top: auto;
+}
+
+body.single-services .nm-price-4-card .package-features li {
+	align-items: flex-start;
+}
+
+body.single-services .nm-price-4-card .package-features li img {
+	margin-top: 4px;
+	flex: 0 0 auto;
+}
+
+/*
+ * The thumbs-down is the FIRST inline SVG to appear in a pricing-card button,
+ * and it exposed two things section 4 never had to handle.
+ *
+ * SIZE. nimo-core sizes that icon with `font-size`, which an `<i>` glyph obeys
+ * and an `<svg>` completely ignores — so the arrow rendered at 16x16 and the
+ * thumbs-down at 40x40, filling its circle edge to edge while its neighbour sat
+ * comfortably inside one. Matching the glyph's 16px is what makes the two cards
+ * look like a pair rather than a mistake.
+ *
+ * FILL. Section 4 sets `color` on `.card-btn .icon *`, which is all an `<i>`
+ * needs. An SVG's `fill` does not inherit from `color`, so it fell through to
+ * the browser default — black, which happens to be almost right on this white
+ * circle and would be invisible the day the circle goes dark. Section 10 of this
+ * file exists for exactly this bug in three other places; this is the fourth,
+ * and it is fixed here rather than there because it only arises from the icon
+ * choice made in the engine's fit block.
+ */
+body.single-services .nm-price-4-card .card-btn .icon svg {
+	width: 16px;
+	height: 16px;
+	fill: currentColor;
+}
+
+/* ------------------------------------------------------------------ *
+ * 20. The manifesto — an editorial spread, not a column of body text
+ *
+ * The `manifesto` block (engine block 7b) is a heading plus several
+ * paragraphs of continuous argument, and shipped as three stacked widgets
+ * it rendered as a grey column filling the left 55% with the right 45% of
+ * a 1344px container empty. On the page's strongest argument that reads as
+ * an afterthought.
+ *
+ * WHY THIS IS CSS AND NOT A DIFFERENT WIDGET. It was worth checking before
+ * writing any of this, so the answer is recorded here: nimo-core has no
+ * component that takes a heading plus continuous prose. `tx_info_text`
+ * renders ONE short line. `tx_wcu` renders a centred title, a single
+ * `<p>` description and a repeater of icon cards. `tx_about` and
+ * `tx_service_section` — already used four times on this page — both split
+ * the body into repeater rows. Every one of them would chop six paragraphs
+ * of one argument into cards, which is the precise failure the block was
+ * added to avoid. So the block is right and only its presentation was
+ * missing.
+ *
+ * THREE THINGS THIS DOES
+ *
+ *   1. A two-column spread above 991px: the eyebrow and H2 hold the left
+ *      column, the argument runs down the right. That uses the width the
+ *      stacked version wasted, and it gives the H2 a narrow column so it
+ *      sets over three lines as a block rather than one long line.
+ *
+ *   2. The FIRST paragraph is the lead. "Read this twice. It's the whole
+ *      ballgame." is an instruction to the reader, not body copy, so it is
+ *      set larger and in the heading colour — the section opens on a beat.
+ *
+ *   3. A paragraph whose entire content is `<strong>` becomes the anchor:
+ *      gold rule, larger type, air around it. That is the payoff line, and
+ *      in plain `.pc-prose` it looked like ordinary bold text.
+ *
+ * (2) and (3) are matched structurally rather than by a class, so any page
+ * that later declares a `manifesto` gets the same treatment for nothing.
+ * The convention is: first paragraph leads, a lone bolded paragraph is the
+ * anchor. It is worth knowing that is load-bearing before rewriting one.
+ *
+ * THE HANDLE IS `.pc-manifesto`, NOT `.pc-sec-title`. Elementor drops
+ * `_css_classes` on containers, so the wrapper is reached with `:has()` on
+ * a child — and the compare table (section 17) also has a `.pc-sec-title`
+ * child. Keying off that would turn the table into a two-column spread.
+ *
+ * Section 0's rhythm and the 1344px container still come from
+ * `.pc-sec-title`, and section 10's `padding-block: 0` exclusion list still
+ * spares this block for the same reason. Nothing there needed changing.
+ * ------------------------------------------------------------------ */
+
+@media (min-width: 992px) {
+
+	body.single-services .e-con:has(> .pc-manifesto) {
+		display: grid;
+		/* 40 + 5 gap + 55. At the 1320px inner width that is a 528px heading
+		 * column against a 726px measure, which the 62ch cap on
+		 * `.pc-prose > *` then trims to ~700px. */
+		grid-template-columns: minmax(0, 40fr) minmax(0, 55fr);
+		column-gap: 5%;
+		align-content: start;
+	}
+
+	/*
+	 * The eyebrow runs FULL WIDTH above the spread, and the two columns are
+	 * one single grid row beneath it.
+	 *
+	 * The obvious placement — eyebrow row 1, title row 2, prose spanning
+	 * `1 / -1` — is wrong, and silently so. A grid item spanning two
+	 * intrinsically-sized rows has its height distributed across them, so the
+	 * 726px-tall prose column inflated row 1 and dropped the H2 534px below
+	 * its own eyebrow. Measured, not guessed. Keeping the prose inside ONE row
+	 * removes the distribution entirely.
+	 */
+	body.single-services .e-con:has(> .pc-manifesto) > .pc-sec-eyebrow {
+		grid-column: 1 / -1;
+		grid-row: 1;
+	}
+
+	body.single-services .e-con:has(> .pc-manifesto) > .pc-sec-title {
+		grid-column: 1;
+		grid-row: 2;
+		align-self: start;
+		/* Nothing follows it in this column, so the 40px it carries from
+		 * section 2 would only push the grid taller. */
+		margin-bottom: 0;
+	}
+
+	body.single-services .e-con:has(> .pc-manifesto) > .pc-manifesto {
+		grid-column: 2;
+		grid-row: 2;
+	}
+}
+
+/* The lead. */
+body.single-services .pc-manifesto > p:first-child {
+	font-size: 22px;
+	line-height: 1.5;
+	color: var(--pc-heading);
+}
+
+/* The anchor — a paragraph that is nothing but a <strong>. */
+body.single-services .pc-manifesto p:has(> strong:only-child) {
+	margin-block: 1.6em;
+	padding-left: 26px;
+	border-left: 2px solid var(--pc-accent);
+	font-size: 20px;
+	line-height: 1.55;
+}
+
+@media (max-width: 767px) {
+
+	body.single-services .pc-manifesto > p:first-child {
+		font-size: 20px;
+	}
+
+	body.single-services .pc-manifesto p:has(> strong:only-child) {
+		padding-left: 18px;
+		font-size: 18px;
+	}
+}
+
+/* ---------------------------------------------------------------------------
+ * 21. "You are here" in the header nav
+ *
+ * `inc/service-menu.php` writes `current-menu-item` on the service page inside
+ * the Services dropdown, and now `current-menu-parent` / `current-menu-ancestor`
+ * on the "Services" item above it. NOTHING IN THE THEME STYLES ANY OF THOSE.
+ * Grepping nimo, nimo-core and this file for `current-menu` / `current_page`
+ * returns no rule that sets a colour anywhere — the header has a hover state and
+ * no current state at all. So the classes were invisible, and adding the
+ * ancestor ones without this section would have changed the markup and nothing
+ * else.
+ *
+ * The colour is not invented. Header 4's own hover is
+ * `.nm-main-navigation .navbar-nav li:hover > a { color: var(--nm-clr-pr-1) }`,
+ * i.e. the brand gold, so "active" already means gold in this header and the
+ * current item simply holds that state instead of borrowing a new one.
+ *
+ * Keyed on `.navbar-nav` rather than `.nm-main-navigation`, because the mobile
+ * menu inside the off-canvas panel is `.mobile-main-navigation` and carries no
+ * `.nm-main-navigation` ancestor. Both top-level `<ul>`s carry `.navbar-nav`, so
+ * one selector covers the desktop bar and the off-canvas list.
+ *
+ * Specificity: the rule being overridden is
+ * `.nm-main-navigation .navbar-nav li a` (0,2,2). These selectors are (0,3,3),
+ * so they win on their own and no `!important` is needed. `> a` matches the
+ * theme's own `li:hover > a` shape, which keeps the colour off the nested
+ * dropdown links of an ancestor item.
+ *
+ * Scope is `body.single-services`, which is also the only place this stylesheet
+ * loads (see inc/enqueue.php) — and the only place an ancestor of a service page
+ * can be current. No other page on the site gains a byte or a rule.
+ * ------------------------------------------------------------------------- */
+
+body.single-services .navbar-nav > li.current-menu-ancestor > a,
+body.single-services .navbar-nav .dropdown-menu > li.current-menu-item > a {
+	color: var(--pc-accent);
+}
+
+/*
+ * The off-canvas menu's top level needs its own selector, and it needs the id.
+ *
+ * nimo-core prints `#m-main-nav > li > a { color: #fff }` inline for the mobile
+ * panel. That is (1,0,2) and an id cannot be out-specified by any number of
+ * classes, so the (0,3,3) rule above loses there — the dropdown child went gold
+ * in the panel while "Services" above it stayed white. Repeating the id is the
+ * only way to win without `!important`; this is (1,2,3).
+ *
+ * `m-main-nav` is hardcoded as `'menu_id' => 'm-main-nav'` in nimo-core's shared
+ * header part (elementor-widgets/tx-headers/parts/side-info.php), so all five
+ * header layouts emit it and it is stable rather than generated. If it ever does
+ * change, this rule stops applying and the off-canvas simply loses its highlight
+ * again — it degrades to today's behaviour rather than breaking anything.
+ */
+body.single-services #m-main-nav > li.current-menu-ancestor > a {
+	color: var(--pc-accent);
+}

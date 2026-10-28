@@ -1,0 +1,539 @@
+/*
+ * Service Detail pages (/services/<slug>/, all 14 in the Services menu):
+ * the home page's glass system (client, 2026-10-16).
+ *
+ * Every service page is built by the same engine (body class
+ * `pc-engine-service`) from the same sections: hero-4, about-4, about-1,
+ * steps-1, services-4, process-5, services-5, price-4, blog-4, cta-2,
+ * contact-5. service-detail.css lays them out; this file, loaded after it,
+ * brings them in line with the home page:
+ *
+ *   - dark glass on every card (rgba(28,24,20,.55) + a faint 135deg sheen +
+ *     backdrop blur) with the 1px gradient edge (--pc-edge) on a free
+ *     pseudo-element;
+ *   - the light islands (the outcome cards, the pricing cards, the blog
+ *     cards, the contact band) turned to dark glass with white type;
+ *   - every button the amber glass pill with white text (--pc-amber);
+ *   - dividers as the white fade line (--pc-line-h).
+ *
+ * Selectors start `html body.single-services` to outrank service-detail.css
+ * (`body.single-services …`). Where that file pins type colour inside the
+ * pricing card at a very high specificity, colour is set !important.
+ */
+
+/* ================================================================== *
+ * The edge
+ * ================================================================== */
+html body.single-services .nm-steps-1-card .content::after,
+html body.single-services .nm-services-5-item::after,
+html body.single-services .nm-price-4-card::after,
+html body.single-services .nm-blog-4-item-2::after,
+html body.single-services .nm-accordion-item::after,
+html body.single-services .nm-about-4-video::after,
+html body.single-services .nm-contact-5-box::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 3;
+	padding: var(--pc-edge-w);
+	border-radius: inherit;
+	background: var(--pc-edge);
+	-webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+	-webkit-mask-composite: xor;
+	        mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+	pointer-events: none;
+}
+
+html body.single-services .nm-steps-1-card .content,
+html body.single-services .nm-services-5-item,
+html body.single-services .nm-price-4-card,
+html body.single-services .nm-blog-4-item-2,
+html body.single-services .nm-accordion-item,
+html body.single-services .nm-about-4-video {
+	position: relative;
+}
+
+/* The shared dark glass. */
+html body.single-services .nm-steps-1-card .content,
+html body.single-services .nm-services-5-item,
+html body.single-services .nm-price-4-card,
+html body.single-services .nm-blog-4-item-2,
+html body.single-services .nm-accordion-item,
+html body.single-services .nm-contact-5-box {
+	border-color: transparent;
+	background-color: rgba(28, 24, 20, 0.55);
+	background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 45%);
+	-webkit-backdrop-filter: blur(18px) saturate(140%);
+	        backdrop-filter: blur(18px) saturate(140%);
+	box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+}
+
+/* The problem cards ("Maybe It Looks Gorgeous", "The Door Is Quietly
+   Locked", …), were a grey-to-black gradient. Same as the About page's:
+   a touch more solid (.72) because they overlap while they stack in, and
+   the edge on ::before because ::after is the theme's gold hover fill. */
+html body.single-services .nm-about-1-card {
+	background-color: rgba(28, 24, 20, 0.72);
+	background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 45%);
+	-webkit-backdrop-filter: blur(18px) saturate(140%);
+	        backdrop-filter: blur(18px) saturate(140%);
+	box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+}
+
+html body.single-services .nm-about-1-card::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	padding: var(--pc-edge-w);
+	border-radius: inherit;
+	background: var(--pc-edge);
+	-webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+	-webkit-mask-composite: xor;
+	        mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+	pointer-events: none;
+}
+
+/* The founder's three stacked discs beside "Nick Barkley" were flat
+   slate grey: white glass instead. */
+html body.single-services .nm-about-1-author-img :is(.img-shape-1, .img-shape-2, .img-shape-3) {
+	background: linear-gradient(135deg, rgba(255, 255, 255, 0.26) 0%, rgba(255, 255, 255, 0.06) 100%);
+	box-shadow: none;
+	-webkit-backdrop-filter: blur(10px);
+	        backdrop-filter: blur(10px);
+}
+
+/* ================================================================== *
+ * Steps (process timeline)
+ * ================================================================== */
+html body.single-services .nm-steps-1-card .date {
+	border-radius: 100px;
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.08) 100%);
+	color: #fff;
+	-webkit-backdrop-filter: blur(12px) saturate(150%);
+	        backdrop-filter: blur(12px) saturate(150%);
+	box-shadow: none;
+}
+
+/* ================================================================== *
+ * Outcome cards ("What You Walk Away With"), were light grey and white
+ * ================================================================== */
+html body.single-services .nm-services-5-item :is(.nm-services-5-item-title, .content-wrap) {
+	background: transparent;
+}
+
+html body.single-services .nm-services-5-item :is(.nm-services-5-item-title, .nm-services-5-item-title .text, .nm-h-5) {
+	color: #fff !important;
+}
+
+html body.single-services .nm-services-5-item :is(.disc, .nm-p-5) {
+	color: rgba(255, 255, 255, 0.72) !important;
+}
+
+/* The icon tile: white glass, white glyph. */
+html body.single-services .nm-services-5-item .icon {
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.06) 100%);
+	box-shadow: none;
+}
+
+html body.single-services .nm-services-5-item .icon :is(i, svg) {
+	color: #fff !important;
+	fill: currentColor;
+}
+
+/* ================================================================== *
+ * Pricing ("Quick gut check"), were white panels
+ * ================================================================== */
+html body.single-services .nm-price-4-card .card-top {
+	background: transparent;
+	background-image: var(--pc-line-h);
+	background-position: bottom;
+	background-size: 100% var(--pc-line-w);
+	background-repeat: no-repeat;
+}
+
+html body.single-services .nm-price-4-card :is(.nm-h-4, .nm-h-4 span, .nm-p-3, .package-name, .plan-name, .wa-ul li):not(.card-btn):not(.card-btn *) {
+	color: #fff !important;
+}
+
+html body.single-services .nm-price-4-card :is(.nm-p-4, .package-disc) {
+	color: rgba(255, 255, 255, 0.7) !important;
+}
+
+html body.single-services .nm-price-4-card :is(.wa-ul li i, .wa-ul li svg) {
+	color: #fff !important;
+}
+
+/* Feature stars and bullet artwork were drawn dark for the white card. */
+html body.single-services .nm-price-4-card .wa-ul li img {
+	filter: brightness(0) invert(1);
+}
+
+html body.single-services .nm-price-4-card .price-wrap {
+	border-color: transparent;
+	border-image: var(--pc-line-h) 1;
+	border-width: var(--pc-line-w);
+}
+
+html body.single-services .nm-price-4-card .package-x-icon .icon {
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.06) 100%);
+	box-shadow: none;
+}
+
+html body.single-services .nm-price-4-card .package-x-icon .icon i {
+	color: #fff !important;
+}
+
+/* The card the page wants booked: an amber edge and a warm lift instead of
+   the plain gradient ring. */
+html body.single-services .nm-price-4-wrap .nm-price-4-card:last-child {
+	border-color: transparent;
+	box-shadow: 0 28px 64px rgba(0, 0, 0, 0.5), 0 0 40px rgba(200, 150, 70, 0.18);
+}
+
+/* …its edge is the same gradient ring, drawn in amber and 1.5px. */
+html body.single-services .nm-price-4-wrap .nm-price-4-card:last-child::after {
+	padding: var(--pc-edge-w);
+	background: linear-gradient(135deg, rgba(220, 165, 80, 0.35) 0%, rgb(230, 175, 90) 50%, rgba(220, 165, 80, 0.35) 100%);
+}
+
+/* ================================================================== *
+ * Blog cards, were white
+ * ================================================================== */
+html body.single-services .nm-blog-4-area .nm-blog-4-item-2 :is(.nm-h-4, a, .date, .date i) {
+	color: #fff !important;
+}
+
+html body.single-services .nm-blog-4-area .nm-blog-4-item-2 .nm-p-4 {
+	color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* ================================================================== *
+ * Dividers: the white fade line
+ * ================================================================== */
+html body.single-services .nm-services-4-area :is(.number, .content-wrap),
+html body.single-services .nm-process-5-area .disc {
+	border-top-color: transparent;
+	border-image: var(--pc-line-h) 1;
+	border-top-width: var(--pc-line-w);
+}
+
+/* Process cards: the card is an SVG shape with a notched tab, so the glass
+ * goes on the path: a warm dark fill and a thin light edge that keeps its
+ * 1px width however the shape is stretched. The fill stays near-opaque: on
+ * desktop the cards slide over one another, and a see-through fill let the
+ * card underneath read through. */
+html body.single-services .nm-process-5-card .bg-shape path {
+	fill: rgba(30, 26, 22, 0.97);
+	stroke: rgba(255, 255, 255, 0.22);
+	stroke: url(#pc-edge-grad); /* inc/enqueue.php prints it in the footer */
+	stroke-width: var(--pc-edge-w);
+	vector-effect: non-scaling-stroke;
+}
+
+/* About features ("Built To Sell" etc.): the rule between icon and text. */
+html body.single-services .nm-about-4-area .nm-about-4-features-single .icon {
+	border-right-color: transparent;
+	border-image: var(--pc-line-v) 1;
+	border-right-width: var(--pc-line-w);
+}
+
+/* The other plain rules on the page, as the same fades:
+   - About: the line under the features and the column rule beside them
+     (the theme's was a radial gradient, dark in the middle);
+   - About (founder): the short rule beside the name;
+   - the trust strip under the hero ("Marketing + Video Agency · …");
+   - Steps: the timeline rule. */
+html body.single-services .nm-about-4-left-line {
+	background: var(--pc-line-h);
+	opacity: 0.35;
+}
+
+html body.single-services .nm-about-4-left::after {
+	background: var(--pc-line-v);
+	opacity: 0.35;
+}
+
+html body.single-services .inner-div-line {
+	background: var(--pc-line-v);
+}
+
+html body.single-services .pc-trust-strip,
+html body.single-services .pc-trust-strip p {
+	border-color: transparent;
+	border-image: var(--pc-line-h) 1;
+	border-width: var(--pc-line-w);
+}
+
+html body.single-services .nm-steps-1-area .number-line {
+	border-right-color: transparent;
+	border-image: var(--pc-line-v) 1;
+	border-right-width: var(--pc-line-w);
+}
+
+/* FAQ: the rule under an open question's title. */
+html body.single-services .nm-accordion-item .item-title {
+	border-bottom-color: transparent;
+	border-image: var(--pc-line-h) 1;
+	border-bottom-width: var(--pc-line-w);
+}
+
+/* Comparison table: a glass panel. The edge is an inset shadow rather than
+ * the ::after ring, because `.pc-compare` scrolls sideways on phones and an
+ * absolutely placed ring would scroll away with the table. */
+html body.single-services .pc-compare {
+	padding: 8px 10px 4px;
+	border: 1px solid transparent;
+	border-radius: 20px;
+	/* The gradient edge without a pseudo-element: the glass fill is painted
+	   on the padding box over --pc-edge on the border box, so only the 1px
+	   border shows the edge. The fill is solid (the band behind it is flat
+	   #111) so the edge cannot read through it. */
+	background:
+		linear-gradient(135deg, rgb(37, 34, 31) 0%, rgb(26, 24, 22) 45%) padding-box,
+		var(--pc-edge) border-box;
+	box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+}
+
+/* Table rules: the white fade, one line across each row (row backgrounds
+   paint across the whole row; cell borders cannot take a gradient in a
+   collapsed table). The head keeps the accent, as an amber fade. */
+html body.single-services .pc-compare-table :is(th, td) {
+	border-bottom-color: transparent;
+}
+
+html body.single-services .pc-compare-table tbody tr:not(:last-child) {
+	background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.35) 50%, rgba(255, 255, 255, 0) 100%) bottom / 100% var(--pc-line-w) no-repeat;
+}
+
+html body.single-services .pc-compare-table thead tr {
+	background: linear-gradient(90deg, rgba(255, 162, 1, 0) 0%, rgb(255, 162, 1) 50%, rgba(255, 162, 1, 0) 100%) bottom / 100% var(--pc-line-w) no-repeat;
+}
+
+/* Closing CTA logo: same crop as the header logo (the partner icons under
+ * the wordmark are cut off), on a dark glass tile instead of a white one. */
+html body.single-services .nm-cta-2-area .nm-about-2-img-logo {
+	border: 1px solid transparent;
+	background:
+		linear-gradient(135deg, rgb(40, 37, 34) 0%, rgb(24, 22, 20) 100%) padding-box,
+		var(--pc-edge) border-box;
+	box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+}
+
+html body.single-services .nm-cta-2-area .pc-cta-logo {
+	height: auto;
+	aspect-ratio: 343 / 122;
+	object-fit: cover;
+	object-position: top;
+}
+
+/* The "us" column takes a warm amber tint instead of the flat grey panel. */
+html body.single-services .pc-compare-table thead th:nth-child(3),
+html body.single-services .pc-compare-table tbody td:nth-child(3) {
+	background-color: rgba(190, 135, 55, 0.12);
+}
+
+/* The About video: a soft light frame, like the home page's HQ photo. */
+html body.single-services .nm-about-4-video {
+	border: 0;
+	border-radius: 20px;
+	box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+}
+
+html body.single-services .nm-about-4-video::after {
+	padding: var(--pc-edge-w);
+}
+
+/* ================================================================== *
+ * Contact band ("Tell us…"), was a light grey band
+ * ================================================================== */
+html body.single-services .nm-contact-5-area {
+	background-color: #111;
+}
+
+/* The theme lit the box's top corners with two blurred orange discs on
+   ::before/::after. ::after now carries the gradient edge, so the warm
+   light moves into the box's own background as two radial glows. */
+html body.single-services .nm-contact-5-box {
+	background-image:
+		radial-gradient(circle at 0 0, rgba(190, 135, 55, 0.55) 0, rgba(190, 135, 55, 0) 300px),
+		radial-gradient(circle at 100% 0, rgba(190, 135, 55, 0.55) 0, rgba(190, 135, 55, 0) 300px),
+		linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 45%);
+	box-shadow: 0 30px 70px rgba(0, 0, 0, 0.55);
+}
+
+html body.single-services .nm-contact-5-box::before {
+	display: none;
+}
+
+html body.single-services .nm-contact-5-box::after {
+	width: auto;
+	height: auto;
+	filter: none;
+	opacity: 1;
+}
+
+/* Fields: the gradient edge on a solid dark fill (see .pc-compare for the
+   padding-box / border-box trick), amber when in use. */
+html body.single-services .nm-contact-5-box :is(input.wpcf7-form-control, textarea.wpcf7-form-control, select.wpcf7-form-control):not([type="checkbox"]):not([type="radio"]):not([type="submit"]) {
+	border: 1px solid transparent;
+	background:
+		linear-gradient(rgb(38, 35, 32), rgb(38, 35, 32)) padding-box,
+		linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.55) 50%, rgba(255, 255, 255, 0.1) 100%) border-box;
+	color: #fff;
+}
+
+html body.single-services .nm-contact-5-box :is(input.wpcf7-form-control, textarea.wpcf7-form-control, select.wpcf7-form-control):not([type="checkbox"]):not([type="radio"]):not([type="submit"]):focus {
+	background:
+		linear-gradient(rgb(38, 35, 32), rgb(38, 35, 32)) padding-box,
+		linear-gradient(135deg, rgba(200, 150, 70, 0.4) 0%, rgb(200, 150, 70) 50%, rgba(200, 150, 70, 0.4) 100%) border-box;
+	outline: none;
+}
+
+/* The scrolling band's gold strip: the amber of the buttons. */
+html body.single-services .nm-contact-5-marquee-wrap-2 {
+	background: var(--pc-amber);
+}
+
+/* ================================================================== *
+ * Buttons: the home page's amber glass pill, white text
+ * ================================================================== */
+html body.single-services :is(.nm-pr-btn-1, .nm-pr-btn-2, .nm-pr-btn-4, .nm-pr-btn-5),
+html body.single-services .nm-price-4-card .card-btn,
+html body.single-services .nm-price-4-card .card-btn:hover {
+	background-color: rgba(150, 106, 44, 0.9) !important;
+	background-image:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0) 100%),
+		var(--pc-amber) !important;
+	border-color: transparent !important;
+	border-radius: 100px !important;
+	color: #fff !important;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+	-webkit-backdrop-filter: blur(16px) saturate(170%);
+	        backdrop-filter: blur(16px) saturate(170%);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+html body.single-services :is(.nm-pr-btn-1, .nm-pr-btn-2, .nm-pr-btn-4, .nm-pr-btn-5) .text,
+html body.single-services .nm-price-4-card .card-btn span:not(.icon),
+html body.single-services .nm-price-4-card .card-btn .text {
+	background: transparent !important;
+	color: #fff !important;
+}
+
+/* The arrow disc: dark glass, white glyph. */
+html body.single-services :is(.nm-pr-btn-1, .nm-pr-btn-2, .nm-pr-btn-4, .nm-pr-btn-5) .icon,
+html body.single-services .nm-price-4-card .card-btn .icon,
+html body.single-services .nm-price-4-card .card-btn:hover .icon {
+	background: rgba(0, 0, 0, 0.7) !important;
+	color: #fff !important;
+	border-radius: 50%;
+	-webkit-backdrop-filter: blur(10px);
+	        backdrop-filter: blur(10px);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+html body.single-services :is(.nm-pr-btn-1, .nm-pr-btn-2, .nm-pr-btn-4, .nm-pr-btn-5) .icon :is(i, svg, svg *),
+html body.single-services .nm-price-4-card .card-btn .icon * {
+	color: #fff !important;
+	fill: currentColor;
+	background: transparent !important;
+}
+
+/* .nm-pr-btn-5's arrow is a black SVG <img>: drawn white on the dark disc. */
+html body.single-services .nm-pr-btn-5 .icon img {
+	filter: brightness(0) invert(1);
+}
+
+/* ================================================================== *
+ * Responsive
+ * ================================================================== */
+@media (max-width: 767px) {
+	html body.single-services .nm-contact-5-box {
+		border-radius: 22px;
+	}
+
+	html body.single-services :is(.nm-pr-btn-1, .nm-pr-btn-2, .nm-pr-btn-4, .nm-pr-btn-5) {
+		max-width: 100%;
+	}
+}
+
+/* No backdrop-filter: solid colours, readable without blur. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+	html body.single-services :is(.nm-about-1-card, .nm-steps-1-card .content, .nm-services-5-item, .nm-price-4-card, .nm-blog-4-item-2, .nm-accordion-item, .nm-contact-5-box) {
+		background-color: rgb(24, 22, 20);
+	}
+}
+
+/* Pricing: the two cards are "not us" vs "us". The first card's button (e.g.
+   "Not For You") is the secondary action, so it is dark glass, not amber. */
+html body.single-services .nm-price-4-wrap .nm-price-4-card:first-child .card-btn,
+html body.single-services .nm-price-4-wrap .nm-price-4-card:first-child .card-btn:hover {
+	background-color: rgba(255, 255, 255, 0.06) !important;
+	background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0) 60%) !important;
+	box-shadow: none;
+}
+
+/* Contact band frame: the theme draws a 5.6px light-grey rounded frame on
+   the section's ::after, made for the old light band. On the dark band it
+   becomes the site's gradient edge, 2px. */
+html body.single-services .nm-contact-5-area::after {
+	border: 0;
+	padding: var(--pc-edge-w);
+	background: var(--pc-edge);
+	-webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+	-webkit-mask-composite: xor;
+	        mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+	opacity: 0.7;
+}
+
+
+/* Pull-quotes in the prose blocks (e.g. Email Marketing, AI Automation):
+   their solid gold rule becomes the site's fade line, in amber. Only sides
+   that have a width take the image, so plain paragraphs are unaffected. */
+html body.single-services .pc-prose p {
+	border-left-color: transparent;
+	border-image: linear-gradient(180deg, rgba(214, 172, 104, 0) 0%, rgb(230, 180, 100) 50%, rgba(214, 172, 104, 0) 100%) 1;
+	border-left-width: var(--pc-line-w);
+}
+
+/* The services list intro ("Done right, your website is …") was a dark
+   slate grey (#4c5258) on the dark page: the readable body tone instead. */
+html body.single-services .nm-services-4-sec-disc {
+	color: rgba(255, 255, 255, 0.7);
+}
+
+/* ================================================================== *
+ * The small glass pieces (badges, icon discs, buttons): the same
+ * gradient edge as the cards, at the site's one border weight, in place
+ * of the old 1px solid rim (client, 2026-10-26: "every border the same").
+ * ::before where the theme already uses ::after.
+ * ================================================================== */
+html body.single-services .nm-about-1-author-img :is(.img-shape-1, .img-shape-2, .img-shape-3)::after,
+html body.single-services .nm-steps-1-card .date::after,
+html body.single-services .nm-services-5-item .icon::after,
+html body.single-services .nm-price-4-card .package-x-icon .icon::after,
+html body.single-services :is(.nm-pr-btn-1, .nm-pr-btn-4, .nm-pr-btn-5)::after,
+html body.single-services :is(.nm-pr-btn-2:not(.has-v3), .nm-price-4-card .card-btn)::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 3;
+	padding: var(--pc-edge-w);
+	border-radius: inherit;
+	background: var(--pc-edge);
+	-webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+	-webkit-mask-composite: xor;
+	        mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+	pointer-events: none;
+}
+
+html body.single-services .nm-services-5-item .icon,
+html body.single-services .nm-price-4-card .package-x-icon .icon,
+html body.single-services :is(.nm-pr-btn-1, .nm-pr-btn-5) {
+	position: relative;
+}
+
+html body.single-services .nm-about-1-author-img :is(.img-shape-1, .img-shape-2, .img-shape-3) {
+	position: relative;
+}
