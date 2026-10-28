@@ -1,0 +1,480 @@
+/**
+ * /industries/ (page 4786) corrections.
+ *
+ * WHY THIS FILE EXISTS
+ * --------------------
+ * The page is assembled from stock Nimo widgets by `build-industries-page.php`,
+ * so none of what follows can be fixed in the Elementor data — the defects are in
+ * the theme's own view files and its demo-tuned type scale. Three separate
+ * problems, all visible at desktop width:
+ *
+ *   1. The CTA's supporting sentence renders at 65px with `word-break: break-all`,
+ *      colliding with the heading above it.
+ *   2. The industry cards put white text straight onto a full-bleed photograph
+ *      with no scrim, so the two bright photos render the copy unreadable.
+ *   3. The whole page is scaled for a 1920 demo: 65px card titles inside 441px
+ *      cards, 845px card height, 105px of dead padding under every card.
+ *
+ * Scoped to `body.page-id-4786` throughout. That is deliberately narrow: every
+ * selector below (`.nm-choose-1-*`, `.nm-contact-*`, `.nm-hero-1-*`) is a shared
+ * theme class used by the homepages and the service pages too, and this file is
+ * only reasoned about — and only regression-tested — against this one page.
+ *
+ * The `body.page-id-4786` prefix also buys the specificity to beat the theme's
+ * own breakpoint rules without `!important`, which is why the responsive ladder
+ * below has to restate every value the theme sets per breakpoint. Customizer post
+ * 549 carries no rule matching anything here (checked against the SERVED
+ * `<style id="wp-custom-css">`, not the stored CSS — see inc/custom-css-scope.php),
+ * so no `!important` war is needed.
+ */
+
+/* ------------------------------------------------------------------ *
+ * 1. The CTA supporting line rendered as a 65px heading
+ *
+ * The `nm-contact-2` view has no `description` control, so the supporting
+ * sentence is nested inside the `title` control as a <p> — the theme's own
+ * pattern, and what page 1697 does. See the comment on `cta` in
+ * scripts/lib/pc-industries-content.php.
+ *
+ * What that comment did not anticipate: the title carries `wa_bg_position`, the
+ * theme's scroll-driven word reveal. Its script splits the <h2> into one <div>
+ * per word and paints them through `background-clip: text`, and the nested <p>
+ * gets swept into that split. It inherits the title's 65px/65px type, its
+ * `word-break: break-all` (hence "wor|k out", "you|r ind|ustry's") and its
+ * transparent text-fill, so the sentence rendered as a second 65px heading with
+ * a grey gradient ghost across it — 868px of <h2> where ~200px belongs.
+ *
+ * Restoring paragraph typography is enough; the reveal keeps working on the
+ * heading words, which is the effect that was actually wanted. `text-fill-color`
+ * has to be reset explicitly — unsetting `background` alone still leaves the <p>
+ * transparent, because the fill is inherited from the word <div> above it.
+ * ------------------------------------------------------------------ */
+
+body.page-id-4786 .nm-contact-2-sec-title h2.tx-title p {
+	display: block;
+	margin: 26px 0 0;
+	max-width: 46ch;
+	font-family: var(--nm-font-2);
+	font-size: 19.5px;
+	font-weight: 400;
+	line-height: 1.65;
+	letter-spacing: normal;
+	text-transform: none;
+	color: #b5b5b5;
+	/* Step out of the heading's gradient-reveal paint. */
+	background: none;
+	-webkit-background-clip: initial;
+	background-clip: initial;
+	-webkit-text-fill-color: #b5b5b5;
+	/* The heading sets break-all so long single words cannot overflow a word
+	   <div>. On a full sentence it breaks mid-word instead of mid-space. */
+	word-break: normal;
+	overflow-wrap: break-word;
+}
+
+/* ------------------------------------------------------------------ *
+ * 2. White text sitting raw on a photograph
+ *
+ * `.nm-choose-1-experience` renders `.bg-img` as a full-bleed cover photo at
+ * `z-index: -1` and drops `.content-wrap` on top of it. The theme ships NO scrim
+ * of any kind — no overlay element, no ::before, no ::after (verified against the
+ * rendered page, not the stylesheet).
+ *
+ * That works only because most of this card set uses transparent-PNG cutouts —
+ * a person on alpha, 30-47% opaque — which composite onto the near-black section
+ * and leave the lower half of the card almost pure black. The cards that use a
+ * full-frame photograph have no such luck. Mean luminance of the lower 60% of the
+ * frame, composited the way the browser does it (0-255, white text needs < ~110):
+ *
+ *     Lawyers-Discussing-issue.webp                   140  unreadable
+ *     house-loan-estate-sell-mortgage-concept.jpg     114  unreadable
+ *     business-meeting-night.jpg                       58  ok
+ *     ... every cutout                              16-69  ok
+ *
+ * The law-firm photo is swapped for the cutout that belongs to that page (see
+ * pc-industries-content.php). The rest is solved structurally by the banded card
+ * in section 3 — text moved off the photograph entirely — so what remains here is
+ * NOT a legibility scrim. Nothing is written on the image any more.
+ *
+ * All that is left is the seam: a band of photo butted against a panel of flat
+ * colour reads as two objects. The gradient fades the bottom of the band into the
+ * panel colour so the card reads as one, and it deliberately stops before half
+ * way up, because darkening the photo is no longer the point.
+ *
+ * It lives inside `.bg-img`, already `z-index: -1` within the card's stacking
+ * context, so it paints above the photo and below the text without needing a
+ * z-index of its own, and inherits the 20px radius so it cannot square off the
+ * corners.
+ * ------------------------------------------------------------------ */
+
+body.page-id-4786 .nm-choose-1-experience .bg-img::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	pointer-events: none;
+	/* Fades the bottom of the band into the panel colour so the two halves read
+	   as one card rather than a photo stuck above a box. Deliberately reaching
+	   less than half way up: the photo itself no longer needs darkening, because
+	   nothing is written on it. */
+	background: linear-gradient(
+		to top,
+		#111215 0%,
+		rgba(17, 18, 21, 0.72) 16%,
+		rgba(17, 18, 21, 0) 42%
+	);
+}
+
+/* The cutouts (transparent PNGs of a person) composite onto the card colour, so
+   the band would otherwise be a flat slab of #111215 with a figure on it. A
+   barely-there wash gives it depth and separates it from the panel below. */
+body.page-id-4786 .nm-choose-1-experience .bg-img {
+	background: radial-gradient(120% 100% at 50% 0%, #1b1d22 0%, #111215 72%);
+}
+
+/* ------------------------------------------------------------------ *
+ * 3. The demo type scale
+ *
+ * The theme's base card title is 65px, dropping to 40px between 992 and 1599.
+ * That is sized for the demo's two-across layout; this page runs three across,
+ * so the title got 40px inside a 441px column while its own description sat at
+ * 18px — a 2.2x jump that reads as shouting.
+ *
+ * These values are a second pass. The first cut it to 26/15.5px, which fixed the
+ * shouting and then read as too small; this settles between the two, keeping the
+ * title-to-body ratio near 1.8 rather than the theme's 2.2. The theme's own
+ * breakpoint ladder is preserved throughout — each step just lands lower.
+ * ------------------------------------------------------------------ */
+
+/* -- Hero ---------------------------------------------------------- *
+ * The hero H1 is deliberately absent from this file. Its size is an Elementor
+ * control on the widget, emitted as
+ * `.elementor-4786 .elementor-element.elementor-element-8c95541 .tx-title` —
+ * four classes, which beats anything scoped `body.page-id-4786 …`. It lives in
+ * build-industries-page.php with the reasoning; change it there.
+ * ------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------ *
+ * The hero is now one full-bleed photograph, not a framed box
+ *
+ * view-1 ships two images: `image_1` as an inset-0 backdrop and `image_2` as a
+ * floating framed picture lower down the section. The page used the demo texture
+ * for the first and the real photograph for the second, which put the good image
+ * in a box — and because that box is absolutely positioned and parallaxes on
+ * scroll, it slid up under `.nm-hero-1-content-2` and the intro copy ended up
+ * sitting on the brightest part of Times Square mid-scroll. That is the overlap
+ * in the screenshots; it never showed in a static measurement, because at rest
+ * the two boxes do not intersect.
+ *
+ * The photograph moved to the backdrop slot in pc-industries-content.php, so it
+ * now covers the hero at full width and height with nothing floating over it.
+ * What is left here is the height and the scrim.
+ *
+ * The scrim is a near-uniform veil with only a slight left bias, NOT the
+ * left-weighted wash it first looked like it wanted. The intro paragraph does sit
+ * in the left 59%, but the <h1> runs 12%-95% of the hero width, straight across
+ * the brightest billboards in the frame. Measured against the real image at the
+ * real text boxes, a left-weighted scrim put the worst pixel under the headline
+ * at exactly 3.0:1 — passing large-text AA by nothing at all. This profile puts
+ * it at 8.4:1 (p95 9.8:1) and the paragraph at 12.1:1, while an effective alpha
+ * of only ~0.66-0.75 keeps Times Square legible as a picture rather than as a
+ * dark rectangle.
+ *
+ * The bottom fade lands the hero into the black section beneath it.
+ * ------------------------------------------------------------------ */
+
+body.page-id-4786 .nm-hero-1-area {
+	min-height: 88vh;
+	display: flex;
+	align-items: center;
+}
+
+body.page-id-4786 .nm-hero-1-bg-img::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background:
+		linear-gradient(to right, rgba(6, 6, 8, 0.34) 0%, rgba(6, 6, 8, 0.18) 55%,
+			rgba(6, 6, 8, 0.12) 100%),
+		linear-gradient(to top, rgba(6, 6, 8, 0.96) 0%, rgba(6, 6, 8, 0.70) 30%,
+			rgba(6, 6, 8, 0.62) 100%);
+}
+
+/* view-1 emits this wrapper whether or not image_2 has a url, so with the slot
+   now empty it would leave a 583px-tall empty box pushing the hero open. */
+body.page-id-4786 .nm-hero-1-main-img {
+	display: none;
+}
+
+body.page-id-4786 .nm-hero-1-content-2 p {
+	font-size: 21px;
+	line-height: 1.6;
+	max-width: 58ch;
+}
+
+/* -- Section headings ---------------------------------------------- */
+/* `.tx-title` rather than the `.nm-sec-title-*` class: the two section headings
+   on this page do NOT share one — the industries grid uses `nm-sec-title-1` and
+   the CTA uses `nm-sec-title-2`, with different base sizes (55px and 65px).
+   `.tx-title` is the class both carry, and the wrapper prefix keeps the rule off
+   every other heading on the page. */
+body.page-id-4786 .nm-choose-1-sec-title .tx-title,
+body.page-id-4786 .nm-contact-2-sec-title .tx-title {
+	font-size: 52px;
+}
+
+body.page-id-4786 .nm-choose-1-sec-title p {
+	font-size: 19px;
+	line-height: 1.7;
+}
+
+/* -- Industry cards: banded, not overlaid --------------------------- *
+ * The theme's card is one box with a full-bleed photo behind bottom-anchored
+ * text (`justify-content: end`). Two things fall out of that, both visible in
+ * the rendered page:
+ *
+ *   - Every card's title lands at a different height, because the block is
+ *     anchored to the BOTTOM and each industry's copy is a different length.
+ *     Across a row of three that reads as broken alignment, not as a design.
+ *   - The copy sits on the photograph, so legibility depends on whatever
+ *     photograph the card happens to carry — which is why two of them were
+ *     unreadable and why a scrim was needed at all.
+ *
+ * Splitting the card into a fixed image band and a solid copy panel fixes both
+ * at once, and structurally: the titles line up because they all start at the
+ * same offset, and the text can never sit on a photo again, so a bright
+ * placeholder image costs nothing but its own thumbnail.
+ *
+ * `object-position: top` keeps faces in frame — every cutout in this set is a
+ * head-and-shoulders portrait, and centre-cropping a 240px band out of one
+ * decapitates it.
+ *
+ * `height` also becomes `min-height`: the theme pins the card to a fixed 845px
+ * with `overflow: hidden`, so any card whose copy outgrew the box lost the end
+ * of its description silently. Letting the card grow while the grid row
+ * stretches its siblings keeps the row flush and the longest card intact.
+ * ------------------------------------------------------------------ */
+/* The grid already stretches each ITEM to the row height, but the card inside it
+   was only as tall as its own copy — so a row of three ended in three different
+   bottom edges. `align-items: stretch` is stated explicitly because the theme
+   sets `start` further up, and `start` is what left them ragged. */
+body.page-id-4786 .nm-choose-1-item {
+	display: flex;
+	align-items: stretch;
+}
+
+body.page-id-4786 .nm-choose-1-experience {
+	height: auto;
+	min-height: 520px;
+	width: 100%;
+	/* Top padding reserves the image band; the photo is absolutely positioned
+	   and cannot reserve it itself. */
+	padding: 314px 0 38px;
+	justify-content: flex-start;
+	background-color: #111215;
+}
+
+body.page-id-4786 .nm-choose-1-experience .bg-img {
+	height: 290px;
+	bottom: auto;
+	border-radius: 20px 20px 0 0;
+}
+
+/* ------------------------------------------------------------------ *
+ * Fitting two kinds of asset into one band
+ *
+ * `cover` is wrong for the cutouts. They are FULL-BODY portraits on alpha, so
+ * cropping one to a short band keeps the head and throws the body away — the
+ * card renders a disembodied floating head, and Restoration rendered the top of
+ * a hard hat and nothing else.
+ *
+ * So `contain` + bottom anchoring is the default: the whole figure fits inside
+ * the band and stands on its bottom edge, which is how a cutout is meant to be
+ * used. It is also the safe default for anything added later — a photo it does
+ * not suit is merely letterboxed, never decapitated.
+ *
+ * The genuine full-frame photographs then opt back into `cover`, matched on
+ * FILENAME rather than `:nth-child`. Position-based selectors silently attach to
+ * the wrong card the moment an industry is inserted or reordered in
+ * pc-industries-content.php; a filename selector simply stops matching when the
+ * image is replaced, falling back to the harmless default. Those were the cards
+ * flagged PLACEHOLDER in that file, so the rule was expected to be deleted, not
+ * maintained, once real photography landed.
+ *
+ * BOTH ARE NOW GONE, WHICH IS THE RULE WORKING AS DESIGNED, AND SO IS THE RULE.
+ * `house-loan-estate` was the Construction card's placeholder and was replaced by
+ * `build-industries-card`; `business-meeting-night` was the Meetings & Events
+ * card's, and has been replaced by `event-industries-card`. Both replacements are
+ * 1920x1080 crops of their own pages' heroes — the same 16:9 as
+ * `pro-industries-card` and `trav-industries-card`, which is the ratio the
+ * `contain` default is drawn for — so neither needs an override, and both
+ * selectors were deleted rather than repointed.
+ *
+ * WHAT IS LEFT IS THE `contain` DEFAULT ALONE, and that is now the whole rule.
+ * Four of the nine cards are full-frame 16:9 photographs that `contain` fits
+ * exactly; five are transparent-PNG cutouts that `contain` is there to protect.
+ * There is no longer a placeholder on this page, so if a card ever needs `cover`
+ * again it will be for a new reason and should say so.
+ * ------------------------------------------------------------------ */
+body.page-id-4786 .nm-choose-1-experience .bg-img img {
+	object-fit: contain;
+	object-position: center bottom;
+}
+
+body.page-id-4786 .nm-choose-1-experience .content-wrap {
+	padding: 0 30px;
+}
+
+body.page-id-4786 .nm-choose-1-experience .title {
+	font-size: 34px;
+	line-height: 1.22;
+	margin-bottom: 16px;
+}
+
+body.page-id-4786 .nm-choose-1-experience .disc {
+	font-size: 18px;
+	line-height: 1.68;
+}
+
+/* Seven cards in a three-column grid leaves the last one stranded in the first
+   column with two empty cells beside it. Centring the orphan is the whole fix —
+   `:nth-child(7):last-child` so it stops applying the moment an eighth industry
+   is added and the row fills naturally. */
+@media (min-width: 992px) {
+	body.page-id-4786 .nm-choose-1-wrap > .nm-choose-1-item:nth-child(7):last-child {
+		grid-column: 2;
+	}
+}
+
+/* ------------------------------------------------------------------ *
+ * NINE CARDS, MEASURED, AND DELIBERATELY NOT OVERRIDDEN
+ *
+ * The rule above is now dead code by design — its own comment promised it would
+ * stop applying at eight cards, and there are nine. It is kept rather than
+ * deleted because it is the correct fix if an industry is ever removed.
+ *
+ * The Hospitality & Travel build took this grid from eight cards to nine, and
+ * section 18 of industry-detail.css is a standing warning about what that can do:
+ * on the Industry Detail pages, three §5 cards in nimo-core's two-column band
+ * produced an orphan that measured 527px against its neighbours' 462px, because
+ * a bare `1fr` track's default minimum is `auto` and a 1116px-wide photograph
+ * pushed its own track past its share. So the same thing was measured here,
+ * before and after, on the BUILT page:
+ *
+ *   EIGHT CARDS                          NINE CARDS
+ *   1920  402px 402px 402px  3/3/2       1920  402px 402px 402px  3/3/3
+ *   1440  402px 402px 402px  3/3/2       1440  402px 402px 402px  3/3/3
+ *   1154  453px 453px        2/2/2/2     1154  453px 453px        2/2/2/2/1
+ *
+ * NO OVERRIDE WAS ADDED, AND THE MEASUREMENT IS THE REASON. At 1920 and 1440 the
+ * ninth card IMPROVES the grid: nine divides into three columns exactly, so the
+ * ragged two-card last row that eight always produced is gone. At 1154 there is
+ * an orphan — but it measures 453px, IDENTICAL to all eight of its neighbours,
+ * so section 18's bug does not reproduce here.
+ *
+ * WHY IT DOES NOT REPRODUCE, because that is the reusable part: these cards'
+ * photographs are `position: absolute` inside `.bg-img` (see section 2 above,
+ * which is why `.nm-choose-1-experience` has to reserve the band with top
+ * padding). An out-of-flow child contributes no intrinsic width, so there is no
+ * `auto` minimum for a bare `1fr` to honour and every track resolves to its
+ * share. The §5 cards on the detail pages paint their photograph IN FLOW, which
+ * is the whole difference.
+ *
+ * The orphan's row is 767.9px tall against 709.1px for rows 2-4, and that is NOT
+ * the orphan: row 1 measures the same 767.9px with two cards in it. Grid rows
+ * take the height of their tallest item and these cards carry copy of different
+ * lengths. Nothing to fix.
+ *
+ * WHAT WAS CONSIDERED AND REJECTED: forcing three columns through the 992-1199
+ * band, which would make nine cards a clean 3x3 everywhere. At 1154 that gives
+ * 292px per card, and `.nm-choose-1-experience .content-wrap` carries 30px of
+ * padding each side, so the title would set in 232px — the same shredding that
+ * stopped section 18 from taking three columns below 992. Rejected on the same
+ * measurement, in the other direction.
+ *
+ * SO THE LONE CARD AT 1154 IS LEFT ALONE. It is left-aligned in the first column
+ * with an empty cell beside it, which is a look rather than a bug, and changing
+ * it would be a new design decision rather than a fix.
+ * ------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------ *
+ * The CTA picture was landing on the CTA copy
+ *
+ * `.nm-contact-1-img` carries `margin-top: -110px`, a deliberate flourish that
+ * lifts the photograph up into the section above it. That works in the demo,
+ * where the heading block is tall and the space beside it is empty.
+ *
+ * It stopped working here as a direct result of fixing the nested <p> in section
+ * 1: that took the heading block from 868px to 234px, so the copy now ends where
+ * the picture starts. Measured: the title block ends at y=387 and the lifted
+ * image starts at y=332 — a 55px collision, directly over the last line of the
+ * paragraph, and the image wins because its wrapper carries `z-index: 1`. That
+ * is why "team to build it." is missing from the rendered section: it is behind
+ * the photograph, not absent.
+ *
+ * Dropping the lift is the whole fix; the heading block already carries `mb-55`,
+ * which becomes a real 55px gap the moment the image stops being pulled through
+ * it. No margin is added on `.nm-contact-1-wrap` to go with it — it would be a
+ * no-op, since adjacent-sibling margins collapse to the larger of the two and
+ * the heading's 55px wins.
+ * ------------------------------------------------------------------ */
+
+body.page-id-4786 .nm-contact-1-img {
+	margin-top: 0;
+}
+
+/* -- CTA info row -------------------------------------------------- */
+body.page-id-4786 .nm-contact-1-info .title {
+	font-size: 22px;
+	line-height: 1.4;
+}
+
+/* ------------------------------------------------------------------ *
+ * 4. Responsive ladder
+ *
+ * Restated rather than inherited: the `body.page-id-4786` prefix outranks the
+ * theme's own breakpoint rules at EVERY width, so without these the desktop
+ * sizes above would follow the page down to 320px.
+ * ------------------------------------------------------------------ */
+
+@media only screen and (min-width: 1200px) and (max-width: 1399px) {
+	body.page-id-4786 .nm-choose-1-sec-title .tx-title,
+	body.page-id-4786 .nm-contact-2-sec-title .tx-title { font-size: 48px; }
+	body.page-id-4786 .nm-choose-1-experience { min-height: 500px; padding-top: 292px; }
+	body.page-id-4786 .nm-choose-1-experience .bg-img { height: 268px; }
+	body.page-id-4786 .nm-choose-1-experience .title { font-size: 32px; }
+}
+
+@media only screen and (min-width: 992px) and (max-width: 1199px) {
+	body.page-id-4786 .nm-choose-1-sec-title .tx-title,
+	body.page-id-4786 .nm-contact-2-sec-title .tx-title { font-size: 43px; }
+	body.page-id-4786 .nm-choose-1-experience { min-height: 480px; padding-top: 278px; }
+	body.page-id-4786 .nm-choose-1-experience .bg-img { height: 254px; }
+	body.page-id-4786 .nm-choose-1-experience .title { font-size: 31px; }
+	body.page-id-4786 .nm-choose-1-experience .disc { font-size: 17.5px; }
+}
+
+@media only screen and (min-width: 768px) and (max-width: 991px) {
+	body.page-id-4786 .nm-hero-1-content-2 p { font-size: 19px; }
+	body.page-id-4786 .nm-choose-1-sec-title .tx-title,
+	body.page-id-4786 .nm-contact-2-sec-title .tx-title { font-size: 37px; }
+	body.page-id-4786 .nm-choose-1-experience { min-height: 440px; padding-top: 268px; padding-bottom: 34px; }
+	body.page-id-4786 .nm-choose-1-experience .bg-img { height: 244px; }
+	body.page-id-4786 .nm-choose-1-experience .title { font-size: 33px; }
+	body.page-id-4786 .nm-choose-1-experience .disc { font-size: 17.5px; }
+	body.page-id-4786 .nm-contact-2-sec-title h2.tx-title p { font-size: 18.5px; }
+}
+
+@media (max-width: 767px) {
+	body.page-id-4786 .nm-hero-1-content-2 p { font-size: 18px; }
+	body.page-id-4786 .nm-choose-1-sec-title .tx-title,
+	body.page-id-4786 .nm-contact-2-sec-title .tx-title { font-size: 33px; }
+	body.page-id-4786 .nm-choose-1-sec-title p { font-size: 18px; }
+	body.page-id-4786 .nm-choose-1-experience { min-height: 400px; padding-top: 292px; padding-bottom: 34px; }
+	body.page-id-4786 .nm-choose-1-experience .bg-img { height: 268px; }
+	body.page-id-4786 .nm-choose-1-experience .content-wrap { padding: 0 24px; }
+	body.page-id-4786 .nm-choose-1-experience .title { font-size: 28px; }
+	body.page-id-4786 .nm-choose-1-experience .disc { font-size: 17.5px; }
+	body.page-id-4786 .nm-contact-2-sec-title h2.tx-title p { font-size: 16px; margin-top: 20px; }
+}

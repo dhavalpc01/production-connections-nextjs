@@ -13,6 +13,7 @@ import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile, access } from "node:fs/promises";
 import path from "node:path";
 import { parse } from "node-html-parser";
+import { readSnapshot } from "./read-snapshot.mjs";
 
 const [origin, ...pages] = process.argv.slice(2);
 if (!origin || pages.length === 0) {
@@ -145,7 +146,7 @@ const manifest = {};
 
 for (const page of pages) {
   console.log(`# ${page}`);
-  const html = await readFile(path.join(import.meta.dirname, "snapshots", `${page}.html`), "utf8");
+  const html = await readSnapshot(page);
   const doc = parse(html, { comment: false });
   const styles = [];
 

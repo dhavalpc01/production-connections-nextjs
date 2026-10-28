@@ -25,7 +25,8 @@ actually renders, so the result matches it pixel for pixel:
   hydration, in WordPress's order, and replaces the server-side parts:
   forms post to `/api/leads`, Popup Maker's click trigger, current-menu marking.
 - **Isolation** — every ported page is its own root layout
-  (`src/app/(home)`, `(about)`, `(contact)`, `(services)`, and `(service)` whose
+  (`src/app/(home)`, `(about)`, `(contact)`, `(services)`, `(industries)`, and
+  `(service)`, `(industry-category)`, `(industry)` whose
   root layout picks the page by slug), so navigating between them is a
   full page load as on WordPress and no page's CSS leaks into another.
 
@@ -58,7 +59,7 @@ Header, footer, preloader, back-to-top and the contact popup are shared
 | [x] | `/about-us/` | `scripts/apply-about-copy.php` | `about.css`, `about-cards-reveal.js` |
 | [x] | `/contact/` | contact page + `[pc_contact_form]` (see Forms) | `contact.css` |
 | [x] | `/services/` | `services` archive, `inc/service-page.php` | `services-stack.css`, `pc-service-index.js` |
-| [ ] | `/industries/` | `build-industries-page.php` (repo root) | `industries.css`, `industry-card-reveal.js` |
+| [x] | `/industries/` | `build-industries-page.php` (repo root) | `industries.css`, `industry-card-reveal.js` |
 | [ ] | `/blog/` | DB only (posts are not in scripts) — export first | `inc/blog-grid-order.php` |
 | [ ] | `/privacy-policy/` | `scripts/lib/pc-legal-builder.php` | `legal.css` |
 
@@ -96,11 +97,11 @@ Styles: `industry-category.css`.
 
 | Done | Slug | WP content file |
 |---|---|---|
-| [ ] | `professional-services` | `scripts/content-industries/professional-services.php` (detail-builder file) |
-| [ ] | `retail-consumer` | `scripts/content-industry-categories/retail-consumer.php` |
-| [ ] | `property-logistics` | `scripts/content-industry-categories/property-logistics.php` |
-| [ ] | `hospitality-experience` | `scripts/content-industry-categories/hospitality-experience.php` |
-| [ ] | `health-nonprofit` | `scripts/content-industry-categories/health-nonprofit.php` |
+| [x] | `professional-services` | `scripts/content-industries/professional-services.php` (detail-builder file) |
+| [x] | `retail-consumer` | `scripts/content-industry-categories/retail-consumer.php` |
+| [x] | `property-logistics` | `scripts/content-industry-categories/property-logistics.php` |
+| [x] | `hospitality-experience` | `scripts/content-industry-categories/hospitality-experience.php` |
+| [x] | `health-nonprofit` | `scripts/content-industry-categories/health-nonprofit.php` |
 
 ### Industry Detail — `/industries/<category>/<slug>/`
 
@@ -110,25 +111,25 @@ Styles: `industry-detail.css`; script: `industry-cta.js`. Content file is
 
 | Done | Category | Slug |
 |---|---|---|
-| [ ] | professional-services | `law-firms` |
-| [ ] | professional-services | `financial-services` |
-| [ ] | professional-services | `merchant-processing` |
-| [ ] | professional-services | `public-adjusters` |
-| [ ] | retail-consumer | `retail` |
-| [ ] | retail-consumer | `restaurants` |
-| [ ] | retail-consumer | `food-beverage` |
-| [ ] | retail-consumer | `automotive` |
-| [ ] | property-logistics | `construction` |
-| [ ] | property-logistics | `real-estate` |
-| [ ] | property-logistics | `restoration` |
-| [ ] | property-logistics | `supply-chain` |
-| [ ] | property-logistics | `transportation` |
-| [ ] | hospitality-experience | `hospitality-travel` |
-| [ ] | hospitality-experience | `meetings-events` |
-| [ ] | hospitality-experience | `sports` |
-| [ ] | health-nonprofit | `medical-practices` |
-| [ ] | health-nonprofit | `education` |
-| [ ] | health-nonprofit | `nonprofits` |
+| [x] | professional-services | `law-firms` |
+| [x] | professional-services | `financial-services` |
+| [x] | professional-services | `merchant-processing` |
+| [x] | professional-services | `public-adjusters` |
+| [x] | retail-consumer | `retail` |
+| [x] | retail-consumer | `restaurants` |
+| [x] | retail-consumer | `food-beverage` |
+| [x] | retail-consumer | `automotive` |
+| [x] | property-logistics | `construction` |
+| [x] | property-logistics | `real-estate` |
+| [x] | property-logistics | `restoration` |
+| [x] | property-logistics | `supply-chain` |
+| [x] | property-logistics | `transportation` |
+| [x] | hospitality-experience | `hospitality-travel` |
+| [x] | hospitality-experience | `meetings-events` |
+| [x] | hospitality-experience | `sports` |
+| [x] | health-nonprofit | `medical-practices` |
+| [x] | health-nonprofit | `education` |
+| [x] | health-nonprofit | `nonprofits` |
 
 ### Site chrome
 

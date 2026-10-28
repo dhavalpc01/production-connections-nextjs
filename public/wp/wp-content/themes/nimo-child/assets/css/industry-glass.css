@@ -1,0 +1,351 @@
+/*
+ * Industry pages (every page under Industries in the header: the category
+ * pages and the detail pages, body class `pc-industry-detail`): the home
+ * page's glass system (client, 2026-10-26).
+ *
+ * industry-detail.css lays these pages out; this file, loaded after it,
+ * brings them in line with the home and service pages:
+ *
+ *   - dark glass on every card (rgba(28,24,20,.55) + a faint 135deg sheen +
+ *     backdrop blur) with the 1px gradient edge (--pc-edge) on whichever
+ *     pseudo-element the card leaves free;
+ *   - the one light island (the process cards, cream) turned to dark glass;
+ *   - every button the amber glass pill with white type (--pc-amber);
+ *   - every rule and divider the white fade line (--pc-line-h / -v).
+ *
+ * Selectors start `html body.pc-industry-detail` to outrank
+ * industry-detail.css (`body.pc-industry-detail …`). Tokens come from
+ * glass.css, which every page loads.
+ */
+
+/* ================================================================== *
+ * The edge — 1px gradient ring on a free pseudo-element
+ * ================================================================== */
+
+/* ::after is free on these. */
+html body.pc-industry-detail .nm-cta-4-content::after,
+html body.pc-industry-detail .pc-problem-grid__card::after,
+html body.pc-industry-detail .pc-service-index__preview-inner::after,
+html body.pc-industry-detail .nm-award-4-item::after,
+html body.pc-industry-detail .pc-faq-item::after,
+html body.pc-industry-detail .nm-projects-5-counter-single::after,
+html body.pc-industry-detail .elementor-widget-tx_count_box > .elementor-widget-container::after,
+/* ::after is the theme's hover fill on these, so ::before. */
+html body.pc-industry-detail .nm-price-5-card-single::before,
+html body.pc-industry-detail .nm-about-5-features-single::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 3;
+	padding: var(--pc-edge-w);
+	border-radius: inherit;
+	background: var(--pc-edge);
+	-webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+	-webkit-mask-composite: xor;
+	        mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+	pointer-events: none;
+}
+
+/* The ring is absolutely placed, so every host is a positioned box. */
+html body.pc-industry-detail .nm-cta-4-content,
+html body.pc-industry-detail .pc-service-index__preview-inner,
+html body.pc-industry-detail .nm-award-4-item,
+html body.pc-industry-detail .pc-faq-item,
+html body.pc-industry-detail .nm-projects-5-counter-single,
+html body.pc-industry-detail .elementor-widget-tx_count_box > .elementor-widget-container,
+html body.pc-industry-detail .nm-price-5-card-single,
+html body.pc-industry-detail .nm-about-5-features-single {
+	position: relative;
+}
+
+/* ================================================================== *
+ * The glass — one fill for every card
+ * ================================================================== */
+html body.pc-industry-detail .nm-cta-4-content,
+html body.pc-industry-detail .pc-problem-grid__card,
+html body.pc-industry-detail .pc-service-index__preview-inner,
+html body.pc-industry-detail .nm-award-4-item,
+html body.pc-industry-detail .pc-faq-item,
+html body.pc-industry-detail .nm-projects-5-counter-single,
+html body.pc-industry-detail .elementor-widget-tx_count_box > .elementor-widget-container,
+html body.pc-industry-detail .nm-price-5-card-single,
+html body.pc-industry-detail .nm-about-5-features-single {
+	border-color: transparent;
+	background-color: rgba(28, 24, 20, 0.55);
+	background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 45%);
+	-webkit-backdrop-filter: blur(18px) saturate(140%);
+	        backdrop-filter: blur(18px) saturate(140%);
+	box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+}
+
+/* The count box paints its panel on the widget itself; the glass moves to
+   its inner container, which carries the same rounding. */
+html body.pc-industry-detail .elementor-widget-tx_count_box {
+	background: transparent !important;
+	border-color: transparent !important;
+}
+
+html body.pc-industry-detail .elementor-widget-tx_count_box > .elementor-widget-container {
+	border-radius: 16px;
+}
+
+/* The statement panel (§5b) keeps its warm glow, under the glass. */
+html body.pc-industry-detail .nm-cta-4-content {
+	background-image:
+		radial-gradient(120% 140% at 0% 0%, rgba(190, 135, 55, 0.16) 0%, rgba(190, 135, 55, 0) 55%),
+		linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 45%);
+}
+
+/* ================================================================== *
+ * Process cards (price-5) — were cream panels
+ * ================================================================== */
+html body.pc-industry-detail .nm-price-5-card-single :is(.title, .nm-h-5.title) {
+	color: #fff;
+}
+
+html body.pc-industry-detail .nm-price-5-card-single :is(.disc, .nm-p-5.disc) {
+	color: rgba(255, 255, 255, 0.7);
+}
+
+/* The feature list was set dark for the cream card. */
+html body.pc-industry-detail .nm-price-5-card-single .price-features li {
+	color: rgba(255, 255, 255, 0.82);
+}
+
+html body.pc-industry-detail .nm-price-5-card-single .price-features li .icon {
+	color: rgb(230, 180, 100);
+	background: transparent;
+}
+
+/* The rule inside the card: the site line. */
+html body.pc-industry-detail .nm-price-5-card-single .dvr-line {
+	height: var(--pc-line-w);
+	background: var(--pc-line-h);
+	opacity: 0.5;
+}
+
+/* The column divider beside the price. */
+html body.pc-industry-detail .nm-price-5-area .right-side {
+	border-left-color: transparent;
+	border-image: var(--pc-line-v) 1;
+	border-left-width: var(--pc-line-w);
+}
+
+/* Below 992px the halves stack and the divider runs across the top. */
+@media only screen and (max-width: 991px) {
+	html body.pc-industry-detail .nm-price-5-area .right-side {
+		border-left-width: 0;
+		border-top: var(--pc-line-w) solid transparent;
+		border-image: var(--pc-line-h) 1;
+	}
+}
+
+/* The gold icon square becomes a glass tile with the icon in amber. */
+html body.pc-industry-detail .nm-price-5-card-single .icon-elm {
+	border-color: transparent !important;
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
+	box-shadow: none;
+	-webkit-backdrop-filter: blur(10px);
+	        backdrop-filter: blur(10px);
+}
+
+html body.pc-industry-detail .nm-price-5-card-single .icon-elm i {
+	color: rgb(230, 180, 100) !important;
+}
+
+/* On hover the theme fills the card gold from below: the text goes dark
+   there so it stays readable on the gold. */
+html body.pc-industry-detail .nm-price-5-card-single:hover :is(.title, .disc, .icon-elm i, .price-features li, .price-features li .icon) {
+	color: #14100a !important;
+}
+
+/* ================================================================== *
+ * Icons in circles and tiles: glass discs
+ * ================================================================== */
+html body.pc-industry-detail :is(.pc-problem-grid__icon, .pc-service-index__arrow) {
+	border-color: transparent;
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 100%);
+	box-shadow: none;
+	-webkit-backdrop-filter: blur(10px);
+	        backdrop-filter: blur(10px);
+}
+
+/* ================================================================== *
+ * Dividers: the white fade line
+ * ================================================================== */
+html body.pc-industry-detail .nm-about-4-area .nm-about-4-features-single .icon {
+	border-right-color: transparent;
+	border-image: var(--pc-line-v) 1;
+	border-right-width: var(--pc-line-w);
+}
+
+html body.pc-industry-detail .pc-service-index__list {
+	border-top-color: transparent;
+	border-image: var(--pc-line-h) 1;
+	border-top-width: var(--pc-line-w);
+}
+
+html body.pc-industry-detail .pc-service-index__row {
+	border-bottom-color: transparent;
+	border-image: var(--pc-line-h) 1;
+	border-bottom-width: var(--pc-line-w);
+}
+
+html body.pc-industry-detail .nm-about-5-right-inner {
+	border-top-color: transparent;
+	border-image: var(--pc-line-h) 1;
+	border-top-width: var(--pc-line-w);
+}
+
+/* The pull-quote's gold rule: the same fade, in amber. */
+html body.pc-industry-detail .pc-pull-line {
+	border-left-color: transparent;
+	border-image: linear-gradient(180deg, rgba(214, 172, 104, 0) 0%, rgb(230, 180, 100) 50%, rgba(214, 172, 104, 0) 100%) 1;
+	border-left-width: var(--pc-line-w);
+}
+
+/* The About column rule and the line under the features (theme lines). */
+html body.pc-industry-detail .nm-about-4-left-line {
+	background: var(--pc-line-h);
+	opacity: 0.35;
+}
+
+html body.pc-industry-detail .nm-about-4-left::after {
+	background: var(--pc-line-v);
+	opacity: 0.35;
+}
+
+/* The comparison rows (award-4) are cards now; their bottom rule goes. The
+   column-names row stays bare, on the site line. */
+html body.pc-industry-detail .nm-award-4-item {
+	border-bottom-color: transparent !important;
+}
+
+html body.pc-industry-detail .nm-award-4-item:not([style*="background"]):first-child {
+	border-image: var(--pc-line-h) 1;
+	border-bottom-width: var(--pc-line-w);
+}
+
+/* The comparison photo: its grey frame becomes the gradient edge. */
+html body.pc-industry-detail .nm-award-4-img {
+	position: relative;
+	border-color: transparent;
+}
+
+html body.pc-industry-detail .nm-award-4-img::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 3;
+	padding: var(--pc-edge-w);
+	border-radius: inherit;
+	background: var(--pc-edge);
+	-webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+	-webkit-mask-composite: xor;
+	        mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+	pointer-events: none;
+}
+
+/* The count box's own grey border. */
+html body.pc-industry-detail .elementor-widget-tx_count_box > .elementor-widget-container {
+	border-color: transparent !important;
+}
+
+/* An open question: its gold border becomes an amber edge. */
+html body.pc-industry-detail .pc-faq-item[open] {
+	border-color: transparent;
+}
+
+html body.pc-industry-detail .pc-faq-item[open]::after {
+	padding: var(--pc-edge-w);
+	background: linear-gradient(135deg, rgba(220, 165, 80, 0.3) 0%, rgb(230, 175, 90) 50%, rgba(220, 165, 80, 0.3) 100%);
+}
+
+/* The "active" status pill on the closing banner: a glass pill. */
+html body.pc-industry-detail .nm-hero-5-active-status {
+	border-color: transparent;
+	box-shadow: none;
+}
+
+/* ================================================================== *
+ * Buttons: the amber glass pill, white text, the arrow in a dark disc
+ * ================================================================== */
+html body.pc-industry-detail :is(.nm-pr-btn-1, .nm-pr-btn-2, .nm-pr-btn-4, .nm-pr-btn-5) {
+	background-color: rgba(150, 106, 44, 0.9) !important;
+	background-image:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0) 100%),
+		var(--pc-amber) !important;
+	border-color: transparent !important;
+	border-radius: 100px !important;
+	color: #fff !important;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+	-webkit-backdrop-filter: blur(16px) saturate(170%);
+	        backdrop-filter: blur(16px) saturate(170%);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+html body.pc-industry-detail :is(.nm-pr-btn-1, .nm-pr-btn-2, .nm-pr-btn-4, .nm-pr-btn-5) .text {
+	background: transparent !important;
+	color: #fff !important;
+}
+
+html body.pc-industry-detail :is(.nm-pr-btn-1, .nm-pr-btn-2, .nm-pr-btn-4, .nm-pr-btn-5) .icon {
+	background: rgba(0, 0, 0, 0.7) !important;
+	color: #fff !important;
+	border-radius: 50%;
+	-webkit-backdrop-filter: blur(10px);
+	        backdrop-filter: blur(10px);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+html body.pc-industry-detail :is(.nm-pr-btn-1, .nm-pr-btn-2, .nm-pr-btn-4, .nm-pr-btn-5) .icon :is(i, svg, svg *) {
+	color: #fff !important;
+	fill: currentColor;
+}
+
+/* ================================================================== *
+ * Responsive
+ * ================================================================== */
+@media (max-width: 767px) {
+	html body.pc-industry-detail :is(.nm-pr-btn-1, .nm-pr-btn-2, .nm-pr-btn-4, .nm-pr-btn-5) {
+		max-width: 100%;
+	}
+}
+
+/* No backdrop-filter: solid colours, readable without blur. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+	html body.pc-industry-detail :is(.nm-cta-4-content, .pc-problem-grid__card, .pc-service-index__preview-inner, .nm-award-4-item, .pc-faq-item, .nm-projects-5-counter-single, .nm-price-5-card-single, .nm-about-5-features-single),
+	html body.pc-industry-detail .elementor-widget-tx_count_box > .elementor-widget-container {
+		background-color: rgb(24, 22, 20);
+	}
+}
+
+/* ================================================================== *
+ * The small glass pieces (icon tiles and discs, the status pill,
+ * buttons): the same gradient edge as the cards, at the site's one
+ * border weight, in place of the old 1px solid rim (client, 2026-10-26).
+ * ::before where the theme already uses ::after.
+ * ================================================================== */
+html body.pc-industry-detail .nm-price-5-card-single .icon-elm::after,
+html body.pc-industry-detail :is(.pc-problem-grid__icon, .pc-service-index__arrow)::after,
+html body.pc-industry-detail .nm-hero-5-active-status::after,
+html body.pc-industry-detail :is(.nm-pr-btn-1, .nm-pr-btn-4, .nm-pr-btn-5)::after,
+html body.pc-industry-detail .nm-pr-btn-2:not(.has-v3)::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 3;
+	padding: var(--pc-edge-w);
+	border-radius: inherit;
+	background: var(--pc-edge);
+	-webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+	-webkit-mask-composite: xor;
+	        mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+	pointer-events: none;
+}
+
+html body.pc-industry-detail .nm-price-5-card-single .icon-elm,
+html body.pc-industry-detail .pc-service-index__arrow,
+html body.pc-industry-detail :is(.nm-pr-btn-1, .nm-pr-btn-5) {
+	position: relative;
+}

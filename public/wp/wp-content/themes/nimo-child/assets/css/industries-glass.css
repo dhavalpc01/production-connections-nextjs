@@ -1,0 +1,238 @@
+/*
+ * /industries/ (page 4786) and the industry CATEGORY pages (body class
+ * `pc-industry-category`): the home page's glass system (client, 2026-10-26).
+ *
+ * Both are built from the same three components: the hero, the industry card
+ * grid (.nm-choose-1-*) and the contact block (.nm-contact-1-* inside
+ * .nm-contact-2-area). industries.css / industry-category.css lay them out;
+ * this file, loaded after them, gives them the site's glass:
+ *
+ *   - buttons: the amber glass pill, white type, the arrow in a dark disc;
+ *   - industry cards: the 1px gradient edge, and dark glass where a card
+ *     has a panel of its own (the landing page's banded cards);
+ *   - the contact block's three points as glass cards with glass icon
+ *     discs, and its call button as dark glass;
+ *   - plus one correction industries.css makes for the landing page only:
+ *     the contact title's supporting sentence rendered as a second 65px
+ *     heading broken mid-word ("wo|rth"). The category pages had it too.
+ *
+ * Tokens (--pc-edge, --pc-amber, --pc-line-*) come from glass.css.
+ */
+
+/* ================================================================== *
+ * The contact title's supporting sentence (as industries.css §1)
+ * ================================================================== */
+body.pc-industry-category .nm-contact-2-sec-title h2.tx-title p {
+	display: block;
+	margin: 26px 0 0;
+	max-width: 46ch;
+	font-family: var(--nm-font-2);
+	font-size: 19.5px;
+	font-weight: 400;
+	line-height: 1.65;
+	letter-spacing: normal;
+	text-transform: none;
+	color: #b5b5b5;
+	background: none;
+	-webkit-background-clip: initial;
+	background-clip: initial;
+	-webkit-text-fill-color: #b5b5b5;
+	word-break: normal;
+	overflow-wrap: break-word;
+}
+
+@media (max-width: 767px) {
+	body.pc-industry-category .nm-contact-2-sec-title h2.tx-title p {
+		font-size: 17px;
+	}
+}
+
+/* ================================================================== *
+ * Buttons
+ * ================================================================== */
+html :is(body.page-id-4786, body.pc-industry-category) :is(.nm-pr-btn-1, .nm-pr-btn-2) {
+	background-color: rgba(150, 106, 44, 0.9) !important;
+	background-image:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0) 100%),
+		var(--pc-amber) !important;
+	border-color: transparent !important;
+	border-radius: 100px !important;
+	color: #fff !important;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+	-webkit-backdrop-filter: blur(16px) saturate(170%);
+	        backdrop-filter: blur(16px) saturate(170%);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+html :is(body.page-id-4786, body.pc-industry-category) :is(.nm-pr-btn-1, .nm-pr-btn-2) .text {
+	background: transparent !important;
+	color: #fff !important;
+}
+
+html :is(body.page-id-4786, body.pc-industry-category) :is(.nm-pr-btn-1, .nm-pr-btn-2) .icon {
+	background: rgba(0, 0, 0, 0.7) !important;
+	color: #fff !important;
+	border-radius: 50%;
+	-webkit-backdrop-filter: blur(10px);
+	        backdrop-filter: blur(10px);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+html :is(body.page-id-4786, body.pc-industry-category) :is(.nm-pr-btn-1, .nm-pr-btn-2) .icon :is(i, svg, svg *) {
+	color: #fff !important;
+	fill: currentColor;
+}
+
+/* ================================================================== *
+ * The edge — a 1px gradient ring on a free ::after
+ * ================================================================== */
+:is(body.page-id-4786, body.pc-industry-category) .nm-choose-1-experience::after,
+:is(body.page-id-4786, body.pc-industry-category) .nm-contact-1-info-single::after,
+:is(body.page-id-4786, body.pc-industry-category) .nm-contact-1-info-single .icon::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 3;
+	padding: var(--pc-edge-w);
+	border-radius: inherit;
+	background: var(--pc-edge);
+	-webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+	-webkit-mask-composite: xor;
+	        mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+	pointer-events: none;
+}
+
+:is(body.page-id-4786, body.pc-industry-category) .nm-choose-1-experience,
+:is(body.page-id-4786, body.pc-industry-category) .nm-contact-1-info-single,
+:is(body.page-id-4786, body.pc-industry-category) .nm-contact-1-info-single .icon {
+	position: relative;
+}
+
+/* ================================================================== *
+ * Industry cards
+ * ================================================================== */
+
+/* The landing page's banded cards have a flat panel under the photo: it
+   becomes the dark glass. (The category cards have no panel of their own:
+   the photo fills them, so only the edge is added.) */
+body.page-id-4786 .nm-choose-1-experience {
+	background-color: rgba(28, 24, 20, 0.6);
+	background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 45%);
+	-webkit-backdrop-filter: blur(18px) saturate(140%);
+	        backdrop-filter: blur(18px) saturate(140%);
+	box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+}
+
+/* The photo's fade into the panel: into the glass tone, not the old flat
+   colour. */
+body.page-id-4786 .nm-choose-1-experience .bg-img::after {
+	background: linear-gradient(180deg, rgba(28, 24, 20, 0) 55%, rgba(28, 24, 20, 0.85) 100%);
+}
+
+body.pc-industry-category .nm-choose-1-experience {
+	box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+}
+
+/* ================================================================== *
+ * The contact block
+ * ================================================================== */
+:is(body.page-id-4786, body.pc-industry-category) .nm-contact-1-info {
+	gap: 16px;
+}
+
+:is(body.page-id-4786, body.pc-industry-category) .nm-contact-1-info-single {
+	padding: 24px 22px 26px;
+	border-radius: 20px;
+	background-color: rgba(28, 24, 20, 0.55);
+	background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 45%);
+	-webkit-backdrop-filter: blur(18px) saturate(140%);
+	        backdrop-filter: blur(18px) saturate(140%);
+	box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+}
+
+:is(body.page-id-4786, body.pc-industry-category) .nm-contact-1-info-single .icon {
+	border-color: transparent;
+	border-radius: 50%;
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.05) 100%);
+	-webkit-backdrop-filter: blur(10px);
+	        backdrop-filter: blur(10px);
+}
+
+:is(body.page-id-4786, body.pc-industry-category) .nm-contact-1-info-single .icon i {
+	color: rgb(230, 180, 100);
+}
+
+/* The call button: the face (the link's ::after) becomes dark glass with
+   the gradient edge on ::before, as on the home page. */
+:is(body.page-id-4786, body.pc-industry-category) .nm-contact-1-social.has-contact-3 .link-elm::after {
+	background:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 55%),
+		rgba(45, 45, 45, 0.55);
+	-webkit-backdrop-filter: blur(16px) saturate(150%);
+	        backdrop-filter: blur(16px) saturate(150%);
+}
+
+:is(body.page-id-4786, body.pc-industry-category) .nm-contact-1-social.has-contact-3 .link-elm::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 3;
+	padding: var(--pc-edge-w);
+	border-radius: inherit;
+	background: var(--pc-edge);
+	-webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+	-webkit-mask-composite: xor;
+	        mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+	pointer-events: none;
+}
+
+/* The photo beside the contact points: a light frame, like the home HQ. */
+:is(body.page-id-4786, body.pc-industry-category) .nm-contact-1-img {
+	border-radius: 20px;
+	box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+}
+
+@media (max-width: 767px) {
+	:is(body.page-id-4786, body.pc-industry-category) .nm-contact-1-info-single {
+		padding: 20px 18px 22px;
+	}
+
+	html :is(body.page-id-4786, body.pc-industry-category) :is(.nm-pr-btn-1, .nm-pr-btn-2) {
+		max-width: 100%;
+	}
+}
+
+/* No backdrop-filter: solid colours, readable without blur. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+	:is(body.page-id-4786, body.pc-industry-category) .nm-contact-1-info-single,
+	body.page-id-4786 .nm-choose-1-experience {
+		background-color: rgb(24, 22, 20);
+	}
+}
+
+/* ================================================================== *
+ * Buttons and the contact photo: the same gradient edge as the cards,
+ * at the site's one border weight, in place of the old 1px solid rim
+ * (client, 2026-10-26). ::before on .nm-pr-btn-2 and the photo, whose
+ * ::after the theme uses.
+ * ================================================================== */
+html :is(body.page-id-4786, body.pc-industry-category) .nm-pr-btn-1::after,
+html :is(body.page-id-4786, body.pc-industry-category) .nm-pr-btn-2:not(.has-v3)::before,
+:is(body.page-id-4786, body.pc-industry-category) .nm-contact-1-img::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 3;
+	padding: var(--pc-edge-w);
+	border-radius: inherit;
+	background: var(--pc-edge);
+	-webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+	-webkit-mask-composite: xor;
+	        mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+	pointer-events: none;
+}
+
+html :is(body.page-id-4786, body.pc-industry-category) .nm-pr-btn-1,
+:is(body.page-id-4786, body.pc-industry-category) .nm-contact-1-img {
+	position: relative;
+}

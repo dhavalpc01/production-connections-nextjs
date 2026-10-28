@@ -1,0 +1,40 @@
+/* ---- PC Contact Form ---- */
+    .pc-cf{background:#000000;padding:36px 32px;border-radius:8px;max-width:540px}
+    .pc-cf-pulse{display:flex;align-items:center;gap:8px;color:#777;font-size:13px;margin-bottom:18px}
+    .pc-cf-pulse::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:#f5a623;animation:pcPulse 1.8s ease-in-out infinite}
+    @keyframes pcPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+    .pc-cf h3{color:#fff;font-size:22px;font-weight:700;margin:0 0 28px;line-height:1.35;font-family:Arial,sans-serif}
+    .pc-cf .pc-field{margin-bottom:22px}
+    .pc-cf input[type=text],
+    .pc-cf input[type=email],
+    .pc-cf input[type=tel],
+    .pc-cf input[type=url],
+    .pc-cf textarea{
+        width:100%;background:transparent;border:none;
+        border-bottom:1px solid #2a2a2a;color:#fff;
+        font-size:15px;padding:10px 0;outline:none;
+        transition:border-color .25s;box-sizing:border-box;
+        font-family:Arial,sans-serif
+    }
+    .pc-cf input::placeholder,.pc-cf textarea::placeholder{color:#555}
+    .pc-cf input:focus,.pc-cf textarea:focus{border-bottom-color:#e8186d}
+    .pc-cf textarea{resize:vertical;min-height:100px}
+    .pc-cf-nl{display:flex;align-items:center;gap:10px;margin-bottom:28px}
+    .pc-cf-nl input[type=checkbox]{width:16px;height:16px;accent-color:#f5a623;cursor:pointer;flex-shrink:0}
+    .pc-cf-nl label{color:#777;font-size:14px;cursor:pointer;font-family:Arial,sans-serif}
+    /* Button */
+    .pc-btn{display:inline-flex;align-items:center;background:#1c1c1c;border:none;border-radius:50px;cursor:pointer;padding:4px 22px 4px 4px;transition:background .3s;gap:0}
+    .pc-btn-ic{width:44px;height:44px;background:#f5a623;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .3s}
+    .pc-btn-ic svg{width:18px;height:18px;fill:none;stroke:#000;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:stroke .3s}
+    .pc-btn-tx{color:#fff;font-size:15px;font-weight:700;padding:0 10px 0 14px;white-space:nowrap;transition:color .3s;font-family:Arial,sans-serif}
+    .pc-btn:hover{background:#f5a623}
+    .pc-btn:hover .pc-btn-ic{background:#0b0b0b}
+    .pc-btn:hover .pc-btn-ic svg{stroke:#fff}
+    .pc-btn:hover .pc-btn-tx{color:#000}
+    /* Error */
+    .pc-cf-err{background:rgba(232,24,109,.08);border:1px solid rgba(232,24,109,.4);color:#e8186d;padding:12px 16px;border-radius:6px;font-size:14px;margin-bottom:20px;font-family:Arial,sans-serif}
+    /* Success */
+    .pc-cf-ok{text-align:center;padding:40px 16px}
+    .pc-cf-ok-ic{width:60px;height:60px;background:rgba(232,24,109,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px}
+    .pc-cf-ok h4{color:#fff;font-size:20px;margin:0 0 10px;font-family:Arial,sans-serif}
+    .pc-cf-ok p{color:#777;font-size:14px;line-height:1.7;margin:0;font-family:Arial,sans-serif}

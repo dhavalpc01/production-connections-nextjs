@@ -1,0 +1,223 @@
+/*
+ * Industry Category pages — /industries/<category>/
+ *
+ * Enqueued by inc/enqueue.php on `nimo_child_is_industry_category()`, which reads
+ * the `_pc_industry_category` post meta. Every selector below is additionally
+ * scoped to `body.pc-industry-category`, so the file is inert if that condition
+ * is ever widened by mistake.
+ *
+ * WHY THIS FILE IS SHORT, AND WHY THAT IS THE POINT. A category page composes
+ * three components that are already styled and already shipping elsewhere on this
+ * site: `tx_hero_section` style_1 (.nm-hero-1-area), the child theme's own
+ * `nimo_child_industry_grid` (.nm-choose-1-*), and `tx_contact_info` style_2
+ * (.nm-contact-1-area). All three are the /industries/ landing page's own
+ * components, chosen there against a census of the served HTML. The only reason
+ * this file exists at all is that assets/css/industries.css — which carries the
+ * corrections those components need — is gated BY PAGE ID to the landing page, so
+ * none of it reaches a category page.
+ *
+ * Anything added here should be a correction that industries.css already makes
+ * for the same component. Design decisions belong upstream, in the widget or in
+ * the content file, not in a per-page stylesheet.
+ */
+
+/* ------------------------------------------------------------------ *
+ * 1. The hero scrim
+ *
+ * `main1` is a photograph of Times Square — bright, high-contrast, and busy in
+ * exactly the region the headline sits over. `.nm-hero-1-title` is #fff with no
+ * text-shadow, so over the unmodified plate the first two words of every category
+ * H1 land on a lit billboard and disappear.
+ *
+ * A LEFT-WEIGHTED GRADIENT, NOT A FLAT OVERLAY. The copy occupies the left half
+ * and the right half is the part of the picture worth seeing; a uniform scrim
+ * dark enough to fix the headline turns the whole plate to mud. This mirrors what
+ * assets/css/industries.css does for the same backdrop on the landing page.
+ *
+ * ::before rather than a background-image layer, because the backdrop is painted
+ * by the widget's own inline `data-background` and a second background on the
+ * same element would replace it rather than sit over it.
+ * ------------------------------------------------------------------ */
+
+body.pc-industry-category .nm-hero-1-area {
+	position: relative;
+}
+
+body.pc-industry-category .nm-hero-1-area > .wa-fix,
+body.pc-industry-category .nm-hero-1-area > .wa-bg-default {
+	position: absolute;
+	inset: 0;
+}
+
+body.pc-industry-category .nm-hero-1-area::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	pointer-events: none;
+	background: linear-gradient(
+		90deg,
+		rgba(14, 14, 14, 0.92) 0%,
+		rgba(14, 14, 14, 0.82) 38%,
+		rgba(14, 14, 14, 0.35) 68%,
+		rgba(14, 14, 14, 0.15) 100%
+	);
+}
+
+/* The content has to outrank the scrim it sits under. */
+body.pc-industry-category .nm-hero-1-area > .container,
+body.pc-industry-category .nm-hero-1-area > .nm-container {
+	position: relative;
+	z-index: 2;
+}
+
+/* ------------------------------------------------------------------ *
+ * 2. Cards without photographs
+ *
+ * The grid widget guards its <img> on `card_image['url']`, so an industry with no
+ * photography yet renders `.nm-choose-1-experience` with a `.content-wrap` and no
+ * `.bg-img` sibling. Retail is that card today.
+ *
+ * Left alone, those cards collapse to the height of their copy and sit shorter
+ * than their neighbours in the same row — the grid tracks are equal but the items
+ * are not stretched. A minimum height keeps the row honest until the shoot
+ * happens, and the flex centring keeps the copy off the top edge where the
+ * picture used to be.
+ *
+ * DELIBERATELY NOT A PLACEHOLDER IMAGE. A grey rectangle reads as a broken asset;
+ * a plain dark card reads as a card. See the note above those cards in
+ * scripts/lib/pc-industries-content.php.
+ * ------------------------------------------------------------------ */
+
+body.pc-industry-category .nm-choose-1-experience:not(:has(.bg-img)) {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	min-height: 320px;
+}
+
+/*
+ * :has() is unsupported in Firefox before 121 and in Safari before 15.4. The
+ * fallback is a card that is shorter than its neighbours, which is untidy rather
+ * than broken — so no polyfill, and no JavaScript for a cosmetic row height.
+ */
+
+/* ------------------------------------------------------------------ *
+ * 3. Section rhythm
+ *
+ * Three sections is fewer than any other page in this tree, so the default
+ * spacing leaves the card grid floating between two large empty bands. These
+ * match the values industries.css uses between the equivalent sections.
+ * ------------------------------------------------------------------ */
+
+body.pc-industry-category .nm-choose-1-area {
+	padding-top: 90px;
+	padding-bottom: 90px;
+}
+
+@media (max-width: 991px) {
+	body.pc-industry-category .nm-choose-1-area {
+		padding-top: 60px;
+		padding-bottom: 60px;
+	}
+
+	body.pc-industry-category .nm-choose-1-experience:not(:has(.bg-img)) {
+		min-height: 0;
+	}
+}
+
+/* ------------------------------------------------------------------ *
+ * 4. The card grid was uneven above 1400px, on EVERY category page
+ *
+ * FOUND BY THE AUTOMOTIVE BUILD, which took this category from three cards to
+ * four and measured the grid because four was a new count here. The defect it
+ * found is older and wider than that change: it is on all four category pages
+ * and it has nothing to do with how many cards there are.
+ *
+ * MEASURED ON THE BUILT PAGES AT A 1920px VIEWPORT, with `offsetWidth` and
+ * `getComputedStyle().gridTemplateColumns` — NOT `getBoundingClientRect()`,
+ * because `.nm-choose-1-wrap` carries `wa-pp-2000`, a 2000px CSS perspective,
+ * and the client rect therefore returns a PROJECTED width that differs per card
+ * and rises left to right within a row. On the hub that projection reads
+ * 263.9-274.7px across eighteen cards whose `offsetWidth` is 238px each — it
+ * looks exactly like this bug and is not it. Every number below is `offsetWidth`.
+ *
+ *   PAGE                     CARDS   gridTemplateColumns              SPREAD
+ *   /retail-consumer/          4     455px 372px 378px                 83px
+ *   /property-logistics/       5     485px 533px 289px                244px
+ *   /hospitality-experience/   2     419px 394px 394px                 25px
+ *   /health-nonprofit/         2     397px 412px 397px                 15px
+ *   /professional-services/    3     505px 505px 505px                  0px
+ *
+ * THE LAST ROW IS THE CONTROL AND IT IS WHY THIS FIX IS THE RIGHT ONE.
+ * /industries/professional-services/ sits in the same position in the same URL
+ * tree and is the only one that is even — because it is not built by this engine.
+ * It is an Industry DETAIL page, so it carries `body.pc-industry-detail` and
+ * picks up section 18 of industry-detail.css, which is `minmax(0, 1fr)`.
+ *
+ * THE WINNING RULE, read out of the cascade rather than guessed: nimo-core.css
+ * declares `.nm-choose-1-wrap { grid-template-columns: 1fr 1fr 1fr }` with no
+ * media query, and nothing in this stylesheet had ever overridden it. A bare
+ * `1fr` is `minmax(auto, 1fr)`, so each track's base size is its content's
+ * intrinsic minimum and a track whose content is wider than its share simply
+ * takes more. THE PROOF THAT THIS IS WHAT IS HAPPENING is that the tracks
+ * overflow their own container: on /property-logistics/ they sum to 1308px
+ * inside a `.nm-choose-1-wrap` that measures 1266px. Tracks that fitted would
+ * have been equalised.
+ *
+ * WHY ONLY ABOVE 1400. Below it the wrap is narrower — 1206px at a 1440px
+ * viewport — and every track's intrinsic minimum fits inside its 402px share, so
+ * all of them resolve evenly. Measured on /property-logistics/, the worst page:
+ * 1440 gives `402px 402px 402px` and five cards at 402px; 1154 gives
+ * `453px 453px` and five at 453px; 800 gives `333px 333px` and five at 333px.
+ * NOTHING BELOW 1400 IS BROKEN, which is why this override is not banded — it is
+ * a no-op at those widths and banding it would be three rules instead of one.
+ *
+ * WHY THE HUB NEVER HAD IT, because that is the part worth carrying forward:
+ * industries.css does the same job by a different route, and every rule in that
+ * file is scoped `body.page-id-4786`. The hub gets it; the four category pages
+ * always got nothing. This is the same bug as section 18 of industry-detail.css,
+ * on a fourth engine that was written after that note and did not inherit it.
+ *
+ * `minmax(0, 1fr)` sets each track's base size to zero, so the share is the only
+ * thing that decides the width and the intrinsic minimum cannot bid.
+ *
+ * THE COLUMN COUNTS ARE RESTATED RATHER THAN INHERITED, and that is not
+ * tidiness — it is required. `body.pc-industry-category .nm-choose-1-wrap` is
+ * more specific than nimo-core's bare `.nm-choose-1-wrap`, and SPECIFICITY BEATS
+ * A MEDIA QUERY: a single unbanded three-column rule here would win inside
+ * nimo-core's 768-1199 band and its max-767 band too, and force three columns
+ * onto a phone. The first draft of this section did exactly that. So each of
+ * nimo-core's four bands is answered with its own rule at its own count —
+ * 3 / 2 / 2 / 1, unchanged from the theme — with only `1fr` swapped for
+ * `minmax(0, 1fr)`. industries.css section 4 carries the same warning about the
+ * same trap for the same reason.
+ *
+ * AFTER, measured the same way on all four pages at 1920, 1440, 1154, 800 and
+ * 500: every card in a row identical, the column count matching the theme's at
+ * every band, `scrollWidth` equal to `clientWidth`, no horizontal overflow.
+ * ------------------------------------------------------------------ */
+
+@media only screen and (min-width: 1200px) {
+	body.pc-industry-category .nm-choose-1-wrap {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+
+@media only screen and (min-width: 992px) and (max-width: 1199px) {
+	body.pc-industry-category .nm-choose-1-wrap {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media only screen and (min-width: 768px) and (max-width: 991px) {
+	body.pc-industry-category .nm-choose-1-wrap {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 767px) {
+	body.pc-industry-category .nm-choose-1-wrap {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}

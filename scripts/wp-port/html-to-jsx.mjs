@@ -14,9 +14,10 @@
  * space, as the browser would have rendered them.
  */
 
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { parse, NodeType } from "node-html-parser";
+import { readSnapshot } from "./read-snapshot.mjs";
 
 const ORIGIN = process.env.WP_ORIGIN ?? "http://localhost:8090";
 const [page, selector, outFile, componentName, ...flags] = process.argv.slice(2);
@@ -167,7 +168,7 @@ ${body}    </>
 `;
 }
 
-const html = await readFile(path.join(import.meta.dirname, "snapshots", `${page}.html`), "utf8");
+const html = await readSnapshot(page);
 const doc = parse(html, { comment: false, blockTextElements: { script: false, noscript: false, style: false, pre: true } });
 const match = doc.querySelector(selector);
 if (!match) {

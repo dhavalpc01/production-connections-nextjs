@@ -1,0 +1,643 @@
+/*
+ * pc-components.css — the child theme's own section components.
+ *
+ * Loaded by handle, not by page. `Problem_Grid::get_style_depends()` and
+ * `Service_Index::get_style_depends()` name `nimo-child-pc-components`, and
+ * Elementor enqueues it only on pages where one of those widgets renders. The
+ * handle is registered in nimo_child_register_component_assets() in
+ * inc/enqueue.php. Nothing here is scoped to `body.pc-industry-detail` — unlike
+ * industry-detail.css these are components, not corrections, and they are meant
+ * to be usable on any page.
+ *
+ *
+ * WHAT IS DELIBERATELY ABSENT
+ * ---------------------------
+ * No `.wow`, no `wa-split`, no `wa_add_class`, no `.active` gate, no scroll
+ * trigger. Three stock components were tried for these two sections and two of
+ * them shipped with copy the reader never saw: `nm-about-5` holds five of six
+ * descriptions at `opacity: 0` until an `.active` class lands, `nm-portfolio-4`
+ * holds every card title at `opacity: 0` with a 133px translate. The page already
+ * carries assets/js/reveal-fallback.js to repair exactly that class of failure in
+ * the theme's own markup. These components do not participate: there is no
+ * entrance animation to fail, so there is nothing to repair.
+ *
+ * The ONE exception is the Service Index preview stack, and it is decoration, not
+ * copy — see section 2. Every word of both components is in the document and at
+ * full opacity the moment this file loads.
+ *
+ *
+ * TOKENS
+ * ------
+ * Colour comes from Nimo's own custom properties wherever one exists, so
+ * `make brand` flows through: `--nm-clr-pr-1` is the primary accent, which
+ * scripts/apply-brand-colors.php writes as the brand gold. Every var() carries a
+ * literal fallback so the components still read correctly on a page that has not
+ * loaded nimo-core.css at all.
+ *
+ * The ground is dark because both components' typography classes (`nm-h-1`,
+ * `nm-p-1`, `nm-sec-title-1`, `nm-subtitle-1`) are the Home-1 scale, which
+ * nimo-core.css colours white by DEFAULT. That is what lets these sit on the
+ * Industry Detail pages' #0e0e0e body with no recolouring block in
+ * industry-detail.css — the mistake that cost four of the eleven stock components
+ * on that page a stylesheet section each.
+ *
+ * CONTENTS
+ *   0. Shared tokens and the section header
+ *   1. .pc-problem-grid  — staggered note cards
+ *   2. .pc-service-index — numbered index + sticky preview
+ *   3. Reduced motion
+ */
+
+/* =========================================================================
+ * 0. Shared tokens and the section header
+ * ====================================================================== */
+
+.pc-problem-grid,
+.pc-service-index {
+	--pcc-h: #fff;
+	--pcc-p: var(--nm-clr-p-1, #b5b5b5);
+	--pcc-muted: #838383;
+	--pcc-accent: var(--nm-clr-pr-1, #ffa201);
+	--pcc-panel: #161616;
+	--pcc-line: rgba(255, 255, 255, 0.12);
+	--pcc-line-soft: rgba(255, 255, 255, 0.07);
+	--pcc-ease: var(--nm-cube-1, cubic-bezier(0.55, 0.085, 0, 0.99));
+
+	padding-top: 100px;
+	padding-bottom: 100px;
+}
+
+/*
+ * The eyebrow, matched to `.pc-sec-eyebrow` in section 2 of industry-detail.css
+ * so every section on that page introduces itself the same way: a gold dot, then
+ * the label in muted grey, letter-spaced and upper-cased.
+ *
+ * `.nm-subtitle-1` is already `display: inline-flex` with a 13px gap, so the gap
+ * is inherited rather than restated; only the dot and the type are set here.
+ */
+.pc-problem-grid__eyebrow,
+.pc-service-index__eyebrow {
+	color: var(--pcc-muted);
+	font-size: 14px;
+	font-weight: 600;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	gap: 10px;
+	margin-bottom: 18px;
+}
+
+.pc-problem-grid__eyebrow::before,
+.pc-service-index__eyebrow::before {
+	content: "";
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: var(--pcc-accent);
+	flex: 0 0 auto;
+}
+
+/*
+ * The number rides INSIDE the eyebrow as its own span rather than being smuggled
+ * into the label string — `nm-choose-2` had no number slot and the previous build
+ * wrapped one in a `<span class="pc-eyebrow-num">` inside the text.
+ */
+.pc-problem-grid__eyebrow .number {
+	color: var(--pcc-accent);
+	letter-spacing: 0.04em;
+}
+
+/*
+ * `.nm-sec-title-1` sets no font-size of its own above 1200px — every stock
+ * section declares its own — so this is an addition, not an override, and the
+ * clamp matches `.pc-sec-title` in industry-detail.css so the two section title
+ * treatments on the page agree.
+ */
+.pc-problem-grid__title,
+.pc-service-index__title {
+	color: var(--pcc-h);
+	font-size: clamp(28px, 3.6vw, 48px);
+	line-height: 1.15;
+	letter-spacing: -0.01em;
+	margin: 0;
+}
+
+/* Buttons. One treatment, both components. */
+/*
+ * `:not(.pcid-cta)` keeps this off the Industry Detail pages, where
+ * assets/js/industry-cta.js has converted these two into the hero's
+ * `nm-pr-btn-1` and only the grid placement below is still wanted from this
+ * file. See section 23 of assets/css/industry-detail.css.
+ */
+.pc-problem-grid__btn:not(.pcid-cta),
+.pc-service-index__btn:not(.pcid-cta) {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	padding: 15px 30px;
+	border-radius: 999px;
+	background: var(--pcc-accent);
+	color: #0e0e0e;
+	font-family: var(--nm-font-2, inherit);
+	font-size: 16px;
+	font-weight: 600;
+	line-height: 1;
+	text-decoration: none;
+	transition: transform 0.35s var(--pcc-ease), box-shadow 0.35s var(--pcc-ease);
+}
+
+.pc-problem-grid__btn:not(.pcid-cta):hover,
+.pc-problem-grid__btn:not(.pcid-cta):focus-visible,
+.pc-service-index__btn:not(.pcid-cta):hover,
+.pc-service-index__btn:not(.pcid-cta):focus-visible {
+	color: #0e0e0e;
+	transform: translateY(-2px);
+	box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+}
+
+.pc-problem-grid__btn .arrow,
+.pc-service-index__btn .arrow {
+	display: inline-flex;
+	transition: transform 0.35s var(--pcc-ease);
+}
+
+.pc-problem-grid__btn:hover .arrow,
+.pc-service-index__btn:hover .arrow {
+	transform: translate(2px, -2px);
+}
+
+/* =========================================================================
+ * 1. .pc-problem-grid — staggered note cards
+ *
+ * A SPLIT HEADER over a two-column card grid whose second column is offset
+ * downward. Neither shape is on the Industry Detail page already: §5 is a bento
+ * mosaic, §10 a three-column row list, §11 a marquee, and every other section
+ * centres or left-aligns a single header block over a full-width body.
+ * ====================================================================== */
+
+.pc-problem-grid__head {
+	display: grid;
+	gap: 28px;
+	margin-bottom: 56px;
+}
+
+@media (min-width: 992px) {
+	.pc-problem-grid__head {
+		grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+		column-gap: 60px;
+		align-items: end;
+	}
+
+	/* The eyebrow and title occupy the left column, the lead and button the right. */
+	.pc-problem-grid__eyebrow {
+		grid-column: 1;
+		grid-row: 1;
+	}
+
+	.pc-problem-grid__title {
+		grid-column: 1;
+		grid-row: 2;
+	}
+
+	.pc-problem-grid__lead {
+		grid-column: 2;
+		grid-row: 2;
+	}
+
+	.pc-problem-grid__btn {
+		grid-column: 2;
+		grid-row: 3;
+		justify-self: start;
+	}
+}
+
+.pc-problem-grid__lead {
+	color: var(--pcc-p);
+	font-size: 18px;
+	line-height: 1.6;
+	max-width: 46ch;
+	margin: 0;
+}
+
+.pc-problem-grid__list {
+	display: grid;
+	gap: 24px;
+	/* It is an <ol>; the marker is the ghost numeral, not a list bullet. */
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+@media (min-width: 992px) {
+	.pc-problem-grid__list {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		column-gap: 28px;
+	}
+
+	/*
+	 * The stagger. The right column drops half a card so the two columns read as
+	 * a rhythm rather than a table.
+	 *
+	 * A TRANSFORM, NOT A MARGIN, and this was measured rather than assumed. With
+	 * `margin-top` on the first right-hand card, that card's grid ROW grew by 56px
+	 * and its row-mate STRETCHED to fill it: card 1 rendered 295px tall against
+	 * card 2's 239px, with dead space under its text. A transform does not enter
+	 * layout, so every row stays equal-height and only the paint moves.
+	 *
+	 * The offset rides in a custom property because :hover also transforms — the
+	 * two have to compose rather than overwrite each other.
+	 */
+	.pc-problem-grid__card:nth-child(even) {
+		--pcc-offset: 56px;
+	}
+
+	/* The last offset card paints 56px past the grid; this is that space. */
+	.pc-problem-grid__list {
+		padding-bottom: 56px;
+	}
+}
+
+.pc-problem-grid__card {
+	--pcc-offset: 0px;
+
+	position: relative;
+	overflow: hidden;
+	padding: 32px;
+	border: 1px solid var(--pcc-line);
+	border-radius: 20px;
+	background: var(--pcc-panel);
+	transform: translateY(var(--pcc-offset));
+	transition: border-color 0.4s var(--pcc-ease), transform 0.4s var(--pcc-ease);
+}
+
+/* The hairline gold rule across the top of every card. */
+.pc-problem-grid__card::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 2px;
+	background: linear-gradient(
+		90deg,
+		var(--pcc-accent) 0%,
+		rgba(255, 255, 255, 0) 65%
+	);
+}
+
+.pc-problem-grid__card:hover {
+	border-color: rgba(255, 255, 255, 0.22);
+	transform: translateY(calc(var(--pcc-offset) - 4px));
+}
+
+/*
+ * The ghost numeral. The ONLY absolutely-positioned element in either component,
+ * and it carries no information: it is `aria-hidden`, generated from the loop
+ * index, and duplicated by nothing. `pointer-events: none` so it cannot eat a
+ * click meant for the card.
+ */
+.pc-problem-grid__num {
+	position: absolute;
+	top: 8px;
+	right: 20px;
+	z-index: 0;
+	font-family: var(--nm-font-1, inherit);
+	font-size: 96px;
+	font-weight: 700;
+	line-height: 1;
+	letter-spacing: -0.04em;
+	color: rgba(255, 255, 255, 0.05);
+	pointer-events: none;
+	user-select: none;
+}
+
+.pc-problem-grid__icon {
+	position: relative;
+	z-index: 1;
+	display: grid;
+	place-items: center;
+	width: 56px;
+	height: 56px;
+	margin-bottom: 26px;
+	border: 1px solid var(--pcc-line);
+	border-radius: 14px;
+	color: var(--pcc-accent);
+}
+
+/*
+ * Flaticon renders as an <i> whose glyph inherits colour. Sized here rather than
+ * left to the icon library so a swap between Flaticon and Font Awesome does not
+ * change the card's rhythm.
+ */
+.pc-problem-grid__icon i,
+.pc-problem-grid__icon svg {
+	font-size: 26px;
+	width: 26px;
+	height: 26px;
+	fill: currentColor;
+	color: inherit;
+}
+
+.pc-problem-grid__card-title {
+	position: relative;
+	z-index: 1;
+	color: var(--pcc-h);
+	font-size: 22px;
+	line-height: 1.3;
+	letter-spacing: -0.01em;
+	margin: 0 0 10px;
+}
+
+.pc-problem-grid__card-text {
+	position: relative;
+	z-index: 1;
+	color: var(--pcc-p);
+	font-size: 16px;
+	line-height: 1.65;
+	margin: 0;
+}
+
+@media (max-width: 767px) {
+	.pc-problem-grid__card {
+		padding: 26px 22px;
+	}
+
+	.pc-problem-grid__num {
+		font-size: 72px;
+	}
+}
+
+/* =========================================================================
+ * 2. .pc-service-index — numbered index + sticky preview
+ *
+ * A NUMBERED INDEX read in order, beside a panel that previews the row under the
+ * cursor. `nm-portfolio-4` put six photographs in a bento whose wrap structure is
+ * hardcoded to three groups, so the layout only balanced at exactly six items and
+ * every card competed for the same glance. Rows do not compete, and the count is
+ * free.
+ *
+ * THE PREVIEW STACK IS THE ONE PLACE ANYTHING IS HIDDEN, and it is decoration:
+ * the panel is `aria-hidden`, every image in it is repeated by the row's own
+ * `__thumb`, and the first is given `is-active` server-side so the panel is
+ * correct before — and without — JavaScript. assets/js/pc-service-index.js only
+ * moves that class.
+ * ====================================================================== */
+
+.pc-service-index__head {
+	margin-bottom: 56px;
+}
+
+/*
+ * A <p>, not a second <h2>. style_8 hardcoded this line as an `<h2 class="nm-h-4
+ * nm-portfolio-4-title-1-text">`, which left the section shipping two H2s for one
+ * heading. The size relationship the client approved is kept exactly — large and
+ * recessive above the white title — it is just no longer a heading.
+ */
+.pc-service-index__display {
+	color: rgba(255, 255, 255, 0.34);
+	font-family: var(--nm-font-2, inherit);
+	font-size: clamp(28px, 4vw, 56px);
+	font-weight: 500;
+	line-height: 1.12;
+	letter-spacing: -0.02em;
+	max-width: 20ch;
+	margin: 0 0 14px;
+}
+
+.pc-service-index__body {
+	display: grid;
+	gap: 40px;
+}
+
+@media (min-width: 992px) {
+	.pc-service-index__body {
+		grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+		column-gap: 64px;
+		align-items: start;
+	}
+
+	/*
+	 * The preview is FIRST in the document so its images begin fetching before the
+	 * list, and second on screen. Order rather than DOM position, so the reading
+	 * order stays list-then-decoration for anything that ignores CSS.
+	 */
+	.pc-service-index__list {
+		order: 1;
+	}
+
+	.pc-service-index__preview {
+		order: 2;
+		position: sticky;
+		top: 120px;
+	}
+}
+
+.pc-service-index__preview-inner {
+	position: relative;
+	aspect-ratio: 4 / 5;
+	overflow: hidden;
+	border: 1px solid var(--pcc-line);
+	border-radius: 20px;
+	background: var(--pcc-panel);
+}
+
+/*
+ * DOUBLED-UP SELECTOR, deliberately. Elementor's frontend stylesheet carries
+ * `.elementor img { height: auto }` at specificity (0,1,1), which beats a single
+ * class and cannot be reordered around — Elementor prints its own CSS. Measured
+ * before it was fixed: a 676px panel holding a 303px image, letterboxed against
+ * black. `.pc-service-index .pc-service-index__preview-img` is (0,2,0) and wins
+ * outright, so the rule holds wherever this component is dropped.
+ */
+.pc-service-index .pc-service-index__preview-img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	opacity: 0;
+	transition: opacity 0.55s var(--pcc-ease);
+}
+
+.pc-service-index .pc-service-index__preview-img.is-active {
+	opacity: 1;
+}
+
+/* Below the split the panel is dropped entirely — see `__thumb`. */
+@media (max-width: 991px) {
+	.pc-service-index__preview {
+		display: none;
+	}
+}
+
+.pc-service-index__list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	border-top: 1px solid var(--pcc-line-soft);
+}
+
+.pc-service-index__row {
+	border-bottom: 1px solid var(--pcc-line-soft);
+}
+
+.pc-service-index__link {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: start;
+	column-gap: 20px;
+	padding: 26px 0;
+	color: inherit;
+	text-decoration: none;
+	transition: padding-left 0.4s var(--pcc-ease);
+}
+
+.pc-service-index__link:hover,
+.pc-service-index__link:focus-visible {
+	color: inherit;
+}
+
+@media (min-width: 992px) {
+	.pc-service-index__link:hover,
+	.pc-service-index__row.is-active .pc-service-index__link {
+		padding-left: 12px;
+	}
+}
+
+.pc-service-index__num {
+	font-family: var(--nm-font-1, inherit);
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 1.9;
+	letter-spacing: 0.08em;
+	color: var(--pcc-muted);
+	transition: color 0.35s var(--pcc-ease);
+}
+
+.pc-service-index__link:hover .pc-service-index__num,
+.pc-service-index__row.is-active .pc-service-index__num {
+	color: var(--pcc-accent);
+}
+
+/*
+ * The inline thumbnail. The same six photographs the preview panel holds, shown
+ * only where the panel is not — so the imagery survives on a touch screen with no
+ * hover to drive it, and nothing renders twice at any width.
+ */
+.pc-service-index__thumb {
+	display: block;
+	grid-column: 1 / -1;
+	grid-row: 1;
+	margin-bottom: 18px;
+	overflow: hidden;
+	border-radius: 14px;
+	aspect-ratio: 16 / 10;
+}
+
+/* Same fight as the preview image above — (0,1,1) would only tie. */
+.pc-service-index .pc-service-index__thumb img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+@media (min-width: 992px) {
+	.pc-service-index__thumb {
+		display: none;
+	}
+}
+
+@media (max-width: 991px) {
+	.pc-service-index__link {
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		grid-template-rows: auto auto;
+	}
+
+	.pc-service-index__num {
+		grid-row: 2;
+	}
+
+	.pc-service-index__text {
+		grid-row: 2;
+	}
+
+	.pc-service-index__arrow {
+		grid-row: 2;
+	}
+}
+
+.pc-service-index__text {
+	display: block;
+	min-width: 0;
+}
+
+.pc-service-index__row-title {
+	color: var(--pcc-h);
+	font-size: clamp(20px, 2.1vw, 28px);
+	line-height: 1.25;
+	letter-spacing: -0.01em;
+	margin: 0 0 8px;
+	transition: color 0.35s var(--pcc-ease);
+}
+
+.pc-service-index__link:hover .pc-service-index__row-title,
+.pc-service-index__row.is-active .pc-service-index__row-title {
+	color: var(--pcc-accent);
+}
+
+/* A <span> in the markup so it can live inside the row anchor; a block here. */
+.pc-service-index__row-desc {
+	display: block;
+	color: var(--pcc-p);
+	font-size: 16px;
+	line-height: 1.65;
+	max-width: 52ch;
+}
+
+.pc-service-index__arrow {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 42px;
+	height: 42px;
+	flex: 0 0 auto;
+	border: 1px solid var(--pcc-line);
+	border-radius: 50%;
+	color: var(--pcc-h);
+	transition: background-color 0.35s var(--pcc-ease),
+		color 0.35s var(--pcc-ease), transform 0.35s var(--pcc-ease);
+}
+
+.pc-service-index__link:hover .pc-service-index__arrow,
+.pc-service-index__row.is-active .pc-service-index__arrow {
+	background: var(--pcc-accent);
+	border-color: var(--pcc-accent);
+	color: #0e0e0e;
+	transform: rotate(0deg) translate(2px, -2px);
+}
+
+/* A row with no link renders as a <div>; the arrow would be a lie. */
+div.pc-service-index__link .pc-service-index__arrow {
+	display: none;
+}
+
+.pc-service-index__cta {
+	margin-top: 48px;
+}
+
+/* =========================================================================
+ * 3. Reduced motion
+ *
+ * Everything above animates colour, opacity or a few pixels of translate, so
+ * removing the transitions costs nothing but the motion. The END STATE of every
+ * rule here is the visible one, which is why this can be a blanket
+ * `transition: none` — there is no animation whose removal would leave content
+ * hidden. That is the whole point of section 0's opening note.
+ * ====================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+	.pc-problem-grid *,
+	.pc-service-index * {
+		transition: none !important;
+		animation: none !important;
+	}
+}
